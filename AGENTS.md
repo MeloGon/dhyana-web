@@ -15,6 +15,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Sitio del **Centro de Desarrollo Integral Dhyana**: psicoterapia y talleres.
 Hoy es una landing de una sola página con secciones ancladas por scroll.
 
+El alcance comercial vigente está en `README.md`: talleres grupales con compra
+independiente de un mes calendario, Culqi y panel; sin módulo de renovación.
+La landing todavía contiene datos y formularios de demo. La arquitectura actual
+y su extensión propuesta se explican en `GUIA-NEXTJS.md`; no confundir propuesta
+con funcionalidad implementada. Los documentos externos son referencias.
+
 El dueño del proyecto viene de **Flutter y no de Next.js**. Priorizá código
 explícito y legible sobre código "inteligente". Si algo requiere conocer una
 sutileza de React/Next para entenderlo, dejá un comentario corto explicándolo.
@@ -42,9 +48,15 @@ app/  →  components/  →  hooks/  →  lib/api  →  (backend)
 | `lib/data/` | Contenido estático (textos, catálogos) | Solo datos + tipos |
 | `lib/types/` | Interfaces compartidas por 2+ archivos | — |
 
-**Por qué así:** cuando se conecte el backend real, cada formulario se activa
-tocando **un solo archivo** en `lib/api/`. Ni los hooks ni los componentes
-cambian.
+**Por qué así:** mantener un contrato permite cambiar su transporte en `lib/api/`
+sin rehacer la UI. Una funcionalidad nueva como pagos también requiere servidor,
+datos y validación; no prometer que se conecta tocando un solo archivo.
+
+Al incorporar el backend, seguir la extensión de la guía: `lib/api/` llama por
+HTTP a `app/api/**/route.ts`, que delega reglas a `lib/server/`. Las páginas de
+servidor pueden llamar a esos servicios para su lectura inicial y componer UI.
+`app/` sigue sin reglas de negocio. `lib/server/` se protege con `server-only`;
+los secretos nunca viajan al cliente. Estas carpetas se crean cuando hagan falta.
 
 ## Mapa de carpetas
 
@@ -86,7 +98,10 @@ lib/
   las piezas reciben todo por props y no saben de dónde viene.
 - **Imports**: siempre con alias `@/` (`@/lib/types`), nunca `../../..`.
 - **Datos**: cualquier lista de contenido (servicios, talleres, FAQs) va a
-  `lib/data/`, nunca hardcodeada dentro del JSX.
+  `lib/data/` mientras sea estática, nunca hardcodeada dentro del JSX. El catálogo
+  persistido será consultado por servicios y editado en el panel.
+- **Tipos nuevos**: agrupar contratos por módulo en `lib/types/<module>.ts`.
+  Mantener los tipos existentes hasta migrarlos por necesidad; no agregar reexports.
 - **Colores**: hex directo en las clases (`bg-[#83D0C6]`), siguiendo la paleta
   ya definida en `globals.css`.
 
@@ -111,8 +126,9 @@ lib/
 4. **Componentes**: orquestador que llama al hook + piezas tontas por props.
 5. Verificar con `npm run build` y `npm run lint`.
 
-Los formularios de contacto y talleres ya siguen esta receta completa —
-copiarlos como referencia.
+Los formularios existentes sirven de referencia de UI/hook/servicio, pero sus
+respuestas simuladas no sirven como confirmación de pago. Para backend propio,
+seguir también las recetas de datos, servicios de servidor y endpoints de la guía.
 
 ## Estado actual / pendientes
 
@@ -148,6 +164,9 @@ en verde.
 
 ## Documentación relacionada
 
-- `GUIA-NEXTJS.md` — explicación de Next.js/React para el dueño del proyecto,
-  con equivalencias a Flutter. Si cambia la estructura de carpetas o alguna
-  convención, actualizar **los dos** archivos.
+- `README.md` — fuente del objetivo, alcance, estado y plan de entrega.
+- `GUIA-NEXTJS.md` — arquitectura y recetas con equivalencias a Flutter. Si cambia
+  la estructura o una convención, actualizar la guía y este archivo.
+- `CLAUDE.md` — remite a estas reglas; no duplicarlas allí.
+- No crear MD separados por cada módulo, modelo o decisión mientras quepan en las
+  secciones existentes. Los borradores de Downloads no se mantienen en paralelo.
