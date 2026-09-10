@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 };
 
-// RootLayout envuelve TODAS las páginas del sitio (hoy solo hay una: app/page.tsx).
+// RootLayout envuelve todas las páginas: landing y acceso administrativo.
 // Es un Server Component (no tiene 'use client' arriba) — corre en el servidor,
 // nunca se manda su código JS al navegador. Ideal para esto porque no maneja
 // estado ni eventos, solo arma el esqueleto <html>/<body>.
