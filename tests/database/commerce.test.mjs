@@ -41,6 +41,42 @@ async function withRollback(run) {
   }
 }
 
+test('datos de consulta: configuración única y valores iniciales del diseño', async () => withRollback(async () => {
+  const { rows } = await db.query('select * from public.contact_settings');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].title, 'Datos de la Consulta');
+  assert.equal(rows[0].phone, '+34 612 345 678');
+  assert.equal(rows[0].whatsapp_phone, '34612345678');
+  await expectSqlError('insert into public.contact_settings select * from public.contact_settings', '23505');
+  await expectSqlError('update public.contact_settings set id = false', '23514');
+}));
+
+test('datos de consulta: RLS, permisos privados y protección contra borrado', async () => withRollback(async () => {
+  assert.equal((await db.query("select relrowsecurity from pg_class where oid = 'public.contact_settings'::regclass")).rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select * from public.contact_settings', '42501');
+    await expectSqlError("update public.contact_settings set title = 'Cambio ajeno'", '42501');
+    await db.exec('reset role');
+  }
+  await db.exec('set local role service_role');
+  await expectSqlError('delete from public.contact_settings', '42501');
+  await expectSqlError('insert into public.contact_settings select * from public.contact_settings', '42501');
+  await db.exec("update public.contact_settings set address_note = '', hours_note = '', whatsapp_message = '' where id = true");
+  assert.equal((await db.query('select address_note from public.contact_settings')).rows[0].address_note, '');
+}));
+
+test('datos de consulta: rechaza enlaces y números inválidos sin guardar campos parciales', async () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  for (const assignment of [
+    "title = ' '", "title = repeat('x', 121)", "address = ''", "hours = ''",
+    "phone = 'javascript:alert(1)'", "phone = '+12'", "phone = '+0123456789'",
+    "whatsapp_phone = 'https://example.com'", "whatsapp_phone = '51999 999999'",
+    "email = 'sin-arroba'", "whatsapp_label = ''", "whatsapp_message = repeat('x', 1001)",
+  ]) await expectSqlError(`update public.contact_settings set address_note = 'No debe persistir', ${assignment}`, '23514');
+  assert.equal((await db.query('select address_note from public.contact_settings')).rows[0].address_note, 'Zona céntrica, fácil aparcamiento y metro cercano');
+}));
+
 test('preguntas frecuentes: carga inicial publicada y ordenada', async () => {
   const { rows } = await db.query('select question, sort_order, is_published from public.faqs order by sort_order');
   assert.equal(rows.length, 4);

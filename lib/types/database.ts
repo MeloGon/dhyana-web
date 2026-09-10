@@ -32,6 +32,51 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_settings: {
+        Row: {
+          address: string
+          address_note: string
+          email: string
+          hours: string
+          hours_note: string
+          id: boolean
+          phone: string
+          phone_note: string
+          title: string
+          whatsapp_label: string
+          whatsapp_message: string
+          whatsapp_phone: string
+        }
+        Insert: {
+          address: string
+          address_note?: string
+          email: string
+          hours: string
+          hours_note?: string
+          id?: boolean
+          phone: string
+          phone_note?: string
+          title: string
+          whatsapp_label: string
+          whatsapp_message?: string
+          whatsapp_phone: string
+        }
+        Update: {
+          address?: string
+          address_note?: string
+          email?: string
+          hours?: string
+          hours_note?: string
+          id?: boolean
+          phone?: string
+          phone_note?: string
+          title?: string
+          whatsapp_label?: string
+          whatsapp_message?: string
+          whatsapp_phone?: string
+        }
+        Relationships: []
+      }
       deleted_manual_sale_requests: {
         Row: {
           deleted_at: string

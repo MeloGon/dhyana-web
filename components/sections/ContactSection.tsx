@@ -7,6 +7,7 @@ import ContactInfoCard from '@/components/sections/contact/ContactInfoCard';
 import ContactFaqAccordion from '@/components/sections/contact/ContactFaqAccordion';
 import ContactForm from '@/components/sections/contact/ContactForm';
 import { usePublicFaqs } from '@/hooks/usePublicFaqs';
+import { usePublicContactSettings } from '@/hooks/useContactSettings';
 
 // Orquestador de la sección de contacto: arma el layout y conecta las piezas.
 // Toda la lógica del formulario (estado, envío, reset) vive en
@@ -19,6 +20,7 @@ interface ContactSectionProps {
 export default function ContactSection({ preselectedService = 'Psicoterapia Individual' }: ContactSectionProps) {
   const contactForm = useContactForm(preselectedService);
   const publicFaqs = usePublicFaqs();
+  const contactSettings = usePublicContactSettings();
 
   return (
     <section id="contacto" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
@@ -39,7 +41,7 @@ export default function ContactSection({ preselectedService = 'Psicoterapia Indi
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Left Side: Contact Information & FAQs */}
         <div className="lg:col-span-5 space-y-6">
-          <ContactInfoCard />
+          <ContactInfoCard {...contactSettings} />
           <ContactFaqAccordion {...publicFaqs} />
         </div>
 
