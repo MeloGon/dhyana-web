@@ -73,6 +73,8 @@ export type Database = {
           currency: string
           group_id: string
           id: string
+          manual_payment_method: string | null
+          manual_request_id: string | null
           origin: string
           payment_reference: string | null
           purchased_at: string | null
@@ -91,6 +93,8 @@ export type Database = {
           currency?: string
           group_id: string
           id?: string
+          manual_payment_method?: string | null
+          manual_request_id?: string | null
           origin: string
           payment_reference?: string | null
           purchased_at?: string | null
@@ -109,6 +113,8 @@ export type Database = {
           currency?: string
           group_id?: string
           id?: string
+          manual_payment_method?: string | null
+          manual_request_id?: string | null
           origin?: string
           payment_reference?: string | null
           purchased_at?: string | null
@@ -219,13 +225,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_sales_page: {
+        Args: {
+          p_access: string
+          p_coordination: string
+          p_page: number
+          p_query: string
+        }
+        Returns: Json
+      }
       delete_workshop_catalog: {
         Args: { p_workshop_id: string }
         Returns: undefined
       }
+      group_peak_occupancy: {
+        Args: { p_from: string; p_group_id: string; p_until: string }
+        Returns: number
+      }
+      register_manual_sale: {
+        Args: { p_admin_id: string; p_input: Json }
+        Returns: string
+      }
       save_workshop_catalog: {
         Args: { p_slug: string; p_workshop: Json; p_workshop_id: string }
         Returns: Json
+      }
+      set_sale_coordination: {
+        Args: {
+          p_admin_id: string
+          p_coordinated: boolean
+          p_purchase_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

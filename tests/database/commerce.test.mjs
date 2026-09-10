@@ -320,3 +320,119 @@ for (const role of ['anon', 'authenticated']) test(`${role}: no ejecuta funcione
   await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '42501', [JSON.stringify(catalogInput), 'prueba']);
   await expectSqlError('select public.delete_workshop_catalog($1)', '42501', [randomUUID()]);
 }));
+
+function manualInput(groupId, changes = {}) {
+  return { requestId: randomUUID(), groupId, buyerName: 'Participante temporal', buyerEmail: 'prueba@example.com',
+    buyerPhone: '+51999999999', amountCents: 11050, purchasedAt: '2025-01-31T20:00:00Z',
+    paymentMethod: 'yape', paymentReference: '', paymentVerified: true, ...changes };
+}
+async function manualSale(adminId, input) {
+  return (await db.query('select public.register_manual_sale($1, $2) as id', [adminId, JSON.stringify(input)])).rows[0].id;
+}
+
+test('venta manual: registra pago histórico, mes calendario e importe recibido; reintento no duplica', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  const input = manualInput(groupId);
+  await db.exec('set local role service_role');
+  const id = await manualSale(adminId, input);
+  assert.equal(await manualSale(adminId, input), id);
+  const { rows } = await db.query('select p.*, a.ends_at from public.purchases p join public.monthly_accesses a on a.purchase_id = p.id');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].amount_cents, 11050);
+  assert.equal(rows[0].origin, 'manual');
+  assert.equal(rows[0].status, 'paid');
+  assert.equal(rows[0].recorded_by, adminId);
+  assert.equal(rows[0].ends_at.toISOString(), '2025-02-28T20:00:00.000Z');
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId, JSON.stringify({ ...input, amountCents: 14000 })]);
+}));
+
+test('venta manual: rechaza administrador inactivo, fecha futura y pago sin verificar', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  for (const [changes, code] of [[{ purchasedAt: '2099-01-01T00:00:00Z' }, 'PT400'], [{ paymentVerified: false }, 'PT400']]) {
+    await expectSqlError('select public.register_manual_sale($1, $2)', code, [adminId, JSON.stringify(manualInput(groupId, changes))]);
+  }
+  await db.query('update public.admin_users set is_active = false where user_id = $1', [adminId]);
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT403', [adminId, JSON.stringify(manualInput(groupId))]);
+  assert.equal((await db.query('select id from public.purchases')).rows.length, 0);
+}));
+
+test('venta manual: no sobrevende períodos antiguos y libera cupo exactamente al vencer', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  await db.query('update public.workshop_groups set capacity = 1 where id = $1', [groupId]);
+  await manualSale(adminId, manualInput(groupId));
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId, JSON.stringify(manualInput(groupId, { purchasedAt: '2025-02-28T19:59:59Z' }))]);
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: '2025-02-28T20:00:00Z' }));
+  assert.equal((await db.query('select id from public.purchases')).rows.length, 2);
+}));
+
+test('ocupación: usa máximo simultáneo, no suma todos los períodos que cruzan el intervalo', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  await db.query('update public.workshop_groups set capacity = 2 where id = $1', [groupId]);
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: '2025-01-01T12:00:00Z' }));
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: '2025-02-01T12:00:00Z' }));
+  // Cruza ambos accesos, pero nunca habrá más de dos personas simultáneas.
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: '2025-01-15T12:00:00Z' }));
+  assert.equal(Number((await db.query("select public.group_peak_occupancy($1, '2025-01-01', '2025-03-01') as n", [groupId])).rows[0].n), 2);
+}));
+
+test('venta manual: referencia repetida no crea otra compra ni acceso', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  await manualSale(adminId, manualInput(groupId, { paymentReference: ' ope-123 ' }));
+  await expectSqlError('select public.register_manual_sale($1, $2)', '23505', [adminId, JSON.stringify(manualInput(groupId, { paymentReference: 'OPE-123' }))]);
+  assert.equal((await db.query('select id from public.purchases')).rows.length, 1);
+  assert.equal((await db.query('select purchase_id from public.monthly_accesses')).rows.length, 1);
+}));
+
+test('venta manual: impide ventas individuales y mantiene cupos al editar catálogo', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  const now = new Date(Date.now() - 3600000).toISOString();
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: now }));
+  await manualSale(adminId, manualInput(groupId, { purchasedAt: now }));
+  const { rows } = await db.query('select workshop_id from public.workshop_groups where id = $1', [groupId]);
+  await expectSqlError('select public.save_workshop_catalog($1, $2, $3)', 'PT409', [rows[0].workshop_id,
+    JSON.stringify({ ...catalogInput, groups: [{ ...catalogGroup, id: groupId, capacity: 1 }] }), 'prueba']);
+  await db.query("update public.workshops set category = 'individual' where id = $1", [rows[0].workshop_id]);
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId, JSON.stringify(manualInput(groupId))]);
+}));
+
+test('coordinación manual: marcar y desmarcar conserva pago, importe y período', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  const id = await manualSale(adminId, manualInput(groupId));
+  const read = async () => (await db.query('select p.*, a.ends_at from public.purchases p join public.monthly_accesses a on a.purchase_id = p.id where p.id = $1', [id])).rows[0];
+  const before = await read();
+  await db.query('select public.set_sale_coordination($1, $2, true)', [adminId, id]);
+  const marked = await read();
+  assert.equal(marked.coordinated_by, adminId);
+  assert.ok(marked.coordinated_at);
+  await db.query('select public.set_sale_coordination($1, $2, true)', [adminId, id]);
+  assert.deepEqual((await read()).coordinated_at, marked.coordinated_at);
+  await db.query('select public.set_sale_coordination($1, $2, false)', [adminId, id]);
+  assert.deepEqual(await read(), before);
+}));
+
+test('ventas: búsqueda literal, filtros, paginación y privacidad de funciones', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  await db.query('update public.workshop_groups set capacity = 30 where id = $1', [groupId]);
+  for (let i = 0; i < 21; i++) await manualSale(adminId, manualInput(groupId));
+  const list = async (query = '', access = 'all', coordination = 'all', page = 1) =>
+    (await db.query('select public.admin_sales_page($1, $2, $3, $4) as result', [query, access, coordination, page])).rows[0].result;
+  assert.equal((await list()).items.length, 20);
+  assert.equal((await list('', 'all', 'all', 2)).items.length, 1);
+  assert.equal((await list('PRUEBA@EXAMPLE.COM', 'expired', 'pending')).total, 21);
+  assert.equal((await list('%')).total, 0);
+  assert.equal((await list('', 'active')).total, 0);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select public.admin_sales_page($1, $2, $3, $4)', '42501', ['', 'all', 'all', 1]);
+    await expectSqlError('select public.register_manual_sale($1, $2)', '42501', [adminId, JSON.stringify(manualInput(groupId))]);
+    await expectSqlError('select public.set_sale_coordination($1, $2, true)', '42501', [adminId, randomUUID()]);
+    await db.exec('reset role');
+  }
+}));
+
+test('venta manual: no vuelve a registrar una referencia de Culqi', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  await createPurchase(groupId, { purchasedAt: '2025-01-01T12:00:00Z', paymentReference: 'chr_test_123' });
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId,
+    JSON.stringify(manualInput(groupId, { paymentReference: 'CHR_TEST_123' }))]);
+}));
