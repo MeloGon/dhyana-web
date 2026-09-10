@@ -21,7 +21,7 @@ La migración inicial ya está aplicada en Supabase (referencia en README). El c
 de servidor y su configuración local están preparados; acceso por Data API verificado.
 Login, recuperación y panel inicial protegido ya están implementados.
 Gestión de catálogo y lectura pública ya están conectadas a Supabase. El editor guarda taller y horarios juntos por RPC transaccional, genera slug desde título y permite eliminar solo sin compras.
-Faltan ventas y pagos. Otras secciones de la landing conservan contenido demo. La arquitectura actual
+Ventas manuales, participantes y coordinación ya funcionan. Faltan reservas y checkout con Culqi. Otras secciones de la landing conservan contenido demo. La arquitectura actual
 y su extensión propuesta se explican en `GUIA-NEXTJS.md`; no confundir propuesta
 con funcionalidad implementada. Los documentos externos son referencias.
 
@@ -78,6 +78,8 @@ app/
   admin/workshops/      Editor de talleres y grupos
   api/admin/workshops/  Lectura y escritura privada de catálogo
   api/workshops/        Lectura pública sin capacidad total
+  admin/sales/          Ventas manuales, participantes y coordinación
+  api/admin/sales/      Registro privado, búsqueda y coordinación
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -98,6 +100,8 @@ lib/
   server/admin-auth.ts  Identidad verificada y autorización activa
   server/auth-*.ts      Sesión SSR, configuración, Proxy y adaptadores HTTP
   server/catalog*.ts    Consultas, validación y RPC de guardado/eliminación de catálogo
+  server/sales*.ts      Ventas manuales, filtros y coordinación mediante RPC
+  types/admin-sales.ts  Contratos privados de ventas y participantes
   types/admin-catalog.ts Contratos privados de talleres y grupos
   types/index.ts        Tipos de la landing demo
   types/catalog.ts      Catálogo público, sin capacidad total
@@ -109,6 +113,7 @@ supabase/migrations/    Esquema SQL versionado (Supabase)
 tests/database/         Pruebas SQL con PGlite, solo para desarrollo
 tests/auth/             Pruebas HTTP del acceso administrativo
 tests/catalog/          Pruebas HTTP de catálogo y privacidad
+tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixtures
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
@@ -174,8 +179,7 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   misma hora y ajustando fechas inexistentes al último día del mes.
 - Tablas sin acceso directo para `anon`/`authenticated`. RLS no sustituye la
   autorización del servidor al usar `service_role`. `requireAdmin()` valida `getUser()`
-  y entrada activa en `admin_users` antes de operaciones privadas. Reservas,
-  confirmación atómica, concurrencia de cupos y Culqi siguen pendientes.
+  y entrada activa en `admin_users` antes de operaciones privadas. Registro manual y edición de catálogo comparten bloqueo de taller/grupo. Reservas y Culqi siguen pendientes.
 - El contenido es de demo (Lic. Alejandro Morales, teléfonos y direcciones de
   ejemplo). Reemplazar por los datos reales de Dhyana antes de publicar.
 - Imágenes y videos apuntan a Unsplash / Pixabay / Mixkit. Cualquier dominio
@@ -202,6 +206,7 @@ npm run test:db # reglas y permisos de migraciones, PostgreSQL en memoria
 npm run check:database # comprueba configuración privada y acceso a Supabase
 npm run test:auth # HTTP contra Next en ejecución; producción para probar caché
 npm run test:catalog # HTTP público; fixtures temporales habilitan escrituras de prueba
+npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RPC remotas
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos
@@ -216,9 +221,15 @@ Primer administrador activo, invitación aceptada y contraseña definida por él
 real: ejecutarlo solo cuando el usuario pida el envío. No crear cuentas reales para
 pruebas ni cambiar la contraseña del usuario.
 Si cambia una migración o regla persistida, ejecutar también `npm run test:db`.
-El cálculo de cupos actual cuenta accesos vigentes. La comprobación de capacidad
-antes de editar un grupo aún no es atómica frente a ventas; resolverlo en la etapa
-de ventas antes de habilitar checkout. No prometer reservas actuales.
+El cálculo público de cupos cuenta accesos vigentes. Ventas manuales y edición de
+capacidad usan bloqueos en orden taller → grupo. group_peak_occupancy comprueba el
+máximo simultáneo del período; register_manual_sale guarda compra/acceso de forma
+atómica y deduplica por manual_request_id. No escribir ventas directamente desde
+endpoints nuevos: usar el mismo protocolo al incorporar Culqi y reservas.
+El formulario manual exige pago verificado, fecha real en Perú e importe recibido.
+No crea cobros ni renovaciones. Coordinación es independiente del pago/acceso.
+No hay reservas actuales. Las pruebas RPC remotas guardan IDs de fixtures para limpiar
+por SQL privilegiado; service_role no puede borrar compras ni accesos.
 Estas pruebas no sustituyen la verificación con Supabase ni pruebas concurrentes
 al implementar reservas y pagos.
 

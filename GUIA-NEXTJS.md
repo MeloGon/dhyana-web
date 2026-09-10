@@ -6,7 +6,7 @@ módulos. El objetivo y alcance están en [README.md](README.md); las reglas par
 agentes, en [AGENTS.md](AGENTS.md). Esta es la guía técnica única del proyecto.
 
 Las secciones 1 a 8 describen la base actual. Las secciones 9 a 12 distinguen la
-base SQL, Auth, catálogo y contratos ya incorporados de los servicios, endpoints y pantallas
+base SQL, Auth, catálogo, ventas manuales y contratos ya incorporados de los servicios, endpoints y pantallas
 de gestión comercial que todavía faltan.
 
 ## 1. Estructura de carpetas
@@ -214,7 +214,7 @@ el navegador (hot reload), como el hot reload de Flutter.
 ## 9. Extensión propuesta: backend en el mismo proyecto
 
 Ya existe el cliente de base de datos en `lib/server/database.ts`, protegido con
-`server-only`. Los servicios de Auth y catálogo ya funcionan; ventas y pagos siguen pendientes. También
+`server-only`. Los servicios de Auth, catálogo y ventas manuales ya funcionan; checkout y pagos web siguen pendientes. También
 existen los contratos públicos, tipos generados y la migración aplicada descrita
 en la sección 10. Los demás archivos se crearán cuando el módulo los necesite.
 
@@ -252,7 +252,7 @@ de `app/api/`; importa la frontera de ejecución, no solo la carpeta.
 
 Supabase es la persistencia elegida; el proyecto remoto y la migración aplicada
 están en README. El cliente de servidor está preparado y sus credenciales locales
-fueron verificadas por la Data API. Auth consulta permisos y catálogo lee/escribe talleres. Faltan ventas y pagos.
+fueron verificadas por la Data API. Auth consulta permisos, catálogo lee/escribe talleres y ventas registra pagos externos verificados. Faltan checkout y pagos web.
 Se conserva Next.js para frontend y backend. No hace falta una interfaz genérica de pasarelas
 para un proveedor futuro hipotético; Culqi queda aislado en su propio servicio.
 
@@ -484,9 +484,9 @@ Los archivos antiguos de demo permanecen como referencia, sin uso en la sección
 Se usa COUNT exacto por grupo publicado para evitar truncar ocupación por el límite de
 filas de la Data API. La lectura no expone compradores. Para este catálogo pequeño,
 la lectura usa una consulta de talleres y un conteo por grupo; si crece, agrupar
-conteos en SQL y paginar catálogo. Todavía no hay reservas ni garantía concurrente
-entre editar capacidad y registrar una venta: esas operaciones deben coordinarse
-transaccionalmente al implementar ventas. No activar compras antes de resolverlo.
+conteos en SQL y paginar catálogo. Las ventas manuales y el editor ya comparten
+bloqueos de taller/grupo. Aún no hay reservas: el checkout deberá incorporarlas y
+respetar el mismo orden de bloqueos. No activar compras web antes de resolverlo.
 
 Taller/horario se despublican conservando relaciones e historial. Eliminar taller
 pide confirmación y llama DELETE al endpoint privado, que delega en
@@ -608,3 +608,46 @@ repitan textos o clases CSS. Ejecutar build y lint según AGENTS.md.
 Actualizar la sección correspondiente cuando se implemente una propuesta y retirar
 la alternativa sustituida. Ampliar aquí los datos y pagos cuando se concreten; no
 copiar los siete borradores externos como siete documentos de mantenimiento.
+
+### Ventas manuales: recorrido implementado
+
+`app/admin/sales/page.tsx` verifica sesión y compone la pantalla con lecturas iniciales.
+`AdminSales`, `ManualSaleForm` y `SalesList` son la presentación; `useAdminSales` y
+`useManualSale` mantienen estado, filtros, envío y errores como ViewModels de Flutter.
+`lib/api/admin-sales.ts` es la puerta HTTP. Las rutas delegan en `lib/server/sales*.ts`,
+que comprueban autorización, validan campos y llaman las funciones SQL privadas.
+
+`register_manual_sale` recibe el administrador validado por el servidor y registra
+compra y acceso juntos. El navegador nunca decide el administrador ni el vencimiento.
+El formulario entrega fecha local de Perú; el servidor valida y convierte a ISO con
+zona. La columna generada calcula el mes calendario y su ajuste al último día del mes.
+
+Cada formulario conserva un UUID de solicitud. Reenviarlo tras una respuesta perdida
+no duplica la venta: la función devuelve su ID original si los datos coinciden.
+Tras un registro exitoso, abrir otro formulario crea un UUID distinto. La referencia
+opcional agrega detección de duplicados entre formularios para el mismo medio de pago;
+sin referencia sigue siendo necesaria la revisión del administrador.
+
+El guardado bloquea taller y grupo en el mismo orden que el editor de catálogo.
+`group_peak_occupancy` calcula la máxima ocupación simultánea en un intervalo,
+considerando inclusivo el inicio y exclusivo el vencimiento. Esto protege pagos
+cargados tarde y evita contar juntos accesos que nunca coincidieron. El editor no
+reduce capacidad por debajo de ocupación actual o futura. Los futuros pagos web y
+reservas deben entrar por el mismo protocolo; escribir filas directamente con una
+clave privilegiada no sustituye esas reglas de negocio.
+
+`admin_sales_page` devuelve 20 ventas pagadas con acceso, total y fecha de lectura.
+La búsqueda usa texto literal, sin SQL dinámico. La lista muestra datos personales
+solo después de `requireAdmin()` y nunca se cachea. Los filtros se aplican al buscar;
+«Actualizar» refresca la página actual. Las fechas se construyen con partes numéricas
+en `America/Lima`, evitando diferencias de abreviaturas/espacios entre Node y navegador.
+
+`set_sale_coordination` marca o desmarca coordinación y conserva autor y fecha de
+la primera marca mientras siga activa. No envía mensajes, cobra ni modifica acceso.
+Las tres funciones de negocio y el cálculo de ocupación son SECURITY INVOKER con
+EXECUTE solo para service_role. Cada endpoint privado valida Origin y autorización.
+
+Pruebas: casos SQL para importe histórico, vencimiento, ocupación, duplicados,
+permisos, filtros y coordinación. `test:sales` agrega privacidad HTTP y, con fixtures
+explícitos, concurrencia real vía RPC. Los IDs quedan en un archivo privado para
+limpieza por SQL privilegiado; no se cobra ni se altera la contraseña de ninguna cuenta.

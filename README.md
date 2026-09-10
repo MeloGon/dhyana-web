@@ -5,7 +5,7 @@ acceso mensual a talleres grupales en línea. La entrega se coordina personalmen
 por WhatsApp y Google Meet.
 
 Este archivo reúne objetivo, alcance, estado y próximos pasos. Las decisiones del
-responsable prevalecen sobre los borradores externos. Actualizado: 8 de septiembre
+responsable prevalecen sobre los borradores externos. Actualizado: 9 de septiembre
 de 2026.
 
 ## Estado actual
@@ -14,11 +14,12 @@ de 2026.
   AI Studio. El diseño se afinará al incorporar funcionalidades.
 - Presentación, servicios, talleres y contacto con contenido de prueba en el código.
 - Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
-- Contacto todavía simulado. Formulario de inscripción demo retirado de la landing; no hay pagos.
+- Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
+- Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
 - Acceso administrativo conectado a Supabase Auth: login, recuperación, cambio de
   contraseña y panel protegido con gestión de catálogo.
 - Migración inicial aplicada a Supabase: cinco tablas con RLS, todavía sin datos
-  comerciales. Contratos públicos y tipos de base de datos incorporados.
+  comerciales al inicio. Migraciones posteriores incorporan catálogo transaccional y ventas manuales.
 - Cliente de servidor preparado en `lib/server/database.ts`; configuración local y
   acceso por Data API verificados. Talleres usa datos persistidos; otras secciones conservan contenido de demo.
 - Next.js 16, React 19, TypeScript y Tailwind CSS 4.
@@ -99,8 +100,9 @@ publicar antes de disponer del checkout.
 2. **Catálogo y gestión — base implementada:** crear y editar talleres/horarios,
    precios, capacidad y publicación; lectura pública desde Supabase. Falta cargar
    contenido real y afinar presentación y detalle compartible si se requiere.
-3. **Ventas y capacidad:** ventas manuales, períodos mensuales y reservas temporales;
-   comprobar que no se vende la última plaza a dos personas.
+3. **Ventas y capacidad — base implementada:** registro manual, participantes,
+   períodos mensuales y coordinación. Concurrencia verificada entre ventas manuales
+   y edición de capacidad. Faltan reservas temporales para checkout.
 4. **Culqi en pruebas:** compra, verificación, consulta de estado y código para
    WhatsApp. Comprobar duplicados, fallos y pagos demorados.
 5. **Publicación:** contenido real, políticas comerciales y comprobantes,
@@ -211,8 +213,9 @@ La disponibilidad actual resta los accesos mensuales vigentes de la capacidad.
 No cuenta accesos vencidos ni futuros; aún no hay reservas ni cobros. El precio se
 convierte de soles a céntimos para guardarlo como entero. Se bloquean valores inválidos,
 horarios ajenos o repetidos y capacidad inferior a accesos vigentes al comprobarla.
-Esta comprobación todavía no es atómica frente a una compra concurrente: la etapa de
-ventas debe incorporar transacciones y reservas antes de habilitar compras.
+El editor y las ventas manuales comparten bloqueos transaccionales y comprueban la
+ocupación máxima de los períodos afectados. El checkout deberá usar el mismo protocolo
+e incorporar reservas antes de habilitar pagos web.
 
 Guardado y eliminación usan funciones SQL privadas (`save_workshop_catalog` y
 `delete_workshop_catalog`), con transacción y permisos exclusivos del servidor.
@@ -224,6 +227,45 @@ También se comprobó eliminación y rollback directamente en Supabase. La prueb
 pública comprueba lectura y rechazo de visitantes. La suite HTTP con escrituras
 requiere CATALOG_TEST_FIXTURES y cuentas temporales; nunca usar cuentas reales como fixtures.
 
+
+## Ventas manuales y participantes
+
+`/admin/sales` permite registrar pagos externos ya verificados (Yape directo,
+transferencia, efectivo u otro medio). Se elige taller grupal y horario, participante,
+correo, teléfono, importe recibido, fecha real del pago en Perú y referencia opcional.
+El formulario pide confirmar la verificación del dinero; registrar no realiza ningún cobro.
+El precio actual se sugiere, pero el importe histórico corresponde a lo realmente pagado.
+
+Compra y acceso se guardan juntos por `register_manual_sale`. Una misma solicitud
+reintentada devuelve la misma venta; reutilizar su clave con datos distintos se rechaza.
+Una referencia manual repetida para el mismo medio también se rechaza. Sin referencia,
+no se puede reconocer automáticamente el mismo pago si se inicia un formulario nuevo;
+el responsable debe revisar el listado. Una referencia conocida de Culqi no se registra
+como manual. Cada compra conserva un mes calendario desde el pago, incluso al cargarla tarde.
+No hay renovación, suscripción, cancelación ni devolución automática.
+
+El listado privado tiene búsqueda literal por nombre, correo, teléfono, código o referencia;
+filtros de acceso y coordinación; paginación de 20 filas y actualización manual.
+Marcar o desmarcar coordinación guarda al administrador y la fecha; no cambia pago ni acceso,
+y no envía mensajes por WhatsApp. Solo muestra compras pagadas con acceso registrado.
+
+Migración `20260910032040_manual_sales.sql` aplicada. Las funciones son privadas y
+SECURITY INVOKER. Ventas y catálogo bloquean primero taller y luego grupo, comprueban
+ocupación y escriben dentro de una transacción. La ocupación máxima considera cruces de
+períodos, no la suma de todos los participantes históricos. No hay reservas todavía:
+Culqi deberá respetar estos mismos bloqueos y reglas antes de habilitar el checkout.
+
+Verificación: 36 pruebas SQL; 2 comprobaciones HTTP de privacidad/origen; 3 escenarios
+concurrentes en Supabase (último cupo, reintentos y venta frente a reducción de capacidad).
+También se probó el formulario y su confirmación histórica desde el navegador.
+Build con webpack y lint correctos. Las pruebas usan registros artificiales, sin cobros.
+
+`npm run test:sales` corre las pruebas HTTP contra Next en ejecución. Los escenarios
+remotos requieren `SALES_RPC_TEST_ADMIN_ID` de un administrador de pruebas activo y
+`SALES_RPC_TEST_ARTIFACTS` apuntando a un archivo privado para los IDs de limpieza.
+Estos escenarios crean talleres y ventas temporales en el proyecto configurado;
+deben limpiarse por SQL privilegiado siguiendo esos IDs (accesos, compras, grupos,
+talleres). El rol del servidor no recibe permisos de borrado de historial.
 
 ## Pendientes para implementar
 
