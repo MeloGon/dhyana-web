@@ -89,6 +89,9 @@ app/
   admin/about/          Configuración de la sección Sobre nosotros
   api/admin/about-settings/ Lectura y edición privadas de Sobre nosotros
   api/about-settings/   Datos públicos de la sección Sobre nosotros
+  admin/quotes/         Editor de citas y reflexiones
+  api/admin/quotes/     Lectura y mutaciones privadas de citas
+  api/quotes/           Reflexiones publicadas para el mazo interactivo
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -126,6 +129,7 @@ tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixt
 tests/faqs/             Lectura pública y privacidad HTTP de preguntas frecuentes
 tests/contact/          Privacidad HTTP y enlaces de datos de consulta
 tests/about/            Privacidad HTTP y lectura pública de Sobre nosotros
+tests/quotes/           Privacidad HTTP y lectura pública de citas
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
@@ -179,6 +183,13 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
+- Citas y reflexiones editables en `/admin/quotes` y visualizadas como mazo de cartas
+  interactivo en `#citas` (`QuoteDeckSection`). Tabla `quotes` privada con RLS y
+  escritura restringida a `service_role` tras `requireAdmin()` y verificación de Origin.
+  `/api/quotes` devuelve solo citas publicadas ordenadas por `order_index`. Carga inicial
+  con tres citas representativas del centro; el hook público incluye `INITIAL_QUOTES`
+  para CLS=0 y soporte offline/SSR. Mazo interactivo con rotación automática (6s),
+  pausa al posar el cursor, controles de avance/retroceso e indicadores.
 - Sección Sobre nosotros editable en `/admin/about`. Tabla única `about_settings`,
   RLS y permisos solo SELECT/UPDATE para service_role. 22 campos (cabecera,
   perfil, credenciales, cita, enfoque y pilares). Guardado conjunto tras
@@ -236,6 +247,7 @@ npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RP
 npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
 npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
 npm run test:about # privacidad HTTP y lectura de Sobre nosotros
+npm run test:quotes # privacidad HTTP y lectura de citas
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos

@@ -15,6 +15,7 @@ de 2026.
 - Presentación, servicios, talleres y contacto con contenido de prueba en el código.
 - Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
 - Preguntas frecuentes conectadas a Supabase y editables desde el panel; carga inicial con los cuatro textos del diseño.
+- Citas y reflexiones conectadas a Supabase y editables desde `/admin/quotes`, visualizadas como un mazo interactivo de cartas apiladas en la landing (#citas).
 - Tarjeta de datos de consulta configurable en el panel: dirección, teléfono, correo, horarios y botón de WhatsApp.
 - Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
 - Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
@@ -291,6 +292,30 @@ La barra de navegación (`Navbar.tsx`) y el ancla pública se actualizaron a `so
 `npm run test:about` comprueba el contrato público, cabecera no-store, redirección al login
 y rechazo de orígenes no autorizados. Pruebas SQL en `commerce.test.mjs` cubren
 configuración única, permisos RLS, denegación a anon/authenticated y validación de campos.
+
+## Citas y reflexiones editables en mazo de cartas
+
+`/admin/quotes` permite crear, editar, reordenar (`order_index`), publicar u ocultar y
+eliminar reflexiones/citas de psicoterapia. La sección pública `#citas` (`QuoteDeckSection`)
+presenta las citas como un mazo de cartas apiladas tridimensional interactivo ("card deck stack"):
+la carta superior muestra la reflexión completa con comillas decorativas, autor y rol;
+las cartas de fondo tienen rotaciones sutiles y traslación vertical creando profundidad
+sin textos que confundan la lectura.
+
+Características del mazo:
+- Rotación automática de carta cada 6 segundos hacia la siguiente reflexión.
+- Pausa automática de la rotación al posar el cursor o interactuar (hover/pause).
+- Controles de navegación manual: botón "Anterior", botón "Siguiente" e indicadores de posición.
+- Animación fluida de deslizamiento y desvanecimiento al cambiar de carta.
+- Cero saltos visuales (CLS=0): `usePublicQuotes()` usa `INITIAL_QUOTES` con las citas
+  emblemáticas del centro durante SSR o fallas de red, y sincroniza inmediatamente con `/api/quotes`.
+
+Migración `20260910152352_editable_quotes.sql` aplicada en Supabase. La tabla `quotes`
+cuenta con RLS y permisos restringidos exclusivamente a `service_role`. La API pública
+`/api/quotes` devuelve solo citas con `is_published = true` ordenadas por `order_index`.
+La API privada (`/api/admin/quotes`) exige `requireAdmin()` y validación estricta de `Origin`.
+Pruebas automáticas en `tests/quotes/quotes-http.test.mjs` (`npm run test:quotes`) y reglas
+de base de datos en `tests/database/commerce.test.mjs` (51 pruebas SQL).
 
 ## Ventas manuales y participantes
 

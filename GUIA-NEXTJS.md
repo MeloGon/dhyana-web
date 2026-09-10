@@ -556,6 +556,16 @@ tabla singleton `about_settings`, permitiendo configurar sus 22 campos desde `/a
   evitar inyección de markup arbitrario. Las mutaciones son atómicas sobre la fila única
   y exigen coincidencia de cabecera `Origin` con `APP_URL`.
 
+### Citas y reflexiones en mazo de cartas (implementado)
+
+La sección pública `#citas` presenta reflexiones en un mazo de cartas tridimensional ("card deck stack") interactivo, editable en `/admin/quotes`.
+
+- **En Flutter:** Equivale a un `Stack` con widgets superpuestos estilizados con `Transform` (`Matrix4` para rotación y traslación vertical). Un `Timer.periodic` rota el índice activo cada 6 segundos y se pausa cuando el usuario toca la tarjeta (`GestureDetector.onTapDown`/`onLongPress`). El estado de la lista lo gestiona un `Cubit` o `ChangeNotifier` conectado a un repositorio HTTP.
+- **En Next.js:** El componente interactivo `QuoteDeckSection.tsx` (`'use client'`) maneja el índice activo con `useState` y la rotación automática con `useEffect` (`setInterval` a 6000ms con limpieza en desmontaje o cambio de índice). Pausa el temporizador en `onMouseEnter` y lo reanuda en `onMouseLeave`.
+- **Diseño del mazo:** La carta frontal activa muestra la reflexión completa con comillas decorativas, autor y rol profesional, con `p-8 sm:p-12 md:p-14` y ancho `max-w-4xl`. Las cartas de fondo se renderizan en capas sutiles con `scale`, `translateY` y `rotate` sin textos internos que distraigan, dando una sensación táctil de baraja física.
+- **ViewModel / Hooks:** `usePublicQuotes()` pre-carga `INITIAL_QUOTES` para entrega inmediata sin parpadeos visuales (CLS=0) y sincroniza con `/api/quotes`. `useAdminQuotes()` gestiona el formulario, orden, borrador/publicado y borrado confirmado en el panel `/admin/quotes`.
+- **Seguridad:** Tabla `quotes` privada con RLS en Supabase. Lectura pública solo de citas activas (`is_published = true`); mutaciones administrativas protegidas por `requireAdmin()` y verificación de `Origin`.
+
 ## 11. Recorrido de una compra
 
 1. El navegador envía el identificador del grupo y los datos mínimos. El servidor
