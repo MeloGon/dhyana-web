@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_settings: {
+        Row: {
+          approach_paragraph1: string
+          approach_paragraph2: string
+          approach_title: string
+          badge: string
+          credential1: string
+          credential2: string
+          credential3: string
+          heading: string
+          id: boolean
+          introduction: string
+          pillar1_description: string
+          pillar1_title: string
+          pillar2_description: string
+          pillar2_title: string
+          pillar3_description: string
+          pillar3_title: string
+          pillar4_description: string
+          pillar4_title: string
+          profile_image_alt: string
+          profile_image_url: string
+          profile_name: string
+          profile_title: string
+          quote: string
+        }
+        Insert: {
+          approach_paragraph1: string
+          approach_paragraph2: string
+          approach_title: string
+          badge: string
+          credential1: string
+          credential2: string
+          credential3: string
+          heading: string
+          id?: boolean
+          introduction: string
+          pillar1_description: string
+          pillar1_title: string
+          pillar2_description: string
+          pillar2_title: string
+          pillar3_description: string
+          pillar3_title: string
+          pillar4_description: string
+          pillar4_title: string
+          profile_image_alt: string
+          profile_image_url: string
+          profile_name: string
+          profile_title: string
+          quote: string
+        }
+        Update: {
+          approach_paragraph1?: string
+          approach_paragraph2?: string
+          approach_title?: string
+          badge?: string
+          credential1?: string
+          credential2?: string
+          credential3?: string
+          heading?: string
+          id?: boolean
+          introduction?: string
+          pillar1_description?: string
+          pillar1_title?: string
+          pillar2_description?: string
+          pillar2_title?: string
+          pillar3_description?: string
+          pillar3_title?: string
+          pillar4_description?: string
+          pillar4_title?: string
+          profile_image_alt?: string
+          profile_image_url?: string
+          profile_name?: string
+          profile_title?: string
+          quote?: string
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string

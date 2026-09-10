@@ -24,6 +24,7 @@ export function AdminPanel({ admin }: { admin: AdminIdentity }) {
         <Link href="/admin/sales" className="mt-3 inline-block rounded-xl border border-[#3D4C5A]/30 px-6 py-3 font-medium sm:ml-3">Ventas y participantes</Link>
         <Link href="/admin/faqs" className="mt-3 inline-block rounded-xl border border-[#3D4C5A]/30 px-6 py-3 font-medium sm:ml-3">Preguntas frecuentes</Link>
         <Link href="/admin/contact" className="mt-3 inline-block rounded-xl border border-[#3D4C5A]/30 px-6 py-3 font-medium sm:ml-3">Datos de la consulta</Link>
+        <Link href="/admin/about" className="mt-3 inline-block rounded-xl border border-[#3D4C5A]/30 px-6 py-3 font-medium sm:ml-3">Sobre nosotros</Link>
         <div className="mt-7 flex flex-wrap gap-5 text-sm">
           <Link href="/admin/password" className="underline underline-offset-4">Cambiar contraseña</Link>
           <Link href="/" className="underline underline-offset-4">Ver sitio público</Link>

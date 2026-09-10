@@ -9,7 +9,7 @@ import { useScrollSpy } from '@/hooks/useScrollSpy';
 // recrea en cada render y useScrollSpy no re-suscribe su listener.
 const NAV_LINKS = [
   { id: 'inicio', label: 'Inicio' },
-  { id: 'sobre-mi', label: 'Sobre Mí' },
+  { id: 'sobre-nosotros', label: 'Sobre Nosotros' },
   { id: 'servicios', label: 'Servicios' },
   { id: 'talleres', label: 'Talleres' },
   { id: 'citas', label: 'Reflexiones' },

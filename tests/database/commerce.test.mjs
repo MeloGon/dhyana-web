@@ -77,6 +77,42 @@ test('datos de consulta: rechaza enlaces y números inválidos sin guardar campo
   assert.equal((await db.query('select address_note from public.contact_settings')).rows[0].address_note, 'Zona céntrica, fácil aparcamiento y metro cercano');
 }));
 
+test('sobre nosotros: configuración única y valores iniciales del diseño', async () => withRollback(async () => {
+  const { rows } = await db.query('select * from public.about_settings');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].badge, 'Sobre el Terapeuta');
+  assert.equal(rows[0].profile_name, 'Lic. Alejandro Morales');
+  assert.equal(rows[0].pillar1_title, 'Vínculo Seguro y Empatía');
+  await expectSqlError('insert into public.about_settings select * from public.about_settings', '23505');
+  await expectSqlError('update public.about_settings set id = false', '23514');
+}));
+
+test('sobre nosotros: RLS, permisos privados y protección contra borrado', async () => withRollback(async () => {
+  assert.equal((await db.query("select relrowsecurity from pg_class where oid = 'public.about_settings'::regclass")).rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select * from public.about_settings', '42501');
+    await expectSqlError("update public.about_settings set heading = 'Cambio ajeno'", '42501');
+    await db.exec('reset role');
+  }
+  await db.exec('set local role service_role');
+  await expectSqlError('delete from public.about_settings', '42501');
+  await expectSqlError('insert into public.about_settings select * from public.about_settings', '42501');
+  await db.exec("update public.about_settings set heading = 'Nuevo título' where id = true");
+  assert.equal((await db.query('select heading from public.about_settings')).rows[0].heading, 'Nuevo título');
+}));
+
+test('sobre nosotros: validación de longitud y campos obligatorios', async () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  for (const assignment of [
+    "badge = ' '", "badge = repeat('x', 121)", "heading = ''", "introduction = ''",
+    "profile_name = ''", "profile_title = ''", "profile_image_url = ''",
+    "credential1 = ''", "quote = ''", "approach_title = ''",
+    "pillar1_title = ''", "pillar1_description = repeat('x', 501)",
+  ]) await expectSqlError(`update public.about_settings set ${assignment}`, '23514');
+  assert.equal((await db.query('select heading from public.about_settings')).rows[0].heading, 'Un Acompañamiento Cercano Hacia Tu Calma');
+}));
+
 test('preguntas frecuentes: carga inicial publicada y ordenada', async () => {
   const { rows } = await db.query('select question, sort_order, is_published from public.faqs order by sort_order');
   assert.equal(rows.length, 4);

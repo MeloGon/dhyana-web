@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useScrollTo } from '@/hooks/useScrollTo';
+import { usePublicAboutSettings } from '@/hooks/useAboutSettings';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import HeroVideo from '@/components/sections/HeroVideo';
@@ -29,6 +30,10 @@ export default function HomePage() {
   // ancestro común en Flutter en vez de en cada widget hijo).
   const [preselectedService, setPreselectedService] = useState<string>('Psicoterapia Individual');
 
+  // Carga la sección "Sobre nosotros" desde la API. Mientras carga, la
+  // sección no se renderiza (null). Si falla, muestra un botón de reintento.
+  const aboutModel = usePublicAboutSettings();
+
   const handleSelectService = (serviceName: string) => {
     setPreselectedService(serviceName);
     scrollTo('contacto');
@@ -49,7 +54,16 @@ export default function HomePage() {
           variant="mint"
         />
 
-        <AboutSection onScrollTo={scrollTo} />
+        {/* Sobre nosotros: se renderiza cuando los datos están listos */}
+        {aboutModel.settings && (
+          <AboutSection settings={aboutModel.settings} onScrollTo={scrollTo} />
+        )}
+        {aboutModel.errorMessage && (
+          <div className="py-10 text-center">
+            <p className="text-sm text-[#3D4C5A]/75">{aboutModel.errorMessage}</p>
+            <button onClick={aboutModel.handleRetry} className="mt-3 text-sm font-medium underline underline-offset-4">Reintentar</button>
+          </div>
+        )}
 
         <ServicesSection onSelectService={handleSelectService} />
 

@@ -15,15 +15,6 @@ export interface HeroVideoSource {
   poster: string;
 }
 
-/** Pilar del enfoque terapéutico (sección "sobre-mi"). */
-export interface AboutPillar {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  accentBg: string;
-  iconColor: string;
-}
-
 /** Servicio terapéutico ofrecido (sección "servicios"). */
 export interface ServiceItem {
   id: string;
