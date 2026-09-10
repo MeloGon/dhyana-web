@@ -32,10 +32,11 @@ export async function registerManualSale(body: Record<string, unknown>): Promise
   const { data: id, error } = await client.rpc('register_manual_sale', { p_admin_id: admin.id, p_input: input as unknown as Json });
   if (error) databaseError(error);
   const { data: sale, error: readError } = await client.from('purchases')
-    .select('id,reference_code,monthly_accesses(starts_at,ends_at)').eq('id', id!).single();
+    .select('id,status,reference_code,monthly_accesses(starts_at,ends_at)').eq('id', id!).single();
   // PostgREST devuelve una lista por la FK compuesta; la PK permite un solo acceso.
   const access = sale?.monthly_accesses?.[0];
   if (readError || !sale || !access?.ends_at) throw new HttpError(503, 'No se pudo recuperar la confirmación. Reintenta sin cambiar los datos; la venta no se duplicará.');
+  if (sale.status !== 'paid') throw new HttpError(409, 'Esta venta fue anulada. Revisa el historial antes de registrar otra compra.');
   return { id: sale.id, referenceCode: sale.reference_code, startsAt: access.starts_at, endsAt: access.ends_at };
 }
 
@@ -48,4 +49,28 @@ export async function setSaleCoordination(id: string, body: Record<string, unkno
   });
   if (error) databaseError(error);
   return { updated: true };
+}
+
+export async function cancelSale(id: string, body: Record<string, unknown>) {
+  const admin = await requireAdmin();
+  validateId(id);
+  if (typeof body.reason !== 'string' || body.reason.trim().length < 5 || body.reason.trim().length > 500) throw new HttpError(400, 'Indica un motivo de entre 5 y 500 caracteres.');
+  const { error } = await createDatabaseAdminClient().rpc('cancel_sale', {
+    p_admin_id: admin.id, p_purchase_id: id, p_reason: body.reason.trim(),
+  });
+  if (error) databaseError(error);
+  return { updated: true };
+}
+
+export async function deleteManualSale(id: string, body: Record<string, unknown>) {
+  const admin = await requireAdmin();
+  validateId(id);
+  if (body.isTestOrMistake !== true) throw new HttpError(400, 'Confirma que es una prueba o un error de registro.');
+  const code = typeof body.confirmationCode === 'string' ? body.confirmationCode.trim().toUpperCase() : '';
+  if (!/^(DHY-)?[A-F0-9]{32}$/.test(code)) throw new HttpError(400, 'Escribe el código de la compra para confirmar el borrado.');
+  const { error } = await createDatabaseAdminClient().rpc('delete_manual_sale', {
+    p_admin_id: admin.id, p_purchase_id: id, p_code: code.startsWith('DHY-') ? code : `DHY-${code}`, p_is_test: true,
+  });
+  if (error) databaseError(error);
+  return { deleted: true };
 }

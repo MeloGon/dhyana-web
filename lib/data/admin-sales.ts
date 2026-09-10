@@ -6,4 +6,4 @@ export const MANUAL_PAYMENT_METHODS: { value: ManualPaymentMethod; label: string
   { value: 'cash', label: 'Efectivo' },
   { value: 'other', label: 'Otro medio externo' },
 ];
-export const ACCESS_LABELS = { active: 'Vigente', expired: 'Vencido', upcoming: 'Próximo' };
+export const ACCESS_LABELS = { active: 'Vigente', expired: 'Vencido', upcoming: 'Próximo', cancelled: 'Anulada' };

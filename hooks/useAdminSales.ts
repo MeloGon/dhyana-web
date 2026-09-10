@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState, type FormEvent } from 'react';
-import { getAdminSales, registerManualSale, setSaleCoordination } from '@/lib/api/admin-sales';
-import type { AdminSalesPage, ManualPaymentMethod, ManualSaleResult, SalesFilters } from '@/lib/types/admin-sales';
+import { getAdminSales, registerManualSale, setSaleCoordination, cancelSale, deleteManualSale } from '@/lib/api/admin-sales';
+import type { AdminSalesPage, ManualPaymentMethod, ManualSaleResult, SalesFilters, AdminSale, SaleAction, SaleActionInput } from '@/lib/types/admin-sales';
 import type { AdminWorkshop } from '@/lib/types/admin-catalog';
 
 const initialFilters: SalesFilters = { query: '', access: 'all', coordination: 'all', page: 1 };
@@ -17,6 +17,11 @@ export function useAdminSales(initial: AdminSalesPage) {
   const [created, setCreated] = useState<ManualSaleResult | null>(null);
   const [coordinationId, setCoordinationId] = useState<string | null>(null);
   const requestVersion = useRef(0);
+  const [actionTarget, setActionTarget] = useState<{ sale: AdminSale; action: SaleAction } | null>(null);
+  const [actionInput, setActionInput] = useState<SaleActionInput>({ reason: '', confirmationCode: '', isTestOrMistake: false });
+  const [actionPending, setActionPending] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [notice, setNotice] = useState('');
 
   async function load(next: SalesFilters) {
     const version = ++requestVersion.current;
@@ -41,8 +46,28 @@ export function useAdminSales(initial: AdminSalesPage) {
     catch (error) { setError(error instanceof Error ? error.message : 'No se pudo actualizar la coordinación.'); }
     finally { setCoordinationId(null); }
   }
+  function openAction(sale: AdminSale, action: SaleAction) {
+    if (actionPending || coordinationId) return;
+    setActionTarget({ sale, action }); setActionError('');
+    setActionInput({ reason: '', confirmationCode: '', isTestOrMistake: false });
+  }
+  function closeAction() { if (!actionPending) setActionTarget(null); }
+  async function submitAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!actionTarget || actionPending) return;
+    setActionPending(true); setActionError(''); setNotice('');
+    try {
+      if (actionTarget.action === 'cancel') await cancelSale(actionTarget.sale.id, actionInput.reason);
+      else await deleteManualSale(actionTarget.sale.id, actionInput);
+      setNotice(actionTarget.action === 'cancel' ? 'Venta anulada. Historial conservado; no se realizó ninguna devolución.' : 'Venta manual y acceso eliminados definitivamente.');
+      setCreated(null); setActionTarget(null);
+      await load({ ...appliedFilters.current, page: 1 });
+    } catch (error) { setActionError(error instanceof Error ? error.message : 'No se pudo completar la operación.'); }
+    finally { setActionPending(false); }
+  }
   return { data, filters, setFilters, isLoading, error, isFormOpen, setIsFormOpen, created,
-    search, refresh, goToPage, handleCreated, toggleCoordination, coordinationId };
+    search, refresh, goToPage, handleCreated, toggleCoordination, coordinationId,
+    actionTarget, actionInput, setActionInput, actionPending, actionError, notice, openAction, closeAction, submitAction };
 }
 
 export function useManualSale(workshops: AdminWorkshop[], onSaved: (result: ManualSaleResult) => void) {
@@ -53,7 +78,7 @@ export function useManualSale(workshops: AdminWorkshop[], onSaved: (result: Manu
   const [form, setForm] = useState(() => ({ buyerName: '', buyerEmail: '', buyerPhone: '',
     amount: options[0]?.groups[0] ? (options[0].groups[0].priceCents / 100).toFixed(2) : '',
     // Perú usa UTC-5. datetime-local necesita una fecha sin sufijo de zona.
-    purchasedAt: new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 16),
+    purchasedAt: new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 19),
     paymentMethod: 'yape' as ManualPaymentMethod, paymentReference: '', paymentVerified: false }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');

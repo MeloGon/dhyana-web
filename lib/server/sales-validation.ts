@@ -20,10 +20,10 @@ export function parseManualSale(body: Record<string, unknown>): ManualSaleInput 
   if (body.paymentVerified !== true) throw new HttpError(400, 'Confirma que verificaste el pago antes de registrarlo.');
   if (!['yape', 'transfer', 'cash', 'other'].includes(String(body.paymentMethod))) throw new HttpError(400, 'Medio de pago inválido.');
   // datetime-local no incluye zona. La pantalla siempre solicita hora de Perú.
-  const localDate = text(body, 'purchasedAt', 16);
+  const localDate = text(body, 'purchasedAt', 19);
   const instant = new Date(`${localDate}-05:00`);
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(localDate) || localDate.startsWith('0000') || !Number.isFinite(instant.getTime())
-    || new Date(instant.getTime() - 5 * 3600000).toISOString().slice(0, 16) !== localDate) throw new HttpError(400, 'Fecha y hora del pago inválidas.');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(localDate) || localDate.startsWith('0000') || !Number.isFinite(instant.getTime())
+    || new Date(instant.getTime() - 5 * 3600000).toISOString().slice(0, localDate.length) !== localDate) throw new HttpError(400, 'Fecha y hora del pago inválidas.');
   if (instant.getTime() > Date.now()) throw new HttpError(400, 'La fecha del pago no puede estar en el futuro.');
   if (typeof body.paymentReference !== 'string' || body.paymentReference.trim().length > 100) throw new HttpError(400, 'Referencia de pago inválida.');
   return { requestId: validateId(text(body, 'requestId', 36)), groupId: validateId(text(body, 'groupId', 36)),
@@ -36,7 +36,7 @@ export function parseSalesFilters(params: URLSearchParams): SalesFilters {
   const access = params.get('access') ?? 'all';
   const coordination = params.get('coordination') ?? 'all';
   const page = Number(params.get('page') ?? 1);
-  if (query.length > 100 || !['all', 'active', 'expired', 'upcoming'].includes(access)
+  if (query.length > 100 || !['all', 'active', 'expired', 'upcoming', 'cancelled'].includes(access)
     || !['all', 'pending', 'done'].includes(coordination) || !Number.isInteger(page) || page < 1 || page > 100000) throw new HttpError(400, 'Filtros inválidos.');
   return { query, access: access as SalesFilters['access'], coordination: coordination as SalesFilters['coordination'], page };
 }

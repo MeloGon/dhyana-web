@@ -2,7 +2,7 @@ import 'server-only';
 
 import { getAuthConfig } from '@/lib/server/auth-config';
 import { HttpError } from '@/lib/server/http-error';
-import { getAdminSales, registerManualSale, setSaleCoordination } from '@/lib/server/sales';
+import { getAdminSales, registerManualSale, setSaleCoordination, cancelSale, deleteManualSale } from '@/lib/server/sales';
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
@@ -29,4 +29,11 @@ export async function handleManualSale(request: Request) {
 }
 export async function handleSaleCoordination(request: Request, id: string) {
   try { return json(await setSaleCoordination(id, await readBody(request))); } catch (error) { return failure(error); }
+}
+
+export async function handleSaleCancel(request: Request, id: string) {
+  try { return json(await cancelSale(id, await readBody(request))); } catch (error) { return failure(error); }
+}
+export async function handleSaleDelete(request: Request, id: string) {
+  try { return json(await deleteManualSale(id, await readBody(request))); } catch (error) { return failure(error); }
 }

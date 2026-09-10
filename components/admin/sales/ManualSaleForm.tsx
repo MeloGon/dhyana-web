@@ -36,7 +36,7 @@ export function ManualSaleForm({ workshops, onSaved, onCancel }: {
             <input id="sale-amount" inputMode="decimal" required value={form.amount} onChange={(e) => setField('amount', e.target.value)} className={inputClass} />
             <p className="mt-2 text-xs">Sugerimos el precio actual; registra el importe realmente pagado.</p></div>
           <div><label htmlFor="sale-date" className="text-sm font-medium">Fecha y hora real del pago (Perú)</label>
-            <input id="sale-date" type="datetime-local" required value={form.purchasedAt} onChange={(e) => setField('purchasedAt', e.target.value)} className={inputClass} />
+            <input id="sale-date" type="datetime-local" step={1} required value={form.purchasedAt} onChange={(e) => setField('purchasedAt', e.target.value)} className={inputClass} />
             <p className="mt-2 text-xs">El mes de acceso empieza aquí, aunque registres el pago después.</p></div>
           <div><label htmlFor="sale-method" className="text-sm font-medium">Medio de pago</label>
             <select id="sale-method" value={form.paymentMethod} onChange={(e) => { const option = MANUAL_PAYMENT_METHODS.find((item) => item.value === e.target.value); if (option) setField('paymentMethod', option.value); }} className={inputClass}>

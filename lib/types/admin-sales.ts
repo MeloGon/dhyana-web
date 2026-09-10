@@ -1,5 +1,12 @@
 export type ManualPaymentMethod = 'yape' | 'transfer' | 'cash' | 'other';
-export type AccessStatus = 'active' | 'expired' | 'upcoming';
+export type AccessStatus = 'active' | 'expired' | 'upcoming' | 'cancelled';
+export type SaleAction = 'cancel' | 'delete';
+
+export interface SaleActionInput {
+  reason: string;
+  confirmationCode: string;
+  isTestOrMistake: boolean;
+}
 
 export interface ManualSaleInput {
   requestId: string;
@@ -16,6 +23,10 @@ export interface ManualSaleInput {
 
 export interface AdminSale {
   id: string;
+  status: 'paid' | 'cancelled';
+  cancelledAt: string | null;
+  cancelledBy: string | null;
+  cancellationReason: string | null;
   referenceCode: string;
   buyerName: string;
   buyerEmail: string;
