@@ -3,9 +3,10 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { useContactForm } from '@/hooks/useContactForm';
-import ContactInfoCard from './contact/ContactInfoCard';
-import ContactFaqAccordion from './contact/ContactFaqAccordion';
-import ContactForm from './contact/ContactForm';
+import ContactInfoCard from '@/components/sections/contact/ContactInfoCard';
+import ContactFaqAccordion from '@/components/sections/contact/ContactFaqAccordion';
+import ContactForm from '@/components/sections/contact/ContactForm';
+import { usePublicFaqs } from '@/hooks/usePublicFaqs';
 
 // Orquestador de la sección de contacto: arma el layout y conecta las piezas.
 // Toda la lógica del formulario (estado, envío, reset) vive en
@@ -17,6 +18,7 @@ interface ContactSectionProps {
 
 export default function ContactSection({ preselectedService = 'Psicoterapia Individual' }: ContactSectionProps) {
   const contactForm = useContactForm(preselectedService);
+  const publicFaqs = usePublicFaqs();
 
   return (
     <section id="contacto" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
@@ -38,7 +40,7 @@ export default function ContactSection({ preselectedService = 'Psicoterapia Indi
         {/* Left Side: Contact Information & FAQs */}
         <div className="lg:col-span-5 space-y-6">
           <ContactInfoCard />
-          <ContactFaqAccordion />
+          <ContactFaqAccordion {...publicFaqs} />
         </div>
 
         {/* Right Side: Interactive Contact Form */}

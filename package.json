@@ -15,7 +15,8 @@
     "test:auth": "node --test tests/auth/*.test.mjs",
     "admin:invite": "node scripts/invite-admin.mjs",
     "test:catalog": "node --test tests/catalog/*.test.mjs",
-    "test:sales": "node --test tests/sales/*.test.mjs"
+    "test:sales": "node --test tests/sales/*.test.mjs",
+    "test:faqs": "node --test tests/faqs/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -41,6 +41,47 @@ async function withRollback(run) {
   }
 }
 
+test('preguntas frecuentes: carga inicial publicada y ordenada', async () => {
+  const { rows } = await db.query('select question, sort_order, is_published from public.faqs order by sort_order');
+  assert.equal(rows.length, 4);
+  assert.deepEqual(rows.map((row) => row.sort_order), [1, 2, 3, 4]);
+  assert.ok(rows.every((row) => row.is_published));
+  assert.equal(rows[0].question, '¿Cómo es la primera sesión de psicoterapia?');
+});
+
+test('preguntas frecuentes: visitantes y usuarios no acceden directamente', async () => withRollback(async () => {
+  const { rows } = await db.query("select relrowsecurity from pg_class where oid = 'public.faqs'::regclass");
+  assert.equal(rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    for (const sql of [
+      'select * from public.faqs',
+      "insert into public.faqs (question, answer) values ('Pregunta', 'Respuesta')",
+      "update public.faqs set answer = 'Otra respuesta'",
+      'delete from public.faqs',
+    ]) await expectSqlError(sql, '42501');
+    await db.exec('reset role');
+  }
+}));
+
+test('preguntas frecuentes: servidor puede editar y borrar con límites persistidos', async () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const { rows: [faq] } = await db.query("insert into public.faqs (question, answer) values ('Pregunta temporal', 'Respuesta temporal') returning *");
+  assert.equal(faq.is_published, false);
+  for (const sql of [
+    "update public.faqs set question = ' '",
+    "update public.faqs set answer = ''",
+    "update public.faqs set question = repeat('x', 301)",
+    "update public.faqs set answer = repeat('x', 5001)",
+    'update public.faqs set sort_order = 0',
+    'update public.faqs set sort_order = 10001',
+  ]) await expectSqlError(sql, '23514');
+  await db.query('update public.faqs set is_published = true, sort_order = 7 where id = $1', [faq.id]);
+  assert.equal((await db.query('select sort_order from public.faqs where id = $1 and is_published', [faq.id])).rows[0].sort_order, 7);
+  await db.query('delete from public.faqs where id = $1', [faq.id]);
+  assert.equal((await db.query('select id from public.faqs where id = $1', [faq.id])).rows.length, 0);
+}));
+
 async function expectSqlError(sql, code, params = []) {
   // Un error aborta la transacción en PostgreSQL; el savepoint permite continuar
   // comprobando otros rechazos dentro de la misma prueba.
