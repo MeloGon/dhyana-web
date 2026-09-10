@@ -70,7 +70,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
                   : 'bg-white/10 text-white backdrop-blur-xs'
               }`}
             >
-              <span className="text-xs font-bold font-sans">AM</span>
+              <span className="text-xs font-bold font-sans">D</span>
             </div>
             <div className="flex flex-col">
               <span
@@ -78,7 +78,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
                   isScrolled ? 'text-[#3D4C5A]' : 'text-white'
                 }`}
               >
-                Lic. Alejandro Morales
+                Centro de Desarrollo Integral Dhyana
               </span>
               <span
                 className={`text-[10px] sm:text-xs uppercase tracking-widest font-sans transition-colors ${

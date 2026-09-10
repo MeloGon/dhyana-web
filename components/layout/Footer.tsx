@@ -47,7 +47,7 @@ export default function Footer({ onScrollTo }: FooterProps) {
               </div>
               <div>
                 <span className="font-serif text-lg font-bold block leading-tight">
-                  Lic. Alejandro Morales
+                  Centro de Desarrollo Integral Dhyana
                 </span>
                 <span className="text-xs text-[#83D0C6] font-sans">
                   Psicología Clínica & Bienestar Emocional
@@ -81,10 +81,10 @@ export default function Footer({ onScrollTo }: FooterProps) {
               </li>
               <li>
                 <button
-                  onClick={() => onScrollTo('sobre-mi')}
+                  onClick={() => onScrollTo('sobre-nosotros')}
                   className="hover:text-[#83D0C6] transition-colors cursor-pointer text-left"
                 >
-                  Sobre Mí y Enfoque Terapéutico
+                  Sobre Nosotros y Enfoque Terapéutico
                 </button>
               </li>
               <li>
@@ -153,7 +153,7 @@ export default function Footer({ onScrollTo }: FooterProps) {
 
         {/* Bottom Bar with Scroll-to-top */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
-          <p>© {new Date().getFullYear()} Lic. Alejandro Morales. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Centro de Desarrollo Integral Dhyana. Todos los derechos reservados.</p>
           <div className="flex items-center gap-4">
             <span className="font-handwriting text-xl text-[#83D0C6]">
               Tu bienestar emocional empieza hoy
