@@ -83,6 +83,9 @@ app/
   admin/faqs/           Editor de preguntas frecuentes
   api/admin/faqs/       Lectura y escritura privada de preguntas
   api/faqs/             Preguntas publicadas para el acordeón
+  admin/contact/        Configuración de la tarjeta de datos de consulta
+  api/admin/contact-settings/ Lectura y edición privadas de contacto
+  api/contact-settings/ Datos públicos y enlaces de contacto validados
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -118,6 +121,7 @@ tests/auth/             Pruebas HTTP del acceso administrativo
 tests/catalog/          Pruebas HTTP de catálogo y privacidad
 tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixtures
 tests/faqs/             Lectura pública y privacidad HTTP de preguntas frecuentes
+tests/contact/          Privacidad HTTP y enlaces de datos de consulta
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
@@ -171,6 +175,11 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
+- Datos de consulta editables en `/admin/contact`. Tabla única `contact_settings`,
+  RLS y permisos solo SELECT/UPDATE para service_role. Guardado conjunto tras
+  `requireAdmin()` y validación de Origin. Enlaces tel/mailto/WhatsApp generados
+  desde datos validados; no aceptar URLs libres. Carga inicial del diseño.
+  Solo configura la tarjeta de contacto; el footer conserva su contenido demo.
 - Preguntas frecuentes editables en `/admin/faqs`: pregunta, respuesta, orden y
   publicación; eliminación confirmada. Tabla `faqs` privada con RLS, escritura
   tras `requireAdmin()` y validación de Origin. `/api/faqs` solo entrega publicadas.
@@ -216,6 +225,7 @@ npm run test:auth # HTTP contra Next en ejecución; producción para probar cach
 npm run test:catalog # HTTP público; fixtures temporales habilitan escrituras de prueba
 npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RPC remotas
 npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
+npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos

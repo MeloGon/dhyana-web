@@ -15,6 +15,7 @@ de 2026.
 - Presentación, servicios, talleres y contacto con contenido de prueba en el código.
 - Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
 - Preguntas frecuentes conectadas a Supabase y editables desde el panel; carga inicial con los cuatro textos del diseño.
+- Tarjeta de datos de consulta configurable en el panel: dirección, teléfono, correo, horarios y botón de WhatsApp.
 - Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
 - Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
 - Acceso administrativo conectado a Supabase Auth: login, recuperación, cambio de
@@ -249,6 +250,27 @@ y restricciones de texto/orden. Verificado: 43 pruebas SQL, 2 pruebas HTTP,
 creación de borrador y publicación de una edición desde navegador; registro temporal
 retirado. Build con Webpack y lint correctos. Turbopack no pudo abrir su puerto
 interno en el entorno de verificación; no se cambió la configuración del proyecto.
+
+## Datos de la consulta editables
+
+`/admin/contact` edita título, dirección y referencia, teléfono y nota, correo,
+horarios principal/adicional y botón de WhatsApp (número, texto y mensaje inicial).
+Teléfono de contacto y WhatsApp pueden ser distintos. Las notas y el mensaje son
+opcionales. Guardar actualiza toda la tarjeta en la siguiente carga del sitio.
+El footer conserva sus textos de demo; esta configuración corresponde a la tarjeta.
+
+Migración `20260910132359_editable_contact_settings.sql` aplicada con los valores
+originales del diseño. `contact_settings` admite una sola fila y el servidor solo
+tiene permisos para leerla y actualizarla, tras verificar al administrador.
+No hay creación ni borrado desde el panel. RLS bloquea acceso directo de visitantes;
+la API pública entrega campos explícitos y genera enlaces seguros desde números y
+correo validados. El botón abre WhatsApp con un mensaje preparado, sin enviarlo.
+
+`npm run test:contact` comprueba contrato público, enlaces, acceso privado y Origin.
+Las pruebas SQL cubren configuración única, permisos y restricciones de campos.
+Verificado: 46 pruebas SQL, 2 pruebas HTTP, build con Webpack y lint. Desde navegador
+se comprobó rechazo de teléfono inválido, guardado y lectura pública de una edición;
+después se restauró el texto original usado en la prueba.
 
 ## Ventas manuales y participantes
 

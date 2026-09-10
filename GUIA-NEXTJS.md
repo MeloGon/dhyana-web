@@ -521,6 +521,20 @@ lectura pública devuelve solo ID, pregunta y respuesta de filas publicadas,
 ordenadas por número y luego ID para resolver empates. Sin preguntas, se oculta
 el bloque; ante errores, muestra reintento. El cambio se ve al recargar el sitio.
 
+### Datos de la consulta (implementado)
+
+`/admin/contact` verifica sesión y carga `AdminContactSettings`. El hook
+`useAdminContactSettings` conserva formulario y errores como un ViewModel;
+`lib/api/contact-settings.ts` transporta los datos y `lib/server/contact-settings.ts`
+valida permisos y campos. Una actualización de la única fila de `contact_settings`
+guarda todos los valores de forma atómica. Las notas pueden quedar vacías.
+
+`ContactSection` conecta `usePublicContactSettings` con `ContactInfoCard`, que solo
+pinta datos y enlaces recibidos. El servidor genera `tel:`, `mailto:` y `https://wa.me/`
+con destinos validados y mensaje codificado, sin aceptar URLs libres. No se añaden
+clientes Supabase de navegador. La tarjeta tiene carga y error con reintento, sin
+fallback al contenido estático. El footer sigue fuera de esta configuración.
+
 ## 11. Recorrido de una compra
 
 1. El navegador envía el identificador del grupo y los datos mínimos. El servidor
