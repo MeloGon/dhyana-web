@@ -5,7 +5,7 @@ acceso mensual a talleres grupales en línea. La entrega se coordina personalmen
 por WhatsApp y Google Meet.
 
 Este archivo reúne objetivo, alcance, estado y próximos pasos. Las decisiones del
-responsable prevalecen sobre los borradores externos. Actualizado: 6 de septiembre
+responsable prevalecen sobre los borradores externos. Actualizado: 8 de septiembre
 de 2026.
 
 ## Estado actual
@@ -13,7 +13,14 @@ de 2026.
 - Landing de una página con navegación por scroll y diseño integrado desde Google
   AI Studio. El diseño se afinará al incorporar funcionalidades.
 - Presentación, servicios, talleres y contacto con contenido de prueba en el código.
-- Formularios simulados: todavía no hay pagos, backend comercial ni panel.
+- Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
+- Contacto todavía simulado. Formulario de inscripción demo retirado de la landing; no hay pagos.
+- Acceso administrativo conectado a Supabase Auth: login, recuperación, cambio de
+  contraseña y panel protegido con gestión de catálogo.
+- Migración inicial aplicada a Supabase: cinco tablas con RLS, todavía sin datos
+  comerciales. Contratos públicos y tipos de base de datos incorporados.
+- Cliente de servidor preparado en `lib/server/database.ts`; configuración local y
+  acceso por Data API verificados. Talleres usa datos persistidos; otras secciones conservan contenido de demo.
 - Next.js 16, React 19, TypeScript y Tailwind CSS 4.
 - El responsable desarrolla y mantiene el proyecto y tiene seis años de experiencia
   en Flutter. Se priorizan código explícito y explicaciones de React y Next.js.
@@ -39,6 +46,12 @@ hay suscripciones, cargos periódicos, extensión del período anterior ni gesti
 de renovación anticipada. Cada venta conserva su fecha, importe y período propio.
 Ejemplo: compra el 10 de septiembre, vence el 10 de octubre.
 
+El período comienza en la fecha y hora real del pago confirmado, usando
+`America/Lima`. Vence a la misma hora del mes siguiente; si ese día no existe,
+se ajusta al último día de ese mes (31 de enero → 28 o 29 de febrero). Desde el
+instante de vencimiento ya no hay acceso. Registrar una venta manual después
+no cambia su fecha de compra. Cada nuevo pago calcula su propio mes calendario.
+
 El panel permitirá editar talleres, horarios, capacidad y publicación; consultar
 ventas y participantes; buscar una compra por código o datos del comprador y
 marcar la coordinación por WhatsApp. Una venta externa se registra como venta,
@@ -52,6 +65,9 @@ sin restar cupos de forma aislada ni perder quién ocupa la plaza.
 4. La web muestra el estado real y un código compartible por WhatsApp. Abrir la
    pantalla de confirmación no convierte por sí solo una compra en pagada.
 5. El responsable busca el pago confirmado en el panel y coordina la entrega.
+
+Se mantiene la coordinación personal después de la compra. Los datos definitivos
+de talleres, horarios y reuniones se incorporarán cuando el responsable los facilite.
 
 El código o ticket ayuda a localizar la operación; una captura no confirma el pago
 por sí sola. Un pago de Culqi confirmado no se vuelve a registrar como venta manual
@@ -77,10 +93,12 @@ Referencia: [API de cargos de Culqi](https://apidocs.culqi.com/#tag/Cargos).
 Estas etapas organizan el trabajo; no fijan fecha de publicación ni obligan a
 publicar antes de disponer del checkout.
 
-1. **Base técnica:** concretar contratos, modelo de datos y permisos según la guía.
-   Supabase está recomendado; la elección final sigue pendiente.
-2. **Catálogo y gestión:** conectar talleres y horarios a datos persistidos;
-   incorporar acceso administrativo y edición básica, conservando el diseño base.
+1. **Base técnica — completada:** proyecto Supabase creado, migración aplicada y
+   conexión de servidor verificada. Acceso administrativo implementado y primera
+   identidad activa. Invitación aceptada y contraseña definida por el responsable.
+2. **Catálogo y gestión — base implementada:** crear y editar talleres/horarios,
+   precios, capacidad y publicación; lectura pública desde Supabase. Falta cargar
+   contenido real y afinar presentación y detalle compartible si se requiere.
 3. **Ventas y capacidad:** ventas manuales, períodos mensuales y reservas temporales;
    comprobar que no se vende la última plaza a dos personas.
 4. **Culqi en pruebas:** compra, verificación, consulta de estado y código para
@@ -90,15 +108,129 @@ publicar antes de disponer del checkout.
 
 Se aceptó desarrollar con el entorno de pruebas antes de activar pagos reales.
 La fecha de publicación, hosting y requisitos comerciales se confirmarán durante
-la preparación. No se han creado recursos externos.
+la preparación. El proyecto Supabase de Dhyana ya está creado en el plan Free.
+
+### Avance de la base técnica
+
+- `supabase/migrations/` contiene talleres, grupos/horarios, administradores,
+  compras y accesos mensuales. Precios en céntimos de sol, fecha histórica de
+  compra y coordinación separada del pago.
+- `lib/types/catalog.ts` define el catálogo público sin capacidad total;
+  `lib/types/checkout.ts` separa pago pendiente y acceso confirmado.
+- `lib/types/database.ts` contiene los tipos generados desde el esquema remoto;
+  `lib/server/database.ts` crea el cliente privilegiado, protegido con `server-only`.
+- Las tablas tienen RLS y acceso directo bloqueado para visitantes y usuarios
+  autenticados. El acceso administrativo valida identidad con Supabase Auth y
+  autorización activa en `admin_users` en cada operación privada.
+- `npm run test:db` prueba la migración y sus restricciones con PostgreSQL en
+  memoria (PGlite, solo dependencia de desarrollo). No necesita proyecto remoto.
+- `npm run check:database` verifica acceso desde el equipo a `workshops` por la
+  Data API con la configuración de `.env.local`, sin descargar datos comerciales.
+
+Proyecto remoto: [dhyana-web](https://supabase.com/dashboard/project/vabbjwjfwcypweucfjhx),
+referencia `vabbjwjfwcypweucfjhx`, organización `company test`
+(`fysoudmbapnawvlrpbci`), región `us-east-1`. Creación confirmada a US$0/mes en Free.
+Migración aplicada: `20260909033912_initial_commerce.sql`. El archivo local usa la
+misma versión del historial remoto. Se verificaron permisos, vencimientos y
+rechazo de accesos duplicados o pendientes en Supabase; los datos de prueba se
+revirtieron. La conexión del agente y el acceso mediante el SDK desde el equipo funcionan.
+
+La configuración local está en `.env.local`, excluido de Git. `.env.example`
+contiene la plantilla sin credenciales; completar `SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY` y `APP_URL` en cada entorno. La clave privada se usa solo
+desde servidor, sin prefijo `NEXT_PUBLIC_`. El cliente privilegiado está separado del cliente de sesión;
+`requireAdmin()` verifica identidad y permisos antes de cada operación privada.
+
+El siguiente módulo es ventas manuales y control concurrente de capacidad.
+Supabase permite dos proyectos Free activos entre las organizaciones donde se es
+Owner o Admin. [Regla oficial](https://supabase.com/docs/guides/platform/billing-on-supabase).
+Los proyectos Free pueden pausarse tras una semana de inactividad;
+[condiciones del plan](https://supabase.com/pricing).
+
+Las reservas temporales, el control concurrente de cupos, la confirmación atómica
+de compra/acceso y la integración Culqi pertenecen a las siguientes etapas.
+La base preparada todavía no habilita ventas reales.
+
+## Acceso administrativo implementado
+
+- `/admin/login`: correo y contraseña. No hay registro público desde la aplicación.
+- `/admin/recover`: solicita enlace de recuperación; abrirlo en el mismo navegador.
+- `/auth/confirm`: recibe invitación o recuperación, valida el enlace al pulsar
+  Continuar y lleva a `/admin/password` para definir la contraseña.
+- `/admin` y `/admin/password`: requieren identidad verificada y entrada activa en
+  `admin_users`; el panel muestra la cuenta, acceso a gestión de talleres, cambio de contraseña y cierre de sesión.
+- Primer administrador activo: `troy.esname@gmail.com`. Invitación aceptada y
+  contraseña definida personalmente; correo confirmado verificado en Supabase.
+
+Para enviar la invitación inicial, ejecutar solo cuando se solicite el envío:
+
+```bash
+npm run admin:invite -- troy.esname@gmail.com
+```
+
+El comando comprueba que el correo pertenece a un administrador activo. No permite
+crear administradores ni envía credenciales por consola. La contraseña se define
+personalmente en la pantalla y no se guarda en el repositorio ni se pide por chat.
+
+`APP_URL` es el origen exacto de la aplicación (`http://localhost:3000` localmente).
+Los enlaces deben abrirse en este equipo mientras corre Next. Al publicar, usar
+HTTPS y configurar Site URL y Redirect URLs en Supabase Auth para el dominio y
+`/auth/confirm`. La plantilla estándar de invitación funciona sin personalizarla.
+
+El correo predeterminado de Supabase solo entrega a miembros del equipo del proyecto
+y tiene límites reducidos. La primera invitación fue recibida y aceptada. Configurar
+SMTP propio antes de producción o de invitar direcciones fuera del equipo.
+[Condiciones oficiales de correo](https://supabase.com/docs/guides/auth/auth-smtp).
+
+`npm run test:auth` prueba HTTP contra una aplicación ejecutándose en `AUTH_TEST_ORIGIN`
+(por defecto `http://localhost:3000`). Se debe usar compilación de producción para
+comprobar cabeceras: Next dev cambia las cabeceras de redirecciones. Sin fixtures
+las pruebas no escriben datos ni envían correos; dos pruebas autenticadas se omiten.
+Con `AUTH_TEST_FIXTURES` apuntando a un JSON privado de identidades temporales, prueban
+invitación/recuperación, cookies HttpOnly, cambio de contraseña, login, logout y rechazo
+de usuario sin permiso aunque se autoasigne metadatos. Nunca usar cuentas reales
+como fixtures: la prueba cambia la contraseña. La entrega de correo se verifica aparte.
+
+## Catálogo implementado
+
+En `/admin/workshops` un formulario crea o edita el taller y sus horarios con un solo
+botón «Guardar taller y horarios». El primer horario está disponible desde el inicio;
+«+ Agregar horario» añade otros y «Quitar» los retira al guardar. El identificador se
+genera desde el título, sin tildes y con guiones; los nombres repetidos reciben sufijo.
+La lista muestra «Editar taller». «Eliminar taller» pide confirmación y solo permite
+borrar talleres sin compras; los demás se pueden despublicar. Cada horario conserva
+su precio en soles y capacidad privada. Taller y horario tienen publicación independiente: ambos deben
+estar publicados para mostrar el horario. Despublicar conserva historial y datos.
+
+La sección pública `/#talleres` consulta `/api/workshops`. Solo devuelve campos públicos,
+precios PEN y cupos restantes. Los individuales se muestran agotados y no exponen
+horarios comprables. Borradores no aparecen. Sin talleres publicados, se muestra un
+estado vacío real: el catálogo de ejemplo y su inscripción simulada ya no se montan.
+
+La disponibilidad actual resta los accesos mensuales vigentes de la capacidad.
+No cuenta accesos vencidos ni futuros; aún no hay reservas ni cobros. El precio se
+convierte de soles a céntimos para guardarlo como entero. Se bloquean valores inválidos,
+horarios ajenos o repetidos y capacidad inferior a accesos vigentes al comprobarla.
+Esta comprobación todavía no es atómica frente a una compra concurrente: la etapa de
+ventas debe incorporar transacciones y reservas antes de habilitar compras.
+
+Guardado y eliminación usan funciones SQL privadas (`save_workshop_catalog` y
+`delete_workshop_catalog`), con transacción y permisos exclusivos del servidor.
+Migración `20260910023948_catalog_atomic_editor.sql` aplicada y tipos regenerados.
+
+Verificación del editor unificado: 27 pruebas SQL, build con webpack y lint; creación
+con dos horarios, edición y horario adicional desde navegador conectado a Supabase.
+También se comprobó eliminación y rollback directamente en Supabase. La prueba HTTP
+pública comprueba lectura y rechazo de visitantes. La suite HTTP con escrituras
+requiere CATALOG_TEST_FIXTURES y cuentas temporales; nunca usar cuentas reales como fixtures.
+
 
 ## Pendientes para implementar
 
-- Días sin equivalente en el mes siguiente, zona horaria y hora de vencimiento.
 - Horarios, capacidad y reuniones incluidas al entrar a un grupo en marcha.
 - Cancelaciones, cambios de horario, reprogramaciones y devoluciones.
 - Datos de compra, emisión de comprobantes y confirmación propia por correo.
-- Permisos y recuperación de acceso de administradores.
+- Segundo administrador y posibles diferencias entre sus permisos.
 - Contenido real, dominio, configuración comercial de Culqi y servicios.
 
 No hay funciones futuras adicionales solicitadas. Se propone dejar fuera historias
@@ -139,9 +271,13 @@ manualmente en otro documento.
 
 ## Desarrollo local
 
+Requiere Node.js 22 o superior (el SDK de Supabase lo exige). El equipo actual usa Node.js 24.
+
 ```bash
 npm install
 npm run dev
+npm run test:db
+npm run check:database
 npm run lint
 npm run build
 ```

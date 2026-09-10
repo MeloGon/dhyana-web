@@ -17,13 +17,19 @@ Hoy es una landing de una sola página con secciones ancladas por scroll.
 
 El alcance comercial vigente está en `README.md`: talleres grupales con compra
 independiente de un mes calendario, Culqi y panel; sin módulo de renovación.
-La landing todavía contiene datos y formularios de demo. La arquitectura actual
+La migración inicial ya está aplicada en Supabase (referencia en README). El cliente
+de servidor y su configuración local están preparados; acceso por Data API verificado.
+Login, recuperación y panel inicial protegido ya están implementados.
+Gestión de catálogo y lectura pública ya están conectadas a Supabase. El editor guarda taller y horarios juntos por RPC transaccional, genera slug desde título y permite eliminar solo sin compras.
+Faltan ventas y pagos. Otras secciones de la landing conservan contenido demo. La arquitectura actual
 y su extensión propuesta se explican en `GUIA-NEXTJS.md`; no confundir propuesta
 con funcionalidad implementada. Los documentos externos son referencias.
 
 El dueño del proyecto viene de **Flutter y no de Next.js**. Priorizá código
 explícito y legible sobre código "inteligente". Si algo requiere conocer una
 sutileza de React/Next para entenderlo, dejá un comentario corto explicándolo.
+El responsable pidió explicaciones breves durante el trabajo: al introducir una
+pieza, explicar qué hace y cómo se relaciona con Flutter cuando ayude.
 
 ## Stack
 
@@ -65,6 +71,13 @@ app/
   layout.tsx            Server Component: fuentes, metadata, <html>/<body>
   page.tsx              Home "/". Orquesta las secciones
   globals.css           Tailwind + variables de color + fuentes
+  admin/                Login, recuperación, contraseña y panel privado
+  auth/confirm/         Recepción de enlaces de invitación/recuperación
+  api/auth/[action]/    Adaptador HTTP que delega en lib/server
+  api/admin/session/    Identidad administrativa validada
+  admin/workshops/      Editor de talleres y grupos
+  api/admin/workshops/  Lectura y escritura privada de catálogo
+  api/workshops/        Lectura pública sin capacidad total
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -81,12 +94,29 @@ hooks/
 lib/
   api/                  submitContactRequest(), submitWorkshopRegistration()
   data/                 workshops, services, about, faqs, hero-videos
-  types/index.ts        WorkshopItem, ContactFormData, SubmitResult, ...
+  server/database.ts    Cliente Supabase privilegiado, protegido con server-only
+  server/admin-auth.ts  Identidad verificada y autorización activa
+  server/auth-*.ts      Sesión SSR, configuración, Proxy y adaptadores HTTP
+  server/catalog*.ts    Consultas, validación y RPC de guardado/eliminación de catálogo
+  types/admin-catalog.ts Contratos privados de talleres y grupos
+  types/index.ts        Tipos de la landing demo
+  types/catalog.ts      Catálogo público, sin capacidad total
+  types/checkout.ts     Compra, estado de pago y acceso mensual
+  types/database.ts     Tipos generados desde el esquema remoto
   utils.ts              cn() — merge de clases Tailwind
+
+supabase/migrations/    Esquema SQL versionado (Supabase)
+tests/database/         Pruebas SQL con PGlite, solo para desarrollo
+tests/auth/             Pruebas HTTP del acceso administrativo
+tests/catalog/          Pruebas HTTP de catálogo y privacidad
+proxy.ts                Renueva sesión y aplica cabeceras privadas
+scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
 
 ## Convenciones
 
+- **Commits**: agrupar cambios relacionados por funcionalidad, con título y explicación
+  en español. Mantener cada commit coherente; excluir credenciales y archivos locales.
 - **Idioma**: comentarios y textos de UI en **español**. Nombres de código en
   inglés (`handleSubmit`, `isSubmitting`).
 - **`'use client'`**: obligatorio en todo archivo que use `useState`,
@@ -108,7 +138,7 @@ lib/
 ## Receta: agregar una sección nueva a la landing
 
 1. `lib/data/<seccion>.ts` — el contenido (si tiene lista o textos largos).
-2. `lib/types/index.ts` — el tipo, si lo usa más de un archivo.
+2. `lib/types/<seccion>.ts` — el tipo, si lo usa más de un archivo.
 3. `components/sections/<Seccion>.tsx` — con `'use client'` si es interactiva.
 4. Montarla en `app/page.tsx`, en el orden visual que corresponda.
 5. `<section id="mi-seccion" className="... scroll-mt-20">` — el `id` es lo que
@@ -118,7 +148,7 @@ lib/
 
 ## Receta: agregar un módulo con backend
 
-1. **Tipos** en `lib/types/index.ts` (payload + respuesta).
+1. **Tipos** en `lib/types/<modulo>.ts` (payload + respuesta).
 2. **Servicio** en `lib/api/<modulo>.ts`. Devolver `SubmitResult` o un tipo
    propio. Lanzar `Error` si la respuesta no es ok.
 3. **Hook** en `hooks/use<Modulo>.ts`: estado, `handleSubmit` con
@@ -132,9 +162,20 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
-- Los dos formularios usan **stubs** en `lib/api/` (delay simulado + código
-  aleatorio). No hay backend ni persistencia. Los `TODO` están documentados en
-  cada archivo de `lib/api/`.
+- Contacto mantiene su stub. La inscripción demo ya no se monta en la landing;
+  sus archivos quedan como referencia sin formar parte del flujo público.
+- Catálogo persistido: formulario conjunto de taller y horarios; slug automático; eliminación con confirmación solo sin compras. Guardado por save_workshop_catalog y borrado por delete_workshop_catalog, SECURITY INVOKER exclusivos de service_role. sort_order conserva el orden de horarios. Talleres y grupos editables, borradores y publicación
+  separada. Público solo recibe campos explícitos y cupos restantes; nunca capacidad.
+  No reactivar el formulario simulado como confirmación de venta.
+- Migración inicial en `supabase/migrations/` aplicada al proyecto remoto: catálogo,
+  administradores, compras y accesos mensuales. Historial local/remoto alineado.
+  Cliente de servidor conectado por Data API; Auth y panel inicial funcionan.
+  Los accesos vencen un mes calendario después del pago, en `America/Lima`, a la
+  misma hora y ajustando fechas inexistentes al último día del mes.
+- Tablas sin acceso directo para `anon`/`authenticated`. RLS no sustituye la
+  autorización del servidor al usar `service_role`. `requireAdmin()` valida `getUser()`
+  y entrada activa en `admin_users` antes de operaciones privadas. Reservas,
+  confirmación atómica, concurrencia de cupos y Culqi siguen pendientes.
 - El contenido es de demo (Lic. Alejandro Morales, teléfonos y direcciones de
   ejemplo). Reemplazar por los datos reales de Dhyana antes de publicar.
 - Imágenes y videos apuntan a Unsplash / Pixabay / Mixkit. Cualquier dominio
@@ -157,10 +198,29 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 npm run dev     # desarrollo en http://localhost:3000
 npm run build   # build de producción + chequeo de TypeScript
 npm run lint    # ESLint
+npm run test:db # reglas y permisos de migraciones, PostgreSQL en memoria
+npm run check:database # comprueba configuración privada y acceso a Supabase
+npm run test:auth # HTTP contra Next en ejecución; producción para probar caché
+npm run test:catalog # HTTP público; fixtures temporales habilitan escrituras de prueba
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos
 en verde.
+Requiere Node.js 22 o superior por el SDK de Supabase. No imprimir credenciales en
+salidas de herramientas ni versionar `.env.local`; `.env.example` es la plantilla versionada.
+Auth usa cookies HttpOnly y llamadas por `lib/api/`; no añadir cliente Supabase de
+navegador sin revisar ese contrato. Proxy renueva sesión, pero no autoriza: cada
+página y endpoint privado debe llamar `requireAdminPage()` o `requireAdmin()`.
+No cachear respuestas privadas. Validar Origin contra APP_URL en mutaciones.
+Primer administrador activo, invitación aceptada y contraseña definida por él. `admin:invite` envía correo
+real: ejecutarlo solo cuando el usuario pida el envío. No crear cuentas reales para
+pruebas ni cambiar la contraseña del usuario.
+Si cambia una migración o regla persistida, ejecutar también `npm run test:db`.
+El cálculo de cupos actual cuenta accesos vigentes. La comprobación de capacidad
+antes de editar un grupo aún no es atómica frente a ventas; resolverlo en la etapa
+de ventas antes de habilitar checkout. No prometer reservas actuales.
+Estas pruebas no sustituyen la verificación con Supabase ni pruebas concurrentes
+al implementar reservas y pagos.
 
 ## Documentación relacionada
 
