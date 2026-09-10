@@ -11,8 +11,8 @@ const NAV_LINKS = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'sobre-nosotros', label: 'Sobre Nosotros' },
   { id: 'servicios', label: 'Servicios' },
-  { id: 'talleres', label: 'Talleres' },
   { id: 'citas', label: 'Reflexiones' },
+  { id: 'talleres', label: 'Talleres' },
   { id: 'contacto', label: 'Contacto' },
 ];
 

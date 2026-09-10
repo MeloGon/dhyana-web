@@ -113,6 +113,36 @@ test('sobre nosotros: validación de longitud y campos obligatorios', async () =
   assert.equal((await db.query('select heading from public.about_settings')).rows[0].heading, 'Un Acompañamiento Cercano Hacia Tu Calma');
 }));
 
+test('citas y reflexiones: carga inicial publicada y ordenada', async () => {
+  const { rows } = await db.query('select quote, author, sort_order, is_published, variant from public.quotes order by sort_order');
+  assert.equal(rows.length, 4);
+  assert.deepEqual(rows.map((r) => r.sort_order), [1, 2, 3, 4]);
+  assert.ok(rows.every((r) => r.is_published));
+  assert.equal(rows[0].author, 'Jon Kabat-Zinn');
+  assert.equal(rows[1].author, 'Carl Rogers');
+});
+
+test('citas y reflexiones: permisos RLS y restricciones de campos', async () => withRollback(async () => {
+  const { rows } = await db.query("select relrowsecurity from pg_class where oid = 'public.quotes'::regclass");
+  assert.equal(rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    for (const sql of [
+      'select * from public.quotes',
+      "insert into public.quotes (quote, author) values ('prueba', 'autor')",
+      "update public.quotes set quote = 'cambio'",
+      'delete from public.quotes',
+    ]) await expectSqlError(sql, '42501');
+    await db.exec('reset role');
+  }
+  await db.exec('set local role service_role');
+  await expectSqlError("insert into public.quotes (quote, author, variant) values ('texto', 'autor', 'invalido')", '23514');
+  await expectSqlError("insert into public.quotes (quote, author) values (' ', 'autor')", '23514');
+  await db.exec("insert into public.quotes (quote, author, variant, sort_order) values ('Prueba nueva', 'Autor nuevo', 'mint', 5)");
+  const count = await db.query('select count(*) from public.quotes');
+  assert.equal(count.rows[0].count, 5);
+}));
+
 test('preguntas frecuentes: carga inicial publicada y ordenada', async () => {
   const { rows } = await db.query('select question, sort_order, is_published from public.faqs order by sort_order');
   assert.equal(rows.length, 4);

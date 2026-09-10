@@ -7,12 +7,13 @@
 import { useState } from 'react';
 import { useScrollTo } from '@/hooks/useScrollTo';
 import { usePublicAboutSettings } from '@/hooks/useAboutSettings';
+import { usePublicQuotes } from '@/hooks/useQuotes';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import HeroVideo from '@/components/sections/HeroVideo';
-import QuoteSection from '@/components/sections/QuoteSection';
 import AboutSection from '@/components/sections/AboutSection';
 import ServicesSection from '@/components/sections/ServicesSection';
+import QuoteDeckSection from '@/components/sections/QuoteDeckSection';
 import WorkshopsSection from '@/components/sections/WorkshopsSection';
 import ContactSection from '@/components/sections/ContactSection';
 
@@ -25,14 +26,14 @@ export default function HomePage() {
 
   // preselectedService viaja de ServicesSection -> ContactSection: cuando el
   // usuario elige un servicio, el formulario de contacto ya abre con ese
-  // servicio seleccionado. Es "levantar el estado" al padre común (patrón
-  // típico de React, equivalente a manejar el estado compartido en un
-  // ancestro común en Flutter en vez de en cada widget hijo).
+  // servicio seleccionado.
   const [preselectedService, setPreselectedService] = useState<string>('Psicoterapia Individual');
 
-  // Carga la sección "Sobre nosotros" desde la API. Mientras carga, la
-  // sección no se renderiza (null). Si falla, muestra un botón de reintento.
+  // Carga la sección "Sobre nosotros" desde la API.
   const aboutModel = usePublicAboutSettings();
+
+  // Carga las reflexiones dinámicas desde la API para el mazo de cartas.
+  const quotesModel = usePublicQuotes();
 
   const handleSelectService = (serviceName: string) => {
     setPreselectedService(serviceName);
@@ -46,14 +47,6 @@ export default function HomePage() {
       <main className="flex-grow">
         <HeroVideo onScrollTo={scrollTo} />
 
-        <QuoteSection
-          quote="No puedes detener las olas, pero puedes aprender a surfear."
-          author="Jon Kabat-Zinn"
-          role="Pionero de la Reducción del Estrés Basada en Mindfulness (MBSR)"
-          accentNote="Respira, cada momento es una oportunidad para empezar de nuevo"
-          variant="mint"
-        />
-
         {/* Sobre nosotros: se renderiza cuando los datos están listos */}
         {aboutModel.settings && (
           <AboutSection settings={aboutModel.settings} onScrollTo={scrollTo} />
@@ -61,19 +54,21 @@ export default function HomePage() {
         {aboutModel.errorMessage && (
           <div className="py-10 text-center">
             <p className="text-sm text-[#3D4C5A]/75">{aboutModel.errorMessage}</p>
-            <button onClick={aboutModel.handleRetry} className="mt-3 text-sm font-medium underline underline-offset-4">Reintentar</button>
+            <button
+              onClick={aboutModel.handleRetry}
+              className="mt-3 text-sm font-medium underline underline-offset-4 cursor-pointer"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
         <ServicesSection onSelectService={handleSelectService} />
 
-        <QuoteSection
-          quote="La curiosa paradoja es que cuando me acepto tal como soy, entonces puedo cambiar."
-          author="Carl Rogers"
-          role="Fundador del Enfoque Centrado en la Persona"
-          accentNote="Tu espacio de aceptación incondicional"
-          variant="sky"
-        />
+        {/* Mazo interactivo de cartas de Reflexiones */}
+        {quotesModel.quotes.length > 0 && (
+          <QuoteDeckSection quotes={quotesModel.quotes} />
+        )}
 
         <WorkshopsSection />
 

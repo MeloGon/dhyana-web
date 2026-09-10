@@ -324,6 +324,42 @@ export type Database = {
           },
         ]
       }
+      quotes: {
+        Row: {
+          accent_note: string
+          author: string
+          created_at: string
+          id: string
+          is_published: boolean
+          quote: string
+          role: string
+          sort_order: number
+          variant: string
+        }
+        Insert: {
+          accent_note?: string
+          author: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          quote: string
+          role?: string
+          sort_order?: number
+          variant?: string
+        }
+        Update: {
+          accent_note?: string
+          author?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          quote?: string
+          role?: string
+          sort_order?: number
+          variant?: string
+        }
+        Relationships: []
+      }
       workshop_groups: {
         Row: {
           capacity: number
