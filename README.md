@@ -272,6 +272,26 @@ Verificado: 46 pruebas SQL, 2 pruebas HTTP, build con Webpack y lint. Desde nave
 se comprobó rechazo de teléfono inválido, guardado y lectura pública de una edición;
 después se restauró el texto original usado en la prueba.
 
+## Sección Sobre Nosotros editable
+
+`/admin/about` edita los 22 campos de la sección de presentación: cabecera (etiqueta,
+título principal y presentación), tarjeta de perfil (nombre, subtítulo, URL de imagen
+y texto alternativo), 3 líneas de credenciales, cita al pie, enfoque terapéutico
+(título y 2 párrafos) y 4 pilares (título y descripción de cada uno). Los íconos
+de los pilares y de las credenciales se conservan fijos en código por diseño.
+
+Migración `20260910140800_editable_about.sql` aplicada en Supabase con los textos
+originales del diseño. `about_settings` es una tabla singleton (`id boolean primary key default true`)
+con RLS habilitado y permisos exclusivos `SELECT, UPDATE` para `service_role`.
+La API pública `/api/about-settings` entrega los campos directamente sin requerir sesión;
+la API privada `/api/admin/about-settings` exige sesión de administrador activa (`requireAdmin()`)
+y valida que el `Origin` coincida con `APP_URL`.
+
+La barra de navegación (`Navbar.tsx`) y el ancla pública se actualizaron a `sobre-nosotros`.
+`npm run test:about` comprueba el contrato público, cabecera no-store, redirección al login
+y rechazo de orígenes no autorizados. Pruebas SQL en `commerce.test.mjs` cubren
+configuración única, permisos RLS, denegación a anon/authenticated y validación de campos.
+
 ## Ventas manuales y participantes
 
 `/admin/sales` permite registrar pagos externos ya verificados (Yape directo,

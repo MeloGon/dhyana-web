@@ -535,6 +535,27 @@ con destinos validados y mensaje codificado, sin aceptar URLs libres. No se aña
 clientes Supabase de navegador. La tarjeta tiene carga y error con reintento, sin
 fallback al contenido estático. El footer sigue fuera de esta configuración.
 
+### Sobre nosotros (implementado)
+
+La sección pública de presentación antes llamada "Sobre Mí" pasó a "Sobre Nosotros"
+(`id="sobre-nosotros"`) y ahora se lee dinámicamente desde Supabase mediante la
+tabla singleton `about_settings`, permitiendo configurar sus 22 campos desde `/admin/about`.
+
+- **En Flutter:** Equivaldría a reemplazar constantes estáticas en un widget por un
+  `ChangeNotifierProvider` o `Bloc` que consume un endpoint HTTP. Mientras se espera la
+  respuesta, un `FutureBuilder` renderiza un estado de carga o error con botón de reintento.
+- **En Next.js:** El orquestador `app/page.tsx` invoca el hook `usePublicAboutSettings()`,
+  el cual usa `AbortController` (análogo a cancelar suscripciones en el `dispose()` de un
+  `StatefulWidget`) para consultar `/api/about-settings` y pasar los datos como props inmutables
+  a `AboutSection`.
+- **Panel administrativo:** `/admin/about` usa Server Components para validar la sesión
+  vía `requireAdminPage()` e inyectar el estado inicial en `AdminAboutSettings`. El hook
+  `useAdminAboutSettings` actúa como ViewModel manteniendo el estado del formulario,
+  indicadores de guardado y mensajes de error/éxito.
+- **Seguridad:** Los íconos y estilos visuales de los pilares se mantienen en código para
+  evitar inyección de markup arbitrario. Las mutaciones son atómicas sobre la fila única
+  y exigen coincidencia de cabecera `Origin` con `APP_URL`.
+
 ## 11. Recorrido de una compra
 
 1. El navegador envía el identificador del grupo y los datos mínimos. El servidor

@@ -86,6 +86,9 @@ app/
   admin/contact/        Configuración de la tarjeta de datos de consulta
   api/admin/contact-settings/ Lectura y edición privadas de contacto
   api/contact-settings/ Datos públicos y enlaces de contacto validados
+  admin/about/          Configuración de la sección Sobre nosotros
+  api/admin/about-settings/ Lectura y edición privadas de Sobre nosotros
+  api/about-settings/   Datos públicos de la sección Sobre nosotros
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -101,7 +104,7 @@ hooks/
 
 lib/
   api/                  submitContactRequest(), submitWorkshopRegistration()
-  data/                 workshops, services, about, hero-videos
+  data/                 workshops, services, hero-videos
   server/database.ts    Cliente Supabase privilegiado, protegido con server-only
   server/admin-auth.ts  Identidad verificada y autorización activa
   server/auth-*.ts      Sesión SSR, configuración, Proxy y adaptadores HTTP
@@ -122,6 +125,7 @@ tests/catalog/          Pruebas HTTP de catálogo y privacidad
 tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixtures
 tests/faqs/             Lectura pública y privacidad HTTP de preguntas frecuentes
 tests/contact/          Privacidad HTTP y enlaces de datos de consulta
+tests/about/            Privacidad HTTP y lectura pública de Sobre nosotros
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
@@ -175,6 +179,11 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
+- Sección Sobre nosotros editable en `/admin/about`. Tabla única `about_settings`,
+  RLS y permisos solo SELECT/UPDATE para service_role. 22 campos (cabecera,
+  perfil, credenciales, cita, enfoque y pilares). Guardado conjunto tras
+  `requireAdmin()` y validación de Origin. Carga inicial del diseño.
+  Íconos y estilos de pilares se mantienen en código; textos e imagen son editables.
 - Datos de consulta editables en `/admin/contact`. Tabla única `contact_settings`,
   RLS y permisos solo SELECT/UPDATE para service_role. Guardado conjunto tras
   `requireAdmin()` y validación de Origin. Enlaces tel/mailto/WhatsApp generados
@@ -226,6 +235,7 @@ npm run test:catalog # HTTP público; fixtures temporales habilitan escrituras d
 npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RPC remotas
 npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
 npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
+npm run test:about # privacidad HTTP y lectura de Sobre nosotros
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos
