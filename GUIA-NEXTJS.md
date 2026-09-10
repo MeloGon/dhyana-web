@@ -37,7 +37,7 @@ hooks/                     ← "ViewModel": estado y lógica, sin nada visual
 
 lib/                       ← Todo lo que no es ni UI ni estado
   api/                        Auth y catálogo por HTTP; contacto aún simulado
-  data/                       Contenido: talleres, servicios, FAQs, videos
+  data/                       Contenido de demo: talleres, servicios, videos
   server/database.ts          Cliente Supabase privilegiado, solo servidor
   types/                      Interfaces compartidas
     catalog.ts                  Contrato público del catálogo persistido
@@ -64,9 +64,8 @@ recorrido, descrito en la sección 9.
 
 Patrón usado en Contact y Workshops: un archivo "orquestador" (ej.
 `ContactSection.tsx`) que llama al hook y arma la sección, delegando cada
-pedazo visual a un componente chico en su subcarpeta. Si necesitás cambiar el
-texto del acordeón de preguntas frecuentes, vas directo a
-`lib/data/faqs.ts` — sin tocar una sola línea de UI.
+pedazo visual a un componente chico en su subcarpeta. El contenido del acordeón
+de preguntas frecuentes ya se edita en `/admin/faqs`, sin tocar código.
 
 ### Dónde tocar según lo que quieras cambiar
 
@@ -504,6 +503,23 @@ por sus IDs antes de eliminar las identidades Auth. No usar cuentas del responsa
 No envía correos ni confirma pagos reales. Para el editor unificado se verificaron
 27 casos SQL, las operaciones remotas con rollback y el formulario real (crear,
 editar y añadir horarios); las pruebas HTTP completas requieren esos fixtures.
+
+### Preguntas frecuentes (implementado)
+
+Las preguntas frecuentes tienen un recorrido independiente, ya implementado:
+`/admin/faqs` verifica sesión y compone `AdminFaqs`; `useAdminFaqs` mantiene el
+formulario como un ViewModel, `lib/api/faqs.ts` comunica por HTTP y
+`lib/server/faqs.ts` autoriza, valida y persiste cada pregunta. Las rutas HTTP
+validan Origin y no cachean respuestas. Cada guardado afecta una sola fila.
+
+La tabla privada `faqs` contiene pregunta, respuesta, orden y publicación. Su
+migración carga una sola vez los cuatro textos originales del diseño. Los tipos
+están en `lib/types/faqs.ts`; las filas SQL, en los tipos generados. No queda una
+copia estática para volver a mostrar preguntas eliminadas u ocultas.
+`ContactSection` conecta `usePublicFaqs` con el acordeón de presentación. La
+lectura pública devuelve solo ID, pregunta y respuesta de filas publicadas,
+ordenadas por número y luego ID para resolver empates. Sin preguntas, se oculta
+el bloque; ante errores, muestra reintento. El cambio se ve al recargar el sitio.
 
 ## 11. Recorrido de una compra
 

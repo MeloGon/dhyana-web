@@ -80,6 +80,9 @@ app/
   api/workshops/        Lectura pública sin capacidad total
   admin/sales/          Ventas manuales, participantes y coordinación
   api/admin/sales/      Registro privado, búsqueda y coordinación
+  admin/faqs/           Editor de preguntas frecuentes
+  api/admin/faqs/       Lectura y escritura privada de preguntas
+  api/faqs/             Preguntas publicadas para el acordeón
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -95,7 +98,7 @@ hooks/
 
 lib/
   api/                  submitContactRequest(), submitWorkshopRegistration()
-  data/                 workshops, services, about, faqs, hero-videos
+  data/                 workshops, services, about, hero-videos
   server/database.ts    Cliente Supabase privilegiado, protegido con server-only
   server/admin-auth.ts  Identidad verificada y autorización activa
   server/auth-*.ts      Sesión SSR, configuración, Proxy y adaptadores HTTP
@@ -114,6 +117,7 @@ tests/database/         Pruebas SQL con PGlite, solo para desarrollo
 tests/auth/             Pruebas HTTP del acceso administrativo
 tests/catalog/          Pruebas HTTP de catálogo y privacidad
 tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixtures
+tests/faqs/             Lectura pública y privacidad HTTP de preguntas frecuentes
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
 ```
@@ -167,6 +171,10 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
+- Preguntas frecuentes editables en `/admin/faqs`: pregunta, respuesta, orden y
+  publicación; eliminación confirmada. Tabla `faqs` privada con RLS, escritura
+  tras `requireAdmin()` y validación de Origin. `/api/faqs` solo entrega publicadas.
+  Cuatro textos originales cargados por migración; no hay fallback hardcodeado.
 - Contacto mantiene su stub. La inscripción demo ya no se monta en la landing;
   sus archivos quedan como referencia sin formar parte del flujo público.
 - Catálogo persistido: formulario conjunto de taller y horarios; slug automático; eliminación con confirmación solo sin compras. Guardado por save_workshop_catalog y borrado por delete_workshop_catalog, SECURITY INVOKER exclusivos de service_role. sort_order conserva el orden de horarios. Talleres y grupos editables, borradores y publicación
@@ -207,6 +215,7 @@ npm run check:database # comprueba configuración privada y acceso a Supabase
 npm run test:auth # HTTP contra Next en ejecución; producción para probar caché
 npm run test:catalog # HTTP público; fixtures temporales habilitan escrituras de prueba
 npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RPC remotas
+npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos

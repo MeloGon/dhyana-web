@@ -14,6 +14,7 @@ de 2026.
   AI Studio. El diseño se afinará al incorporar funcionalidades.
 - Presentación, servicios, talleres y contacto con contenido de prueba en el código.
 - Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
+- Preguntas frecuentes conectadas a Supabase y editables desde el panel; carga inicial con los cuatro textos del diseño.
 - Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
 - Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
 - Acceso administrativo conectado a Supabase Auth: login, recuperación, cambio de
@@ -226,6 +227,28 @@ También se comprobó eliminación y rollback directamente en Supabase. La prueb
 pública comprueba lectura y rechazo de visitantes. La suite HTTP con escrituras
 requiere CATALOG_TEST_FIXTURES y cuentas temporales; nunca usar cuentas reales como fixtures.
 
+
+## Preguntas frecuentes editables
+
+`/admin/faqs` permite crear y editar preguntas/respuestas, definir orden de aparición,
+publicar u ocultar y eliminar con confirmación. Se conserva el acordeón del diseño.
+Las preguntas nuevas empiezan como borrador; guardar una publicada actualiza su
+contenido en la siguiente carga del sitio. Los números menores aparecen primero;
+para elegir un orden exacto, usar números distintos.
+
+Migración `20260910043132_editable_faqs.sql` aplicada y tipos regenerados. Carga inicial:
+los cuatro textos originales del diseño, publicados y en el mismo orden. El contenido
+estático se retiró; editar, ocultar o borrar no lo restaura. Sin preguntas publicadas,
+el bloque se oculta; errores de lectura permiten reintentar.
+
+Tabla `faqs` con RLS y sin acceso directo de `anon` ni `authenticated`. La API privada
+valida administrador y Origin; `/api/faqs` entrega solo ID, pregunta y respuesta de
+publicadas, sin caché. `npm run test:faqs` comprueba lectura pública y rechazo de
+visitantes contra Next en ejecución; `npm run test:db` cubre carga inicial, permisos
+y restricciones de texto/orden. Verificado: 43 pruebas SQL, 2 pruebas HTTP,
+creación de borrador y publicación de una edición desde navegador; registro temporal
+retirado. Build con Webpack y lint correctos. Turbopack no pudo abrir su puerto
+interno en el entorno de verificación; no se cambió la configuración del proyecto.
 
 ## Ventas manuales y participantes
 
