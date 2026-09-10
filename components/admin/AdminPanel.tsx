@@ -19,7 +19,8 @@ export function AdminPanel({ admin }: { admin: AdminIdentity }) {
       <section className="mt-8 rounded-3xl border border-[#3D4C5A]/10 bg-white p-7 sm:p-10">
         <p className="text-sm font-medium text-[#467E76]">Acceso habilitado</p>
         <h2 className="mt-3 break-all font-serif text-2xl">{admin.email}</h2>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed">Tu cuenta tiene acceso al panel privado de Dhyana.</p>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed">Administra talleres, horarios, precios y cupos. Guarda borradores y publica cuando estén listos.</p>
+        <Link href="/admin/workshops" className="mt-6 inline-block rounded-xl bg-[#3D4C5A] px-6 py-3 font-medium text-white">Gestionar talleres</Link>
         <div className="mt-7 flex flex-wrap gap-5 text-sm">
           <Link href="/admin/password" className="underline underline-offset-4">Cambiar contraseña</Link>
           <Link href="/" className="underline underline-offset-4">Ver sitio público</Link>

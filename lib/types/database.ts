@@ -149,6 +149,7 @@ export type Database = {
           is_published: boolean
           price_cents: number
           schedule_description: string
+          sort_order: number
           workshop_id: string
         }
         Insert: {
@@ -159,6 +160,7 @@ export type Database = {
           is_published?: boolean
           price_cents: number
           schedule_description?: string
+          sort_order?: number
           workshop_id: string
         }
         Update: {
@@ -169,6 +171,7 @@ export type Database = {
           is_published?: boolean
           price_cents?: number
           schedule_description?: string
+          sort_order?: number
           workshop_id?: string
         }
         Relationships: [
@@ -216,7 +219,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_workshop_catalog: {
+        Args: { p_workshop_id: string }
+        Returns: undefined
+      }
+      save_workshop_catalog: {
+        Args: { p_slug: string; p_workshop: Json; p_workshop_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

@@ -13,7 +13,8 @@
     "test:db": "node --test tests/database/*.test.mjs",
     "check:database": "node scripts/check-database.mjs",
     "test:auth": "node --test tests/auth/*.test.mjs",
-    "admin:invite": "node scripts/invite-admin.mjs"
+    "admin:invite": "node scripts/invite-admin.mjs",
+    "test:catalog": "node --test tests/catalog/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -238,3 +238,85 @@ test('servidor puede leer y escribir ventas, pero no otorgar administradores ni 
   await expectSqlError('update public.admin_users set is_active = false', '42501');
   await expectSqlError('delete from public.purchases where id = $1', '42501', [purchase.id]);
 }));
+
+const catalogGroup = { scheduleDescription: 'Sábado 10:00', priceCents: 12050, capacity: 3, isPublished: true };
+const catalogInput = { title: 'Regulación emocional', summary: 'Descripción', category: 'group', isPublished: false,
+  groups: [catalogGroup] };
+async function saveCatalog(input = catalogInput, id = null, slug = 'regulacion-emocional') {
+  const { rows } = await db.query('select public.save_workshop_catalog($1, $2, $3) as result', [id, JSON.stringify(input), slug]);
+  return rows[0].result;
+}
+
+test('catálogo: crear y editar juntos, conservar IDs, añadir y quitar horarios', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const first = await saveCatalog();
+  const groupId = first.groups[0].id;
+  const updated = await saveCatalog({ ...catalogInput, title: 'Nuevo título', groups: [
+    { ...catalogGroup, id: groupId, priceCents: 15000 }, { ...catalogGroup, scheduleDescription: 'Domingo 11:00' },
+  ] }, first.workshop.id, 'nuevo-titulo');
+  assert.equal(updated.workshop.slug, 'nuevo-titulo');
+  assert.equal(updated.groups.length, 2);
+  assert.equal(updated.groups[0].id, groupId);
+  assert.equal(updated.groups[0].price_cents, 15000);
+  const removed = await saveCatalog({ ...catalogInput, groups: [{ ...catalogGroup, id: groupId }] }, first.workshop.id);
+  assert.equal(removed.groups.length, 1);
+  await db.query('select public.delete_workshop_catalog($1)', [first.workshop.id]);
+  assert.equal((await db.query('select id from public.workshops')).rows.length, 0);
+  assert.equal((await db.query('select id from public.workshop_groups')).rows.length, 0);
+}));
+
+test('catálogo: títulos repetidos generan sufijos y el identificador no cambia en guardados sin renombrar', () => withRollback(async () => {
+  const first = await saveCatalog();
+  const second = await saveCatalog();
+  assert.equal(first.workshop.slug, 'regulacion-emocional');
+  assert.equal(second.workshop.slug, 'regulacion-emocional-2');
+  const again = await saveCatalog({ ...catalogInput, groups: [{ ...catalogGroup, id: second.groups[0].id }] }, second.workshop.id);
+  assert.equal(again.workshop.slug, second.workshop.slug);
+  assert.equal(again.groups[0].id, second.groups[0].id);
+}));
+
+test('catálogo: un segundo horario inválido revierte toda la creación', () => withRollback(async () => {
+  await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '23514', [
+    JSON.stringify({ ...catalogInput, groups: [catalogGroup, { ...catalogGroup, capacity: 0 }] }), 'prueba',
+  ]);
+  assert.equal((await db.query('select id from public.workshops')).rows.length, 0);
+  assert.equal((await db.query('select id from public.workshop_groups')).rows.length, 0);
+}));
+
+test('catálogo: grupo ajeno o repetido revierte edición y no mueve relaciones', () => withRollback(async () => {
+  const first = await saveCatalog(); const other = await saveCatalog();
+  for (const [groups, code] of [
+    [[{ ...catalogGroup, id: other.groups[0].id }], 'PT404'],
+    [[{ ...catalogGroup, id: first.groups[0].id }, { ...catalogGroup, id: first.groups[0].id }], 'PT400'],
+  ]) await expectSqlError('select public.save_workshop_catalog($1, $2, $3)', code, [first.workshop.id,
+    JSON.stringify({ ...catalogInput, title: 'No debe guardarse', groups }), 'no-debe-guardarse']);
+  assert.equal((await db.query('select title from public.workshops where id = $1', [first.workshop.id])).rows[0].title, catalogInput.title);
+  assert.equal((await db.query('select workshop_id from public.workshop_groups where id = $1', [other.groups[0].id])).rows[0].workshop_id, other.workshop.id);
+}));
+
+test('catálogo: compras bloquean eliminación y quitar horario; ningún cambio parcial', () => withRollback(async () => {
+  const saved = await saveCatalog();
+  await createPurchase(saved.groups[0].id, { purchasedAt: null });
+  await db.exec('set local role service_role');
+  await expectSqlError('select public.delete_workshop_catalog($1)', 'PT409', [saved.workshop.id]);
+  await expectSqlError('select public.save_workshop_catalog($1, $2, $3)', 'PT409', [saved.workshop.id,
+    JSON.stringify({ ...catalogInput, title: 'No guardar', groups: [] }), 'no-guardar']);
+  assert.equal((await db.query('select title from public.workshops where id = $1', [saved.workshop.id])).rows[0].title, catalogInput.title);
+  assert.equal((await db.query('select id from public.workshop_groups')).rows.length, 1);
+  assert.equal((await db.query('select id from public.purchases')).rows.length, 1);
+}));
+
+test('catálogo: capacidad inferior a accesos vigentes revierte título y precio', () => withRollback(async () => {
+  const saved = await saveCatalog();
+  const now = new Date(Date.now() - 86400000).toISOString();
+  await createAccess(await createPurchase(saved.groups[0].id, { purchasedAt: now }));
+  await createAccess(await createPurchase(saved.groups[0].id, { purchasedAt: now }));
+  await expectSqlError('select public.save_workshop_catalog($1, $2, $3)', 'PT409', [saved.workshop.id,
+    JSON.stringify({ ...catalogInput, title: 'No guardar', groups: [{ ...catalogGroup, id: saved.groups[0].id, capacity: 1 }] }), 'no-guardar']);
+}));
+
+for (const role of ['anon', 'authenticated']) test(`${role}: no ejecuta funciones privadas del catálogo`, () => withRollback(async () => {
+  await db.exec(`set local role ${role}`);
+  await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '42501', [JSON.stringify(catalogInput), 'prueba']);
+  await expectSqlError('select public.delete_workshop_catalog($1)', '42501', [randomUUID()]);
+}));
