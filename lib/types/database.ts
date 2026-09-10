@@ -32,6 +32,21 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_manual_sale_requests: {
+        Row: {
+          deleted_at: string
+          request_id: string
+        }
+        Insert: {
+          deleted_at?: string
+          request_id: string
+        }
+        Update: {
+          deleted_at?: string
+          request_id?: string
+        }
+        Relationships: []
+      }
       monthly_accesses: {
         Row: {
           created_at: string
@@ -67,6 +82,9 @@ export type Database = {
           buyer_email: string
           buyer_name: string
           buyer_phone: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           coordinated_at: string | null
           coordinated_by: string | null
           created_at: string
@@ -87,6 +105,9 @@ export type Database = {
           buyer_email: string
           buyer_name: string
           buyer_phone: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           coordinated_at?: string | null
           coordinated_by?: string | null
           created_at?: string
@@ -107,6 +128,9 @@ export type Database = {
           buyer_email?: string
           buyer_name?: string
           buyer_phone?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           coordinated_at?: string | null
           coordinated_by?: string | null
           created_at?: string
@@ -123,6 +147,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "purchases_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "purchases_coordinated_by_fkey"
             columns: ["coordinated_by"]
@@ -233,6 +264,19 @@ export type Database = {
           p_query: string
         }
         Returns: Json
+      }
+      cancel_sale: {
+        Args: { p_admin_id: string; p_purchase_id: string; p_reason: string }
+        Returns: undefined
+      }
+      delete_manual_sale: {
+        Args: {
+          p_admin_id: string
+          p_code: string
+          p_is_test: boolean
+          p_purchase_id: string
+        }
+        Returns: undefined
       }
       delete_workshop_catalog: {
         Args: { p_workshop_id: string }

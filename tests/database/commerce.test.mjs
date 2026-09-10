@@ -228,7 +228,7 @@ for (const role of ['anon', 'authenticated']) {
   }));
 }
 
-test('servidor puede leer y escribir ventas, pero no otorgar administradores ni borrar historial', () => withRollback(async () => {
+test('servidor puede leer y escribir ventas, pero no otorgar administradores ni borrar historial directamente', () => withRollback(async () => {
   const { groupId } = await createGroup();
   await db.exec('set local role service_role');
   const purchase = await createPurchase(groupId);
@@ -236,7 +236,7 @@ test('servidor puede leer y escribir ventas, pero no otorgar administradores ni 
   const { rows } = await db.query('select id from public.purchases');
   assert.equal(rows.length, 1);
   await expectSqlError('update public.admin_users set is_active = false', '42501');
-  await expectSqlError('delete from public.purchases where id = $1', '42501', [purchase.id]);
+  await expectSqlError('delete from public.purchases where id = $1', 'PT403', [purchase.id]);
 }));
 
 const catalogGroup = { scheduleDescription: 'Sábado 10:00', priceCents: 12050, capacity: 3, isPublished: true };
@@ -435,4 +435,72 @@ test('venta manual: no vuelve a registrar una referencia de Culqi', () => withRo
   await createPurchase(groupId, { purchasedAt: '2025-01-01T12:00:00Z', paymentReference: 'chr_test_123' });
   await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId,
     JSON.stringify(manualInput(groupId, { paymentReference: 'CHR_TEST_123' }))]);
+}));
+
+test('anular: conserva historial, libera cupo desde anulación y no revive con reintentos', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  const input = manualInput(groupId, { purchasedAt: new Date(Date.now() - 3600000).toISOString() });
+  const id = await manualSale(adminId, input);
+  await db.exec('set local role service_role');
+  const before = (await db.query('select * from public.monthly_accesses where purchase_id = $1', [id])).rows[0];
+  await db.query('select public.cancel_sale($1, $2, $3)', [adminId, id, 'Participante solicita cancelar']);
+  const sale = (await db.query('select * from public.purchases where id = $1', [id])).rows[0];
+  assert.equal(sale.status, 'cancelled'); assert.equal(sale.cancelled_by, adminId);
+  assert.equal(sale.amount_cents, input.amountCents);
+  assert.deepEqual((await db.query('select * from public.monthly_accesses where purchase_id = $1', [id])).rows[0], before);
+  const occupied = async (from, to) => Number((await db.query('select public.group_peak_occupancy($1, $2, $3) as n', [groupId, from, to])).rows[0].n);
+  assert.equal(await occupied(sale.cancelled_at, 'infinity'), 0);
+  assert.equal(await occupied(input.purchasedAt, sale.cancelled_at), 1);
+  await db.query('select public.cancel_sale($1, $2, $3)', [adminId, id, 'Otro texto de un reintento']);
+  assert.deepEqual((await db.query('select cancelled_at from public.purchases where id = $1', [id])).rows[0].cancelled_at, sale.cancelled_at);
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId, JSON.stringify(input)]);
+  await expectSqlError('select public.set_sale_coordination($1, $2, true)', 'PT404', [adminId, id]);
+  const list = (await db.query("select public.admin_sales_page('', 'cancelled', 'all', 1) as result")).rows[0].result;
+  assert.equal(list.total, 1); assert.equal(list.items[0].accessStatus, 'cancelled');
+  assert.equal((await db.query("select public.admin_sales_page('', 'active', 'all', 1) as result")).rows[0].result.total, 0);
+}));
+
+test('eliminar: exige código y declaración, borra compra/acceso y bloquea resurrección', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup(); const input = manualInput(groupId);
+  const id = await manualSale(adminId, input);
+  const code = (await db.query('select reference_code from public.purchases where id = $1', [id])).rows[0].reference_code;
+  await db.exec('set local role service_role');
+  await expectSqlError('select public.delete_manual_sale($1, $2, $3, true)', 'PT400', [adminId, id, 'DHY-' + '0'.repeat(32)]);
+  await expectSqlError('select public.delete_manual_sale($1, $2, $3, false)', 'PT400', [adminId, id, code]);
+  await expectSqlError('delete from public.purchases where id = $1', 'PT403', [id]);
+  await expectSqlError('delete from public.monthly_accesses where purchase_id = $1', 'PT403', [id]);
+  assert.equal((await db.query('select id from public.purchases where id = $1', [id])).rows.length, 1);
+  await db.query('select public.delete_manual_sale($1, $2, $3, true)', [adminId, id, code]);
+  assert.equal((await db.query('select id from public.purchases where id = $1', [id])).rows.length, 0);
+  assert.equal((await db.query('select purchase_id from public.monthly_accesses where purchase_id = $1', [id])).rows.length, 0);
+  await db.query('select public.delete_manual_sale($1, $2, $3, true)', [adminId, id, code]);
+  await expectSqlError('select public.register_manual_sale($1, $2)', 'PT409', [adminId, JSON.stringify(input)]);
+}));
+
+test('eliminar: no borra pagos Culqi ni deja habilitado DELETE para otras ventas', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup();
+  const culqi = await createPurchase(groupId);
+  const id = await manualSale(adminId, manualInput(groupId));
+  const code = (await db.query('select reference_code from public.purchases where id = $1', [id])).rows[0].reference_code;
+  await db.exec('set local role service_role');
+  await expectSqlError('select public.delete_manual_sale($1, $2, $3, true)', 'PT409', [adminId, culqi.id, culqi.reference_code]);
+  await db.query('select public.delete_manual_sale($1, $2, $3, true)', [adminId, id, code]);
+  const other = await manualSale(adminId, manualInput(groupId));
+  await expectSqlError('delete from public.purchases where id = $1', 'PT403', [other]);
+}));
+
+test('anular y eliminar: rechazan permisos, motivo vacío y pago pendiente', () => withRollback(async () => {
+  const { groupId, adminId } = await createGroup(); const id = await manualSale(adminId, manualInput(groupId));
+  const pending = await createPurchase(groupId, { purchasedAt: null });
+  await expectSqlError('select public.cancel_sale($1, $2, $3)', 'PT400', [adminId, id, '']);
+  await expectSqlError('select public.cancel_sale($1, $2, $3)', 'PT409', [adminId, pending.id, 'Pago no recibido']);
+  await expectSqlError('select public.cancel_sale($1, $2, $3)', 'PT403', [randomUUID(), id, 'Sin autorización']);
+  await expectSqlError('select public.delete_manual_sale($1, $2, $3, true)', 'PT403', [randomUUID(), id, 'DHY-' + '0'.repeat(32)]);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select public.cancel_sale($1, $2, $3)', '42501', [adminId, id, 'Sin autorización']);
+    await expectSqlError('select public.delete_manual_sale($1, $2, $3, true)', '42501', [adminId, id, 'DHY-' + '0'.repeat(32)]);
+    await expectSqlError('select * from public.deleted_manual_sale_requests', '42501');
+    await db.exec('reset role');
+  }
 }));

@@ -66,7 +66,7 @@ export async function deleteWorkshop(id: string) {
 async function activeAccessCount(groupId: string, at: string) {
   const { count, error } = await createDatabaseAdminClient().from('monthly_accesses')
     .select('purchase_id,purchases!inner(group_id)', { count: 'exact', head: true })
-    .eq('purchases.group_id', groupId).lte('starts_at', at).gt('ends_at', at);
+    .eq('purchases.group_id', groupId).eq('purchases.status', 'paid').lte('starts_at', at).gt('ends_at', at);
   if (error || count === null) throw new Error('No se pudo comprobar la disponibilidad.');
   return count;
 }
