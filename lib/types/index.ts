@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
-// Tipos compartidos del proyecto. Vive acá todo lo que usan 2+ archivos —
-// si un tipo lo usa un solo componente, se declara en ese archivo y listo.
+// Tipos compartidos de la landing demo. Los contratos nuevos se agrupan por
+// módulo en lib/types/<module>.ts, sin reexports desde este archivo.
 
 // ---------------------------------------------------------------------------
 // Contenido
@@ -97,9 +97,9 @@ export interface WorkshopFormData {
 // ---------------------------------------------------------------------------
 
 /**
- * Resultado de un envío a backend. Todas las funciones de `lib/api/`
- * devuelven esta forma, así los hooks no tienen que saber de dónde viene
- * el dato ni cambiar cuando se conecte el backend real.
+ * Resultado de los formularios demo de `lib/api/`; no confirma un pago.
+ * Los contratos comerciales viven en lib/types/checkout.ts y distinguen
+ * pagos pendientes de accesos confirmados.
  */
 export interface SubmitResult {
   ok: boolean;
