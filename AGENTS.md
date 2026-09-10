@@ -229,7 +229,12 @@ endpoints nuevos: usar el mismo protocolo al incorporar Culqi y reservas.
 El formulario manual exige pago verificado, fecha real en Perú e importe recibido.
 No crea cobros ni renovaciones. Coordinación es independiente del pago/acceso.
 No hay reservas actuales. Las pruebas RPC remotas guardan IDs de fixtures para limpiar
-por SQL privilegiado; service_role no puede borrar compras ni accesos.
+por SQL privilegiado. service_role solo borra ventas manuales mediante
+delete_manual_sale con código y declaración de prueba/error; triggers bloquean
+DELETE directo. Limpiar también los UUID técnicos de fixtures eliminados.
+Anular mediante cancel_sale conserva historial y auditoría, sin devolución.
+La ocupación efectiva acaba en cancelled_at; lectura pública exige paid.
+No autorizar acceso usando solo monthly_accesses de una compra anulada.
 Estas pruebas no sustituyen la verificación con Supabase ni pruebas concurrentes
 al implementar reservas y pagos.
 

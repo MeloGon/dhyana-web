@@ -143,15 +143,14 @@ contiene la plantilla sin credenciales; completar `SUPABASE_URL`,
 desde servidor, sin prefijo `NEXT_PUBLIC_`. El cliente privilegiado está separado del cliente de sesión;
 `requireAdmin()` verifica identidad y permisos antes de cada operación privada.
 
-El siguiente módulo es ventas manuales y control concurrente de capacidad.
+Ventas manuales y control concurrente de capacidad ya funcionan; siguen reservas y checkout Culqi.
 Supabase permite dos proyectos Free activos entre las organizaciones donde se es
 Owner o Admin. [Regla oficial](https://supabase.com/docs/guides/platform/billing-on-supabase).
 Los proyectos Free pueden pausarse tras una semana de inactividad;
 [condiciones del plan](https://supabase.com/pricing).
 
-Las reservas temporales, el control concurrente de cupos, la confirmación atómica
-de compra/acceso y la integración Culqi pertenecen a las siguientes etapas.
-La base preparada todavía no habilita ventas reales.
+Las reservas temporales y la integración Culqi pertenecen a las siguientes etapas.
+El registro manual ya guarda compra/acceso de forma atómica con control de cupos.
 
 ## Acceso administrativo implementado
 
@@ -242,12 +241,12 @@ Una referencia manual repetida para el mismo medio también se rechaza. Sin refe
 no se puede reconocer automáticamente el mismo pago si se inicia un formulario nuevo;
 el responsable debe revisar el listado. Una referencia conocida de Culqi no se registra
 como manual. Cada compra conserva un mes calendario desde el pago, incluso al cargarla tarde.
-No hay renovación, suscripción, cancelación ni devolución automática.
+No hay renovación, suscripción ni devolución automática.
 
 El listado privado tiene búsqueda literal por nombre, correo, teléfono, código o referencia;
 filtros de acceso y coordinación; paginación de 20 filas y actualización manual.
 Marcar o desmarcar coordinación guarda al administrador y la fecha; no cambia pago ni acceso,
-y no envía mensajes por WhatsApp. Solo muestra compras pagadas con acceso registrado.
+y no envía mensajes por WhatsApp. Muestra compras pagadas y anuladas con su período original.
 
 Migración `20260910032040_manual_sales.sql` aplicada. Las funciones son privadas y
 SECURITY INVOKER. Ventas y catálogo bloquean primero taller y luego grupo, comprueban
@@ -255,8 +254,9 @@ ocupación y escriben dentro de una transacción. La ocupación máxima consider
 períodos, no la suma de todos los participantes históricos. No hay reservas todavía:
 Culqi deberá respetar estos mismos bloqueos y reglas antes de habilitar el checkout.
 
-Verificación: 36 pruebas SQL; 2 comprobaciones HTTP de privacidad/origen; 3 escenarios
-concurrentes en Supabase (último cupo, reintentos y venta frente a reducción de capacidad).
+Verificación: 40 pruebas SQL; 2 comprobaciones HTTP de privacidad/origen; 5 escenarios
+en Supabase (último cupo, reintentos, venta frente a reducción de capacidad, anulación
+y borrado concurrente con reintento).
 También se probó el formulario y su confirmación histórica desde el navegador.
 Build con webpack y lint correctos. Las pruebas usan registros artificiales, sin cobros.
 
@@ -265,12 +265,33 @@ remotos requieren `SALES_RPC_TEST_ADMIN_ID` de un administrador de pruebas activ
 `SALES_RPC_TEST_ARTIFACTS` apuntando a un archivo privado para los IDs de limpieza.
 Estos escenarios crean talleres y ventas temporales en el proyecto configurado;
 deben limpiarse por SQL privilegiado siguiendo esos IDs (accesos, compras, grupos,
-talleres). El rol del servidor no recibe permisos de borrado de historial.
+talleres y marcadores técnicos de solicitud). El borrado directo por Data API queda
+bloqueado por triggers; el panel usa la función confirmada para ventas manuales.
+
+### Anular o eliminar una venta
+
+En cada venta pagada, «Anular venta» pide un motivo de 5 a 500 caracteres. Conserva
+importe, fecha del pago, coordinación, período original y administrador responsable;
+libera cupo desde la anulación. No devuelve dinero. El filtro «Anulados» permite
+consultar ese historial; las anuladas no quedan pendientes de coordinación.
+
+Las ventas manuales también ofrecen «Eliminar definitivamente», para pruebas o
+registros erróneos. Exige escribir su código (con o sin DHY-) y confirmar el motivo
+de uso mediante una casilla. Borra compra y acceso, sin recuperación. Culqi solo
+admite anulación. Queda únicamente un UUID técnico en `deleted_manual_sale_requests`
+para impedir que reenviar la solicitud original recree lo eliminado; no conserva
+comprador, importe ni referencia del pago.
+
+Migración `20260910040538_sale_cancellation_and_deletion.sql` aplicada. Las funciones
+`cancel_sale` y `delete_manual_sale` son privadas, SECURITY INVOKER y respetan los
+bloqueos del catálogo. Los triggers impiden DELETE directo desde el rol del servidor;
+el propietario SQL conserva mantenimiento. La ocupación histórica cuenta hasta la
+anulación, y el catálogo público excluye esos accesos desde entonces.
 
 ## Pendientes para implementar
 
 - Horarios, capacidad y reuniones incluidas al entrar a un grupo en marcha.
-- Cancelaciones, cambios de horario, reprogramaciones y devoluciones.
+- Política comercial de cancelaciones, cambios de horario, reprogramaciones y devoluciones.
 - Datos de compra, emisión de comprobantes y confirmación propia por correo.
 - Segundo administrador y posibles diferencias entre sus permisos.
 - Contenido real, dominio, configuración comercial de Culqi y servicios.

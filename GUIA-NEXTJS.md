@@ -317,15 +317,15 @@ entradas y, en acciones administrativas, la identidad y su entrada activa en
 `admin_users`. Esa validación ya existe en `requireAdmin()` y se debe repetir en cada servicio privado. No agregar políticas que permitan
 a una persona autoasignarse acceso administrativo.
 
-El servidor tiene permisos de lectura/escritura comercial, sin borrado, y solo
+El servidor tiene permisos de lectura/escritura comercial, con borrado manual confirmado mediante RPC, y solo
 lectura de administradores. La lista de administradores se configura explícitamente
 desde SQL después de crear las identidades de Auth. El primero está autorizado;
 su invitación ya fue aceptada y definió su contraseña. No se fijaron roles distintos para los operadores.
 La recuperación por enlace y el cambio de contraseña ya tienen pantallas y endpoints.
 
 Esta migración no implementa reservas, control concurrente de capacidad, verificación
-de pagos ni confirmación atómica de compra/acceso. Esas operaciones llegarán en las
-etapas de ventas y Culqi; hasta entonces no hay endpoint para registrar ventas.
+de pagos ni confirmación atómica de compra/acceso. Migraciones posteriores implementan registro manual atómico y concurrencia;
+reservas y verificación de pagos Culqi siguen pendientes.
 
 ### Probar y aplicar la base
 
@@ -465,7 +465,7 @@ llamar una función de la base de datos: aquí guarda taller y horarios dentro d
 transacción, de modo que un error revierte todo. `sort_order` conserva el orden del
 formulario. Los IDs devueltos reemplazan los borradores para que guardar otra vez
 edite los horarios recién creados. Las funciones son SECURITY INVOKER; solo
-service_role puede ejecutarlas. No se otorgan permisos de borrado sobre ventas.
+service_role puede ejecutarlas. El borrado de ventas manuales se habilita después mediante una RPC confirmada y triggers.
 `HttpError` representa un fallo esperado con código HTTP y mensaje seguro: Auth y
 catálogo lo comparten. Los detalles internos de Supabase no se devuelven al navegador.
 
@@ -636,7 +636,7 @@ reduce capacidad por debajo de ocupación actual o futura. Los futuros pagos web
 reservas deben entrar por el mismo protocolo; escribir filas directamente con una
 clave privilegiada no sustituye esas reglas de negocio.
 
-`admin_sales_page` devuelve 20 ventas pagadas con acceso, total y fecha de lectura.
+`admin_sales_page` devuelve 20 ventas pagadas o anuladas con período original, total y fecha de lectura.
 La búsqueda usa texto literal, sin SQL dinámico. La lista muestra datos personales
 solo después de `requireAdmin()` y nunca se cachea. Los filtros se aplican al buscar;
 «Actualizar» refresca la página actual. Las fechas se construyen con partes numéricas
@@ -644,10 +644,24 @@ en `America/Lima`, evitando diferencias de abreviaturas/espacios entre Node y na
 
 `set_sale_coordination` marca o desmarca coordinación y conserva autor y fecha de
 la primera marca mientras siga activa. No envía mensajes, cobra ni modifica acceso.
-Las tres funciones de negocio y el cálculo de ocupación son SECURITY INVOKER con
+Las funciones de negocio y el cálculo de ocupación son SECURITY INVOKER con
 EXECUTE solo para service_role. Cada endpoint privado valida Origin y autorización.
 
 Pruebas: casos SQL para importe histórico, vencimiento, ocupación, duplicados,
 permisos, filtros y coordinación. `test:sales` agrega privacidad HTTP y, con fixtures
 explícitos, concurrencia real vía RPC. Los IDs quedan en un archivo privado para
 limpieza por SQL privilegiado; no se cobra ni se altera la contraseña de ninguna cuenta.
+
+`SaleActionForm` presenta confirmación de borrado o motivo de anulación; el hook
+orquesta y `lib/api` llama POST `/api/admin/sales/[id]/cancel` o DELETE
+`/api/admin/sales/[id]`. Ambos endpoints validan Origin e identidad activa.
+`cancel_sale` conserva historial y auditoría, sin devolución de dinero. El acceso
+original sigue almacenado, pero su ocupación efectiva termina en `cancelled_at`.
+La lectura pública exige estado paid; la privada distingue las anuladas.
+
+`delete_manual_sale` exige código y declaración de prueba/error, elimina compra y
+acceso en una transacción y guarda solo el UUID técnico de la solicitud. El bloqueo
+por solicitud precede taller → grupo → compra, igual que el registro manual, para
+que un reintento concurrente no recree lo borrado. Los triggers restringen DELETE
+del servidor a esa operación; el propietario postgres conserva mantenimiento.
+No usar el acceso original de una venta anulada para autorizar asistencia futura.
