@@ -29,10 +29,10 @@ const caveat = Caveat({
 // `metadata` es exclusivo del App Router: Next.js lo lee para armar el <head>
 // (título de pestaña, descripción para buscadores, tarjeta de OpenGraph al compartir el link).
 export const metadata: Metadata = {
-  title: 'Lic. Alejandro Morales | Psicología Clínica & Bienestar Emocional',
+  title: 'Centro de Desarrollo Integral Dhyana | Psicología Clínica & Bienestar Emocional',
   description: 'Espacio de psicoterapia, salud mental y talleres vivenciales individuales y grupales. Modalidad presencial y online.',
   openGraph: {
-    title: 'Lic. Alejandro Morales | Psicología Clínica & Bienestar Emocional',
+    title: 'Centro de Desarrollo Integral Dhyana | Psicología Clínica & Bienestar Emocional',
     description: 'Espacio de psicoterapia, salud mental y talleres vivenciales individuales y grupales.',
     type: 'website',
   },
