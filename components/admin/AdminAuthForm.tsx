@@ -8,12 +8,12 @@ import type { AuthFormMode } from '@/lib/types/admin-auth';
 export function AdminAuthForm({ mode }: { mode: AuthFormMode }) {
   const form = useAdminAuth(mode);
   const content = AUTH_FORM_CONTENT[mode];
-  const inputClass = 'mt-2 w-full rounded-xl border border-[#3D4C5A]/25 bg-[#F7F7F5]/50 px-4 py-3 text-base outline-none focus:border-[#467E76] focus:ring-2 focus:ring-[#83D0C6]/40 disabled:opacity-60';
+  const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--page)]/50 px-4 py-3 text-base outline-none focus:border-[#467E76] focus:ring-2 focus:ring-[#83D0C6]/40 disabled:opacity-60';
 
   return (
     <>
       <h1 className="font-serif text-3xl leading-tight">{content.title}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-[#3D4C5A]/75">{content.description}</p>
+      <p className="mt-3 text-sm leading-relaxed text-[color:var(--ink)]/75">{content.description}</p>
       <form onSubmit={form.handleSubmit} className="mt-7 space-y-5" aria-busy={form.isSubmitting}>
         {mode !== 'password' && (
           <div>
@@ -40,7 +40,7 @@ export function AdminAuthForm({ mode }: { mode: AuthFormMode }) {
               disabled={form.isSubmitting} className={inputClass} />
           </div>
         )}
-        {form.errorMessage && <p role="alert" className="rounded-xl bg-[#FFF0ED] p-3 text-sm text-[#9B3024]">{form.errorMessage}</p>}
+        {form.errorMessage && <p role="alert" className="rounded-xl bg-[#FFF0ED] p-3 text-sm text-[color:var(--danger)]">{form.errorMessage}</p>}
         {form.successMessage && <p role="status" className="rounded-xl bg-[#E7F5EF] p-3 text-sm text-[#285D48]">{form.successMessage}</p>}
         <button disabled={form.isSubmitting} className="w-full rounded-xl bg-[#3D4C5A] px-5 py-3.5 font-medium text-white transition hover:bg-[#2E3B47] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#467E76] disabled:opacity-60">
           {form.isSubmitting ? 'Procesando…' : content.submit}

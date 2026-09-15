@@ -50,7 +50,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
       id="navbar-header"
       className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#FFFFFF]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3 border-b border-[#D1D3E8]/40'
+          ? 'bg-[var(--surface)]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3 border-b border-[#D1D3E8]/40'
           : 'bg-[#3D4C5A]/85 backdrop-blur-sm py-4 border-b border-white/10 text-white'
       }`}
     >
@@ -66,7 +66,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
             <div
               className={`w-9 h-9 rounded-full border-2 border-[#83D0C6] flex items-center justify-center transition-all duration-300 ${
                 isScrolled
-                  ? 'bg-[#83D0C6]/15 text-[#3D4C5A]'
+                  ? 'bg-[#83D0C6]/15 text-[color:var(--ink)]'
                   : 'bg-white/10 text-white backdrop-blur-xs'
               }`}
             >
@@ -75,14 +75,14 @@ export default function Navbar({ onNavigate }: NavbarProps) {
             <div className="flex flex-col">
               <span
                 className={`font-serif italic font-bold text-base sm:text-lg tracking-tight transition-colors ${
-                  isScrolled ? 'text-[#3D4C5A]' : 'text-white'
+                  isScrolled ? 'text-[color:var(--ink)]' : 'text-white'
                 }`}
               >
                 Centro de Desarrollo Integral Dhyana
               </span>
               <span
                 className={`text-[10px] sm:text-xs uppercase tracking-widest font-sans transition-colors ${
-                  isScrolled ? 'text-[#3D4C5A]/70' : 'text-[#84B0DF]'
+                  isScrolled ? 'text-[color:var(--ink)]/70' : 'text-[#84B0DF]'
                 }`}
               >
                 Psicología & Terapia Consciente
@@ -103,10 +103,10 @@ export default function Navbar({ onNavigate }: NavbarProps) {
                   className={`text-xs uppercase tracking-wider font-medium transition-all duration-200 ${
                     isActive
                       ? isScrolled
-                        ? 'text-[#3D4C5A] font-bold border-b-2 border-[#83D0C6] pb-0.5'
+                        ? 'text-[color:var(--ink)] font-bold border-b-2 border-[#83D0C6] pb-0.5'
                         : 'text-white font-bold border-b-2 border-[#83D0C6] pb-0.5'
                       : isScrolled
-                      ? 'text-[#3D4C5A]/80 hover:text-[#83D0C6]'
+                      ? 'text-[color:var(--ink)]/80 hover:text-[#83D0C6]'
                       : 'text-white/85 hover:text-[#83D0C6]'
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
             <button
               id="nav-cta-contact-btn"
               onClick={(e) => scrollToSection(e, 'contacto')}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-wider font-semibold bg-[#83D0C6] text-white hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-wider font-semibold bg-[var(--mint-solid)] text-white hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>Agendar Cita</span>
@@ -136,7 +136,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`p-2 rounded-xl transition-colors ${
                 isScrolled
-                  ? 'text-[#3D4C5A] hover:bg-[#F0F2F4]'
+                  ? 'text-[color:var(--ink)] hover:bg-[var(--surface-soft)]'
                   : 'text-white hover:bg-white/10'
               }`}
               aria-label="Abrir menú"
@@ -151,7 +151,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
       {mobileMenuOpen && (
         <div
           id="mobile-drawer"
-          className="md:hidden bg-[#FFFFFF] border-b border-[#D1D3E8] px-4 pt-3 pb-6 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200"
+          className="md:hidden bg-[var(--surface)] border-b border-[#D1D3E8] px-4 pt-3 pb-6 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <div className="flex flex-col gap-1">
             {navLinks.map((link) => {
@@ -164,8 +164,8 @@ export default function Navbar({ onNavigate }: NavbarProps) {
                   onClick={(e) => scrollToSection(e, link.id)}
                   className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                     isActive
-                      ? 'bg-[#83D0C6]/20 text-[#3D4C5A] font-semibold'
-                      : 'text-[#3D4C5A]/80 hover:bg-[#F7F7F5]'
+                      ? 'bg-[#83D0C6]/20 text-[color:var(--ink)] font-semibold'
+                      : 'text-[color:var(--ink)]/80 hover:bg-[var(--page)]'
                   }`}
                 >
                   {link.label}
@@ -176,7 +176,7 @@ export default function Navbar({ onNavigate }: NavbarProps) {
               <button
                 id="mobile-drawer-cta-btn"
                 onClick={(e) => scrollToSection(e, 'contacto')}
-                className="w-full text-center py-3 rounded-xl text-base font-semibold bg-[#83D0C6] text-[#3D4C5A] shadow-md hover:bg-[#72c2b8]"
+                className="w-full text-center py-3 rounded-xl text-base font-semibold bg-[var(--mint-solid)] text-[color:var(--ink)] shadow-md hover:bg-[#72c2b8]"
               >
                 Agendar Consulta
               </button>

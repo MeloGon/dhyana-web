@@ -9,8 +9,8 @@ interface Props {
   onSubmit: () => void;
 }
 
-const inputClass = 'mt-2 w-full rounded-xl border border-[#3D4C5A]/25 bg-white px-4 py-3 text-base';
-const sectionClass = 'space-y-5 rounded-3xl border border-[#3D4C5A]/10 bg-white p-6 sm:p-8';
+const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--surface)] px-4 py-3 text-base';
+const sectionClass = 'space-y-5 rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-6 sm:p-8';
 
 export function ContactSettingsForm({ form, isSaving, onChange, onSubmit }: Props) {
   return (
@@ -33,7 +33,7 @@ export function ContactSettingsForm({ form, isSaving, onChange, onSubmit }: Prop
           <label className="block text-sm font-medium">Teléfono de contacto
             <input type="tel" required maxLength={40} value={form.phone} onChange={(event) => onChange({ ...form, phone: event.target.value })} className={inputClass} aria-describedby="contact-phone-help" />
           </label>
-          <p id="contact-phone-help" className="text-xs text-[#3D4C5A]/75">Incluye + y código de país. Puedes usar espacios: +51 999 999 999.</p>
+          <p id="contact-phone-help" className="text-xs text-[color:var(--ink)]/75">Incluye + y código de país. Puedes usar espacios: +51 999 999 999.</p>
           <label className="block text-sm font-medium">Nota del teléfono (opcional)
             <input maxLength={300} value={form.phoneNote} onChange={(event) => onChange({ ...form, phoneNote: event.target.value })} className={inputClass} />
           </label>
@@ -55,14 +55,14 @@ export function ContactSettingsForm({ form, isSaving, onChange, onSubmit }: Prop
           <label className="block text-sm font-medium">Número de WhatsApp
             <input type="tel" required maxLength={16} value={form.whatsappPhone} onChange={(event) => onChange({ ...form, whatsappPhone: event.target.value })} className={inputClass} aria-describedby="contact-whatsapp-help" />
           </label>
-          <p id="contact-whatsapp-help" className="text-xs text-[#3D4C5A]/75">Código de país y número sin espacios: 51999999999. Puede ser distinto del teléfono de contacto.</p>
+          <p id="contact-whatsapp-help" className="text-xs text-[color:var(--ink)]/75">Código de país y número sin espacios: 51999999999. Puede ser distinto del teléfono de contacto.</p>
           <label className="block text-sm font-medium">Texto del botón
             <input required maxLength={120} value={form.whatsappLabel} onChange={(event) => onChange({ ...form, whatsappLabel: event.target.value })} className={inputClass} />
           </label>
           <label className="block text-sm font-medium">Mensaje inicial (opcional)
             <textarea maxLength={1000} rows={3} value={form.whatsappMessage} onChange={(event) => onChange({ ...form, whatsappMessage: event.target.value })} className={inputClass} />
           </label>
-          <p className="text-xs text-[#3D4C5A]/75">El mensaje se prepara al abrir WhatsApp; el visitante decide si lo envía.</p>
+          <p className="text-xs text-[color:var(--ink)]/75">El mensaje se prepara al abrir WhatsApp; el visitante decide si lo envía.</p>
         </section>
         <button type="submit" className="rounded-xl bg-[#3D4C5A] px-6 py-3 font-medium text-white">{isSaving ? 'Guardando…' : 'Guardar datos de la consulta'}</button>
       </fieldset>

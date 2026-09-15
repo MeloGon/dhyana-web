@@ -41,7 +41,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F7F5] text-[#3D4C5A]">
+    <div className="min-h-screen flex flex-col bg-[var(--page)] text-[color:var(--ink)]">
       <Navbar onNavigate={scrollTo} />
 
       <main className="flex-grow">
@@ -53,7 +53,7 @@ export default function HomePage() {
         )}
         {aboutModel.errorMessage && (
           <div className="py-10 text-center">
-            <p className="text-sm text-[#3D4C5A]/75">{aboutModel.errorMessage}</p>
+            <p className="text-sm text-[color:var(--ink)]/75">{aboutModel.errorMessage}</p>
             <button
               onClick={aboutModel.handleRetry}
               className="mt-3 text-sm font-medium underline underline-offset-4 cursor-pointer"

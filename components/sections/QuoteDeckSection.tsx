@@ -13,21 +13,21 @@ const variantStyles: Record<
   { cardBg: string; borderColor: string; iconColor: string; badgeBg: string }
 > = {
   mint: {
-    cardBg: 'bg-[#F9FCFB]',
+    cardBg: 'bg-[var(--surface-mint)]',
     borderColor: 'border-[#83D0C6]/30',
     iconColor: 'text-[#83D0C6]',
     badgeBg: 'bg-[#83D0C6]/15',
   },
   sky: {
-    cardBg: 'bg-[#F8FAFD]',
+    cardBg: 'bg-[var(--surface-sky)]',
     borderColor: 'border-[#84B0DF]/30',
     iconColor: 'text-[#84B0DF]',
     badgeBg: 'bg-[#84B0DF]/15',
   },
   lavender: {
-    cardBg: 'bg-[#FAF9FC]',
+    cardBg: 'bg-[var(--surface-lavender)]',
     borderColor: 'border-[#D1D3E8]/50',
-    iconColor: 'text-[#7D82B8]',
+    iconColor: 'text-[color:var(--lavender-ink)]',
     badgeBg: 'bg-[#D1D3E8]/30',
   },
 };
@@ -87,10 +87,10 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
     <section id="citas" className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto scroll-mt-20">
       {/* Cabecera de la sección */}
       <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[#3D4C5A] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <span>Reflexiones & Bienestar</span>
         </div>
-        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[#3D4C5A] font-bold tracking-tight">
+        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight">
           Palabras para acompañar tu proceso
         </h2>
       </div>
@@ -148,30 +148,30 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
                   ${transformClass} ${opacityClass} ${isFront ? 'cursor-pointer' : 'pointer-events-none'}`}
               >
                 {/* Destellos decorativos ambientales */}
-                <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-white/60 blur-2xl pointer-events-none" />
-                <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-white/70 blur-2xl pointer-events-none" />
+                <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-[var(--surface)]/60 blur-2xl pointer-events-none" />
+                <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-[var(--surface)]/70 blur-2xl pointer-events-none" />
 
                 {/* Si es la carta frontal, renderizamos el contenido completo con padding amplio */}
                 {isFront ? (
                   <div className="relative z-10 h-full flex flex-col justify-between p-8 sm:p-12 md:p-14 text-center">
                     {/* Icono circular de comillas centrado con aire */}
-                    <div className="mx-auto w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-xs text-[#3D4C5A] mb-4">
+                    <div className="mx-auto w-14 h-14 rounded-full bg-[var(--surface)] flex items-center justify-center shadow-xs text-[color:var(--ink)] mb-4">
                       <Quote className={`w-6 h-6 ${styles.iconColor}`} />
                     </div>
 
                     {/* Cita en tipografía Playfair destacada y centrada */}
-                    <blockquote className="font-serif italic text-2xl sm:text-3xl md:text-4xl text-[#3D4C5A] font-medium leading-relaxed tracking-tight my-auto px-4 sm:px-8 max-w-3xl mx-auto">
+                    <blockquote className="font-serif italic text-2xl sm:text-3xl md:text-4xl text-[color:var(--ink)] font-medium leading-relaxed tracking-tight my-auto px-4 sm:px-8 max-w-3xl mx-auto">
                       &ldquo;{activeQuote.quote}&rdquo;
                     </blockquote>
 
                     {/* Bloque inferior: Autor y Nota manuscrita con respiro visual */}
-                    <div className="mt-6 pt-6 border-t border-[#3D4C5A]/10">
+                    <div className="mt-6 pt-6 border-t border-[color:var(--ink)]/10">
                       <div className="flex flex-col items-center justify-center">
-                        <span className="font-sans font-semibold text-base sm:text-lg text-[#3D4C5A]">
+                        <span className="font-sans font-semibold text-base sm:text-lg text-[color:var(--ink)]">
                           {activeQuote.author}
                         </span>
                         {activeQuote.role && (
-                          <span className="text-xs sm:text-sm text-[#3D4C5A]/70 font-sans mt-0.5 max-w-md">
+                          <span className="text-xs sm:text-sm text-[color:var(--ink)]/70 font-sans mt-0.5 max-w-md">
                             {activeQuote.role}
                           </span>
                         )}
@@ -180,7 +180,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
                       {activeQuote.accentNote && (
                         <div className="mt-5 flex items-center justify-center gap-2">
                           <Sparkles className="w-4 h-4 text-[#83D0C6]" />
-                          <span className="font-handwriting text-2xl sm:text-3xl text-[#3D4C5A] font-semibold">
+                          <span className="font-handwriting text-2xl sm:text-3xl text-[color:var(--ink)] font-semibold">
                             ~ {activeQuote.accentNote} ~
                           </span>
                         </div>
@@ -190,7 +190,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
                 ) : (
                   /* Las cartas de fondo NO muestran texto para no confundir ni saturar la vista */
                   <div className="h-full w-full flex items-start justify-center pt-8 opacity-40">
-                    <div className="w-12 h-12 rounded-full bg-white/70 flex items-center justify-center shadow-xs">
+                    <div className="w-12 h-12 rounded-full bg-[var(--surface)]/70 flex items-center justify-center shadow-xs">
                       <Quote className={`w-5 h-5 ${styles.iconColor}`} />
                     </div>
                   </div>
@@ -205,7 +205,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
           <button
             onClick={prevCard}
             disabled={total <= 1 || isAnimating}
-            className="w-10 h-10 rounded-full border border-[#3D4C5A]/15 bg-white text-[#3D4C5A] flex items-center justify-center shadow-xs hover:border-[#83D0C6] hover:text-[#467E76] disabled:opacity-40 transition-all cursor-pointer"
+            className="w-10 h-10 rounded-full border border-[color:var(--ink)]/15 bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shadow-xs hover:border-[#83D0C6] hover:text-[color:var(--positive)] disabled:opacity-40 transition-all cursor-pointer"
             aria-label="Carta anterior"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -213,7 +213,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
 
           {/* Contador de cartas y barra de puntos interactiva */}
           <div className="flex flex-col items-center gap-1.5">
-            <span className="text-xs font-sans font-semibold uppercase tracking-widest text-[#3D4C5A]/70">
+            <span className="text-xs font-sans font-semibold uppercase tracking-widest text-[color:var(--ink)]/70">
               {currentIndex + 1} de {total}
             </span>
             <div className="flex items-center gap-1.5">
@@ -230,7 +230,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
                   }}
                   aria-label={`Ver carta ${idx + 1}`}
                   className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                    idx === currentIndex ? 'w-6 bg-[#83D0C6]' : 'w-2 bg-[#3D4C5A]/20 hover:bg-[#3D4C5A]/40'
+                    idx === currentIndex ? 'w-6 bg-[var(--mint-solid)]' : 'w-2 bg-[#3D4C5A]/20 hover:bg-[#3D4C5A]/40'
                   }`}
                 />
               ))}
@@ -240,7 +240,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPaused((prev) => !prev)}
-              className="w-8 h-8 rounded-full border border-[#3D4C5A]/15 bg-white text-[#3D4C5A]/60 flex items-center justify-center hover:text-[#3D4C5A] transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full border border-[color:var(--ink)]/15 bg-[var(--surface)] text-[color:var(--ink)]/60 flex items-center justify-center hover:text-[color:var(--ink)] transition-all cursor-pointer"
               title={isPaused ? 'Reanudar rotación automática' : 'Pausar rotación automática'}
               aria-label={isPaused ? 'Reanudar rotación' : 'Pausar rotación'}
             >
@@ -249,7 +249,7 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
             <button
               onClick={nextCard}
               disabled={total <= 1 || isAnimating}
-              className="w-10 h-10 rounded-full border border-[#3D4C5A]/15 bg-white text-[#3D4C5A] flex items-center justify-center shadow-xs hover:border-[#83D0C6] hover:text-[#467E76] disabled:opacity-40 transition-all cursor-pointer"
+              className="w-10 h-10 rounded-full border border-[color:var(--ink)]/15 bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shadow-xs hover:border-[#83D0C6] hover:text-[color:var(--positive)] disabled:opacity-40 transition-all cursor-pointer"
               aria-label="Siguiente carta"
             >
               <ChevronRight className="w-5 h-5" />

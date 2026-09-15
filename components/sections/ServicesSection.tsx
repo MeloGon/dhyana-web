@@ -16,14 +16,14 @@ export default function ServicesSection({ onSelectService }: ServicesSectionProp
     <section id="servicios" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#84B0DF]/20 text-[#3D4C5A] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#84B0DF]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <Sparkles className="w-3.5 h-3.5 text-[#84B0DF]" />
           <span>Servicios Terapéuticos</span>
         </div>
-        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#3D4C5A] font-bold tracking-tight mb-4">
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
           Cuidado Psicológico para Cada Momento de tu Vida
         </h2>
-        <p className="font-sans text-base sm:text-lg text-[#3D4C5A]/80 font-normal leading-relaxed">
+        <p className="font-sans text-base sm:text-lg text-[color:var(--ink)]/80 font-normal leading-relaxed">
           Cada espacio terapéutico está diseñado para brindarte comprensión, herramientas clínicas rigurosas y un acompañamiento cálido hacia tu estabilidad emocional.
         </p>
       </div>
@@ -50,22 +50,22 @@ export default function ServicesSection({ onSelectService }: ServicesSectionProp
                 </div>
 
                 {/* Title and description */}
-                <h3 className="font-serif text-2xl font-bold text-[#3D4C5A] mb-3">
+                <h3 className="font-serif text-2xl font-bold text-[color:var(--ink)] mb-3">
                   {svc.title}
                 </h3>
-                <p className="text-[#3D4C5A]/80 text-sm sm:text-base leading-relaxed mb-6 font-sans">
+                <p className="text-[color:var(--ink)]/80 text-sm sm:text-base leading-relaxed mb-6 font-sans">
                   {svc.description}
                 </p>
 
                 {/* Benefits checklist */}
                 <div className="space-y-2.5 mb-6 pt-4 border-t border-[#D1D3E8]/40">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#3D4C5A]/60 block mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink)]/60 block mb-2">
                     Enfoque y Beneficios
                   </span>
                   {svc.benefits.map((benefit, bIdx) => (
-                    <div key={bIdx} className="flex items-start gap-2.5 text-sm text-[#3D4C5A]/90">
+                    <div key={bIdx} className="flex items-start gap-2.5 text-sm text-[color:var(--ink)]/90">
                       <div className="w-4 h-4 rounded-full bg-[#83D0C6]/30 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check className="w-2.5 h-2.5 text-[#3D4C5A] stroke-[3]" />
+                        <Check className="w-2.5 h-2.5 text-[color:var(--ink)] stroke-[3]" />
                       </div>
                       <span>{benefit}</span>
                     </div>
@@ -75,7 +75,7 @@ export default function ServicesSection({ onSelectService }: ServicesSectionProp
 
               {/* Card Footer info and action */}
               <div className="pt-6 border-t border-[#D1D3E8]/40">
-                <div className="flex items-center justify-between text-xs text-[#3D4C5A]/70 mb-4">
+                <div className="flex items-center justify-between text-xs text-[color:var(--ink)]/70 mb-4">
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-[#83D0C6]" />
                     <span>{svc.duration}</span>
@@ -103,16 +103,16 @@ export default function ServicesSection({ onSelectService }: ServicesSectionProp
       {/* Clarification banner */}
       <div className="rounded-2xl bg-gradient-to-r from-[#B2C9DC]/30 to-[#D1D3E8]/30 p-6 sm:p-8 text-center border border-[#B2C9DC]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-left">
-          <h4 className="font-serif text-lg font-bold text-[#3D4C5A] mb-1">
+          <h4 className="font-serif text-lg font-bold text-[color:var(--ink)] mb-1">
             ¿Tienes dudas sobre qué tipo de acompañamiento necesitas?
           </h4>
-          <p className="text-sm text-[#3D4C5A]/80 font-sans">
+          <p className="text-sm text-[color:var(--ink)]/80 font-sans">
             Podemos realizar una primera sesión de valoración para determinar el plan terapéutico más adecuado para ti.
           </p>
         </div>
         <button
           onClick={() => onSelectService('Sesión de Valoración y Orientación')}
-          className="shrink-0 px-6 py-3 rounded-full text-sm font-semibold bg-[#83D0C6] text-[#3D4C5A] hover:bg-[#72c2b8] shadow-sm transition-all cursor-pointer"
+          className="shrink-0 px-6 py-3 rounded-full text-sm font-semibold bg-[var(--mint-solid)] text-[color:var(--ink)] hover:bg-[#72c2b8] shadow-sm transition-all cursor-pointer"
         >
           Pedir Sesión de Valoración
         </button>

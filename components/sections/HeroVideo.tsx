@@ -120,7 +120,7 @@ export default function HeroVideo({ onScrollTo }: HeroVideoProps) {
           <button
             id="hero-cta-contacto"
             onClick={() => onScrollTo('contacto')}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-sans font-semibold text-sm uppercase tracking-wider bg-[#83D0C6] text-white hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-sans font-semibold text-sm uppercase tracking-wider bg-[var(--mint-solid)] text-white hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
           >
             <span>Agendar Cita</span>
             <ArrowRight className="w-4 h-4" />
@@ -188,7 +188,7 @@ export default function HeroVideo({ onScrollTo }: HeroVideoProps) {
               onClick={() => handleVideoSelect(idx)}
               className={`px-2.5 py-1 text-xs rounded-full transition-all ${
                 currentVideoIdx === idx
-                  ? 'bg-[#83D0C6] text-[#3D4C5A] font-semibold'
+                  ? 'bg-[var(--mint-solid)] text-[color:var(--ink)] font-semibold'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
               title={vid.name}

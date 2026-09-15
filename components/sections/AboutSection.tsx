@@ -10,10 +10,10 @@ import type { AboutSettings } from '@/lib/types/about-settings';
 // y elegir uno desde un formulario web no aporta valor suficiente por ahora.
 const PILLAR_ICONS = [HeartHandshake, Brain, Sparkles, ShieldCheck];
 const PILLAR_STYLES = [
-  { accentBg: 'bg-[#83D0C6]/20', iconColor: 'text-[#3D4C5A]' },
-  { accentBg: 'bg-[#84B0DF]/20', iconColor: 'text-[#3D4C5A]' },
-  { accentBg: 'bg-[#D1D3E8]/40', iconColor: 'text-[#3D4C5A]' },
-  { accentBg: 'bg-[#B2C9DC]/30', iconColor: 'text-[#3D4C5A]' },
+  { accentBg: 'bg-[#83D0C6]/20', iconColor: 'text-[color:var(--ink)]' },
+  { accentBg: 'bg-[#84B0DF]/20', iconColor: 'text-[color:var(--ink)]' },
+  { accentBg: 'bg-[#D1D3E8]/40', iconColor: 'text-[color:var(--ink)]' },
+  { accentBg: 'bg-[#B2C9DC]/30', iconColor: 'text-[color:var(--ink)]' },
 ];
 
 interface AboutSectionProps {
@@ -37,13 +37,13 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
     <section id="sobre-nosotros" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[#3D4C5A] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <span>{settings.badge}</span>
         </div>
-        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[#3D4C5A] font-bold tracking-tight mb-4">
+        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
           {settings.heading}
         </h2>
-        <p className="font-sans text-base sm:text-lg text-[#3D4C5A]/80 font-normal leading-relaxed">
+        <p className="font-sans text-base sm:text-lg text-[color:var(--ink)]/80 font-normal leading-relaxed">
           {settings.introduction}
         </p>
       </div>
@@ -52,7 +52,7 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center mb-16">
         {/* Left Side: Profile Presentation Card */}
         <div className="lg:col-span-5">
-          <div className="relative rounded-[24px] bg-[#F7F7F5] p-6 sm:p-8 border border-[#3D4C5A]/10 shadow-sm">
+          <div className="relative rounded-[24px] bg-[var(--page)] p-6 sm:p-8 border border-[color:var(--ink)]/10 shadow-sm">
             {/* Visual Portrait Container */}
             <div className="relative w-full aspect-4/3 rounded-2xl overflow-hidden mb-6 bg-[#3D4C5A]/10 shadow-sm flex items-center justify-center">
               <Image
@@ -72,29 +72,29 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
 
             {/* Credential Badges */}
             <div className="space-y-2.5">
-              <div className="flex items-center gap-3 text-sm text-[#3D4C5A]">
+              <div className="flex items-center gap-3 text-sm text-[color:var(--ink)]">
                 <div className="w-7 h-7 rounded-full bg-[#83D0C6]/30 flex items-center justify-center shrink-0">
-                  <Award className="w-4 h-4 text-[#3D4C5A]" />
+                  <Award className="w-4 h-4 text-[color:var(--ink)]" />
                 </div>
                 <span>{settings.credential1}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-[#3D4C5A]">
+              <div className="flex items-center gap-3 text-sm text-[color:var(--ink)]">
                 <div className="w-7 h-7 rounded-full bg-[#84B0DF]/30 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-[#3D4C5A]" />
+                  <CheckCircle2 className="w-4 h-4 text-[color:var(--ink)]" />
                 </div>
                 <span>{settings.credential2}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-[#3D4C5A]">
-                <div className="w-7 h-7 rounded-full bg-[#D1D3E8] flex items-center justify-center shrink-0">
-                  <Smile className="w-4 h-4 text-[#3D4C5A]" />
+              <div className="flex items-center gap-3 text-sm text-[color:var(--ink)]">
+                <div className="w-7 h-7 rounded-full bg-[var(--lavender-solid)] flex items-center justify-center shrink-0">
+                  <Smile className="w-4 h-4 text-[color:var(--ink)]" />
                 </div>
                 <span>{settings.credential3}</span>
               </div>
             </div>
 
             {/* Handwritten note */}
-            <div className="mt-6 pt-5 border-t border-[#3D4C5A]/10 text-center">
-              <span className="font-handwriting text-2xl text-[#3D4C5A] font-semibold">
+            <div className="mt-6 pt-5 border-t border-[color:var(--ink)]/10 text-center">
+              <span className="font-handwriting text-2xl text-[color:var(--ink)] font-semibold">
                 &ldquo;{settings.quote}&rdquo;
               </span>
             </div>
@@ -103,8 +103,8 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
 
         {/* Right Side: Pillars & Philosophy */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="prose text-[#3D4C5A]/90">
-            <h3 className="font-serif italic text-2xl sm:text-3xl text-[#3D4C5A] font-bold mb-3">
+          <div className="prose text-[color:var(--ink)]/90">
+            <h3 className="font-serif italic text-2xl sm:text-3xl text-[color:var(--ink)] font-bold mb-3">
               {settings.approachTitle}
             </h3>
             <p className="text-base leading-relaxed mb-4">
@@ -123,15 +123,15 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
               return (
                 <div
                   key={idx}
-                  className="p-5 rounded-2xl bg-white border border-[#3D4C5A]/10 shadow-xs hover:border-[#83D0C6] transition-all duration-200"
+                  className="p-5 rounded-2xl bg-[var(--surface)] border border-[color:var(--ink)]/10 shadow-xs hover:border-[#83D0C6] transition-all duration-200"
                 >
                   <div className={`w-11 h-11 rounded-full ${style.accentBg} flex items-center justify-center mb-3.5`}>
                     <Icon className={`w-5 h-5 ${style.iconColor} stroke-[1.75]`} />
                   </div>
-                  <h4 className="font-sans font-semibold text-base text-[#3D4C5A] mb-1.5">
+                  <h4 className="font-sans font-semibold text-base text-[color:var(--ink)] mb-1.5">
                     {pillar.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-[#3D4C5A]/75 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[color:var(--ink)]/75 leading-relaxed">
                     {pillar.description}
                   </p>
                 </div>
@@ -150,7 +150,7 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
             </button>
             <button
               onClick={() => onScrollTo('servicios')}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-xs uppercase tracking-wider font-semibold text-[#3D4C5A] border border-[#3D4C5A]/20 hover:bg-white hover:shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-xs uppercase tracking-wider font-semibold text-[color:var(--ink)] border border-[color:var(--ink)]/20 hover:bg-[var(--surface)] hover:shadow-xs transition-all cursor-pointer"
             >
               <span>Ver áreas de consulta</span>
             </button>

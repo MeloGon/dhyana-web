@@ -8,12 +8,12 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
   onRemove: (key: string) => void;
 }) {
   const prefix = `group-${index}`;
-  const inputClass = 'mt-2 w-full rounded-xl border border-[#3D4C5A]/25 bg-white px-4 py-3 text-base focus:outline-2 focus:outline-[#467E76]';
+  const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--surface)] px-4 py-3 text-base focus:outline-2 focus:outline-[#467E76]';
   return (
-    <section aria-labelledby={`${prefix}-heading`} className="rounded-2xl border border-[#3D4C5A]/15 bg-[#F7F7F5]/60 p-5">
+    <section aria-labelledby={`${prefix}-heading`} className="rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)]/60 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3 id={`${prefix}-heading`} className="font-semibold">Horario {index + 1}</h3>
-        <button type="button" onClick={() => onRemove(group.key)} aria-label={`Quitar horario ${index + 1}`} className="text-sm text-[#9B3024] underline underline-offset-4">Quitar</button>
+        <button type="button" onClick={() => onRemove(group.key)} aria-label={`Quitar horario ${index + 1}`} className="text-sm text-[color:var(--danger)] underline underline-offset-4">Quitar</button>
       </div>
       <div className="mt-4 space-y-4">
         <div><label htmlFor={`${prefix}-schedule`} className="text-sm">Horario del grupo</label>

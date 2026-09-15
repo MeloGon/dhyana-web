@@ -1,10 +1,26 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Paleta de colores y fuentes del sitio. Ver GUIA-NEXTJS.md para cómo funcionan
    las fuentes (--font-playfair, --font-montserrat, --font-caveat) — se inyectan
    desde app/layout.tsx usando next/font. */
 @layer base {
   :root {
+    color-scheme: light;
+    --ink: #3D4C5A;
+    --page: #F7F7F5;
+    --surface: #FFFFFF;
+    --surface-soft: #F0F2F4;
+    --surface-mint: #F9FCFB;
+    --surface-sky: #F8FAFD;
+    --surface-lavender: #FAF9FC;
+    --mint-solid: #83D0C6;
+    --sky-solid: #84B0DF;
+    --lavender-solid: #D1D3E8;
+    --blue-solid: #B2C9DC;
+    --positive: #467E76;
+    --danger: #9B3024;
+    --lavender-ink: #7D82B8;
     --primary: #3D4C5A;
     --secondary: #83D0C6;
     --accent: #84B0DF;
@@ -13,9 +29,35 @@
     --bg-main: #F7F7F5;
   }
 
+  :root.dark {
+    color-scheme: dark;
+    --ink: #E2EBF1;
+    --page: #111C24;
+    --surface: #1D2C37;
+    --surface-soft: #263844;
+    --surface-mint: #1C302F;
+    --surface-sky: #1D2D3D;
+    --surface-lavender: #2C293D;
+    --mint-solid: #295C54;
+    --sky-solid: #365D86;
+    --lavender-solid: #474461;
+    --blue-solid: #354E66;
+    --positive: #9CE3D6;
+    --danger: #FFA99C;
+    --lavender-ink: #BCBFF1;
+    --bg-main: #111C24;
+  }
+
   html {
     scroll-behavior: smooth;
     font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+  }
+
+  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid #84B0DF; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 }
 

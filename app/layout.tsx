@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Playfair_Display, Montserrat, Caveat } from 'next/font/google';
 import './globals.css';
 
@@ -50,9 +51,11 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${playfair.variable} ${montserrat.variable} ${caveat.variable} scroll-smooth`}
     >
-      <body className="bg-[#F7F7F5] text-[#3D4C5A] font-sans antialiased selection:bg-[#83D0C6]/30 selection:text-[#3D4C5A]" suppressHydrationWarning>
+      <body className="bg-[var(--page)] text-[color:var(--ink)] font-sans antialiased selection:bg-[#83D0C6]/30 selection:text-[color:var(--ink)]" suppressHydrationWarning>
+        <Script id="dhyana-theme" strategy="beforeInteractive">{`(function(){var theme;try{theme=localStorage.getItem('dhyana-theme')}catch(e){}document.documentElement.classList.toggle('dark',theme==='dark'||(theme!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches));})();`}</Script>
         {children}
       </body>
     </html>

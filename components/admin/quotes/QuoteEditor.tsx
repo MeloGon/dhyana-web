@@ -11,7 +11,7 @@ interface Props {
   onSubmit: () => void;
 }
 
-const fieldClass = 'mt-2 w-full rounded-xl border border-[#3D4C5A]/25 bg-white px-4 py-3 text-base';
+const fieldClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--surface)] px-4 py-3 text-base';
 
 export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, onSubmit }: Props) {
   return (
@@ -20,7 +20,7 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
         event.preventDefault();
         onSubmit();
       }}
-      className="rounded-3xl border border-[#3D4C5A]/10 bg-white p-6 sm:p-8"
+      className="rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-6 sm:p-8"
     >
       <h2 className="font-serif text-2xl">{isEditing ? 'Editar reflexión' : 'Nueva reflexión'}</h2>
       <fieldset disabled={isSaving || isDisabled} className="mt-6 space-y-5 disabled:opacity-60">
@@ -85,7 +85,7 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
             placeholder="Respira, cada momento es una oportunidad para empezar de nuevo"
           />
         </label>
-        <p className="text-xs text-[#3D4C5A]/75">
+        <p className="text-xs text-[color:var(--ink)]/75">
           Esta frase aparece en letra cursiva estilizada al pie de la tarjeta.
         </p>
 
@@ -102,7 +102,7 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
             className={fieldClass}
             aria-describedby="quote-order-help"
           />
-          <span id="quote-order-help" className="mt-2 block text-xs font-normal text-[#3D4C5A]/75">
+          <span id="quote-order-help" className="mt-2 block text-xs font-normal text-[color:var(--ink)]/75">
             Los números menores aparecen primero en el mazo de cartas.
           </span>
         </label>
@@ -116,7 +116,7 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
           />
           Publicar en el sitio
         </label>
-        <p className="text-xs text-[#3D4C5A]/75">
+        <p className="text-xs text-[color:var(--ink)]/75">
           Si desmarcas esta opción, la cita queda guardada como borrador sin mostrarse a los visitantes.
         </p>
 

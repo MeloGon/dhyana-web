@@ -26,14 +26,14 @@ export default function ContactSection({ preselectedService = 'Psicoterapia Indi
     <section id="contacto" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[#3D4C5A] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <Calendar className="w-3.5 h-3.5 text-[#83D0C6]" />
           <span>Contacto & Solicitud de Cita</span>
         </div>
-        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[#3D4C5A] font-bold tracking-tight mb-4">
+        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
           Comienza tu Proceso Terapéutico
         </h2>
-        <p className="font-sans text-base sm:text-lg text-[#3D4C5A]/80 font-normal leading-relaxed">
+        <p className="font-sans text-base sm:text-lg text-[color:var(--ink)]/80 font-normal leading-relaxed">
           Dar el primer paso suele ser el más difícil. Escríbeme y responderé en un plazo máximo de 24 horas laborables para coordinar nuestra primera sesión.
         </p>
       </div>
@@ -47,7 +47,7 @@ export default function ContactSection({ preselectedService = 'Psicoterapia Indi
 
         {/* Right Side: Interactive Contact Form */}
         <div className="lg:col-span-7">
-          <div className="rounded-[24px] p-6 sm:p-10 bg-white border border-[#3D4C5A]/10 shadow-sm h-full flex flex-col justify-between">
+          <div className="rounded-[24px] p-6 sm:p-10 bg-[var(--surface)] border border-[color:var(--ink)]/10 shadow-sm h-full flex flex-col justify-between">
             <ContactForm
               formData={contactForm.formData}
               setFormData={contactForm.setFormData}

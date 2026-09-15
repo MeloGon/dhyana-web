@@ -42,7 +42,7 @@ export default function Footer({ onScrollTo }: FooterProps) {
           {/* Col 1: Brand & Credentials */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#83D0C6] text-[#3D4C5A] flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-full bg-[var(--mint-solid)] text-[color:var(--ink)] flex items-center justify-center font-bold">
                 <HeartHandshake className="w-5 h-5" />
               </div>
               <div>
@@ -160,7 +160,7 @@ export default function Footer({ onScrollTo }: FooterProps) {
             </span>
             <button
               onClick={scrollToTop}
-              className="p-2 rounded-full bg-white/10 hover:bg-[#83D0C6] hover:text-[#3D4C5A] text-white transition-all cursor-pointer"
+              className="p-2 rounded-full bg-white/10 hover:bg-[var(--mint-solid)] hover:text-[color:var(--ink)] text-white transition-all cursor-pointer"
               title="Volver al inicio"
               aria-label="Volver al inicio"
             >

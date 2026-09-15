@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function AdminQuotesError({ reset }: { reset: () => void }) {
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-5 py-10 sm:px-8">
-      <Link href="/admin" className="text-sm text-[#467E76] underline underline-offset-4">
+      <Link href="/admin" className="text-sm text-[color:var(--positive)] underline underline-offset-4">
         Volver al panel
       </Link>
       <h1 className="mt-3 font-serif text-3xl">Citas y reflexiones</h1>
