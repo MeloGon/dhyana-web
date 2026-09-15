@@ -360,6 +360,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          content: Json
+          id: boolean
+          services: Json
+        }
+        Insert: {
+          content: Json
+          id?: boolean
+          services: Json
+        }
+        Update: {
+          content?: Json
+          id?: boolean
+          services?: Json
+        }
+        Relationships: []
+      }
       workshop_groups: {
         Row: {
           capacity: number

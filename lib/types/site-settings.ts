@@ -1,0 +1,28 @@
+import type { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS } from '@/lib/data/site-fields';
+
+export type SiteTextKey = keyof typeof SITE_TEXT_FIELDS;
+export type SiteVisibilityKey = keyof typeof SITE_VISIBILITY_FIELDS;
+export interface SiteSettings {
+  texts: Record<SiteTextKey, string>;
+  visibility: Record<SiteVisibilityKey, boolean>;
+  logoPath: string;
+  videoPath: string;
+}
+export interface SiteService {
+  id: string;
+  title: string;
+  description: string;
+  benefits: string[];
+  duration: string;
+  modality: string;
+  badge: string;
+  icon: 'user' | 'users' | 'wind' | 'compass';
+  isPublished: boolean;
+}
+export interface SiteContent {
+  settings: SiteSettings;
+  services: SiteService[];
+  logoUrl: string;
+  videoUrl: string;
+}
+export interface UploadedSiteAsset { path: string; url: string }

@@ -14,6 +14,8 @@ before(async () => {
     create role anon;
     create role authenticated;
     create role service_role bypassrls;
+    create schema storage;
+    create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
     create schema auth;
     create table auth.users (id uuid primary key);
     grant usage on schema public to anon, authenticated, service_role;
@@ -647,3 +649,37 @@ test('anular y eliminar: rechazan permisos, motivo vacío y pago pendiente', () 
     await db.exec('reset role');
   }
 }));
+
+test('sitio: carga inicial, límites y configuración única', async () => withRollback(async () => {
+  const { rows } = await db.query('select content, services from public.site_settings');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].services.length, 4);
+  assert.equal(rows[0].content.visibility.contactForm, false);
+  assert.equal(rows[0].content.visibility.contactInfo, false);
+  await expectSqlError('update public.site_settings set id = false', '23514');
+  await expectSqlError("update public.site_settings set content = '{}'::jsonb", '23514');
+  await expectSqlError("update public.site_settings set services = '{}'::jsonb", '23514');
+  await expectSqlError("update public.site_settings set services = (select jsonb_agg(i) from generate_series(1, 25) i)", '23514');
+}));
+
+test('sitio: RLS y permisos de servidor limitados a lectura y actualización', async () => withRollback(async () => {
+  assert.equal((await db.query("select relrowsecurity from pg_class where oid = 'public.site_settings'::regclass")).rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select * from public.site_settings', '42501');
+    await expectSqlError("update public.site_settings set services = '[]'::jsonb", '42501');
+    await db.exec('reset role');
+  }
+  await db.exec('set local role service_role');
+  await expectSqlError('delete from public.site_settings', '42501');
+  await expectSqlError('insert into public.site_settings select * from public.site_settings', '42501');
+  await db.exec("update public.site_settings set services = '[]'::jsonb where id = true");
+  assert.equal((await db.query('select services from public.site_settings')).rows[0].services.length, 0);
+}));
+
+test('archivos del sitio: bucket público con límite y formatos explícitos', async () => {
+  const { rows } = await db.query("select * from storage.buckets where id = 'site-media'");
+  assert.equal(rows[0].public, true);
+  assert.equal(Number(rows[0].file_size_limit), 52428800);
+  assert.deepEqual(rows[0].allowed_mime_types, ['video/mp4', 'video/webm', 'image/svg+xml']);
+});

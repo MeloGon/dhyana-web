@@ -19,11 +19,13 @@
     "test:faqs": "node --test tests/faqs/*.test.mjs",
     "test:contact": "node --test tests/contact/*.test.mjs",
     "test:about": "node --test tests/about/*.test.mjs",
-    "test:quotes": "node --test tests/quotes/*.test.mjs"
+    "test:quotes": "node --test tests/quotes/*.test.mjs",
+    "test:site": "node --test tests/site/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",
+    "@xmldom/xmldom": "0.9.12",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
