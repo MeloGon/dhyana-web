@@ -9,13 +9,14 @@ import type { PublicFaq } from '@/lib/types/faqs';
 // saberlo, así que vive acá y no en un hook aparte.
 // El contenido llega del servidor; este componente solo mantiene la apertura.
 interface Props {
+  title: string;
   faqs: PublicFaq[];
   isLoading: boolean;
   errorMessage: string;
   handleRetry: () => void;
 }
 
-export default function ContactFaqAccordion({ faqs, isLoading, errorMessage, handleRetry }: Props) {
+export default function ContactFaqAccordion({ title, faqs, isLoading, errorMessage, handleRetry }: Props) {
   // undefined abre la primera pregunta al cargar; null cierra todas.
   const [openFaq, setOpenFaq] = useState<string | null | undefined>(undefined);
 
@@ -23,9 +24,9 @@ export default function ContactFaqAccordion({ faqs, isLoading, errorMessage, han
 
   return (
     <div className="rounded-[24px] p-6 bg-[var(--surface)] border border-[color:var(--ink)]/10 shadow-sm">
-      <h4 className="font-serif italic text-lg font-bold text-[color:var(--ink)] mb-4 flex items-center gap-2">
+      <h4 className="font-serif text-lg font-bold text-[color:var(--ink)] mb-4 flex items-center gap-2">
         <HelpCircle className="w-4 h-4 text-[#84B0DF]" />
-        <span>Preguntas Frecuentes</span>
+        <span>{title}</span>
       </h4>
       {isLoading && <p role="status" className="text-sm text-[color:var(--ink)]/75">Cargando preguntas…</p>}
       {errorMessage && <div role="alert" className="text-sm text-[color:var(--ink)]/75">

@@ -60,7 +60,7 @@ function parseInput(body: Record<string, unknown>): QuoteInput {
   }
 
   return {
-    quote: text('quote', 'Cita o reflexión', 1000),
+    quote: text('quote', 'Opinión', 1000),
     author: text('author', 'Autor', 150),
     role: text('role', 'Rol o descripción del autor', 250, true),
     accentNote: text('accentNote', 'Nota manuscrita de acento', 300, true),

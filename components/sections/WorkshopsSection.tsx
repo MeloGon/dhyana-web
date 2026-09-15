@@ -1,19 +1,20 @@
 'use client';
 
+import type { SiteSettings } from '@/lib/types/site-settings';
 import { Users, User } from 'lucide-react';
 import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { PublicWorkshopCard } from '@/components/sections/workshops/PublicWorkshopCard';
 
-export default function WorkshopsSection() {
+export default function WorkshopsSection({ settings }: { settings: SiteSettings }) {
   const catalog = usePublicCatalog();
   return (
     <section id="talleres" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto mb-12 max-w-3xl text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#83D0C6]/20 px-4 py-1 text-xs font-semibold uppercase tracking-wider">
-          <Users className="h-4 w-4" aria-hidden="true" /><span>Talleres Dhyana</span>
+          <Users className="h-4 w-4" aria-hidden="true" /><span>{settings.texts.workshopsEyebrow}</span>
         </div>
-        <h2 className="mb-4 font-serif text-3xl font-bold italic sm:text-4xl md:text-5xl">Espacios de Crecimiento &amp; Talleres</h2>
-        <p className="text-base leading-relaxed text-[color:var(--ink)]/80 sm:text-lg">Herramientas para tu bienestar emocional, aprendizaje compartido y acompañamiento en grupo.</p>
+        <h2 className="mb-4 font-serif text-3xl font-bold sm:text-4xl md:text-5xl">{settings.texts.workshopsTitle}</h2>
+        <p className="text-base leading-relaxed text-[color:var(--ink)]/80 sm:text-lg">{settings.texts.workshopsSubtitle}</p>
       </div>
       {catalog.isLoading ? <p role="status" className="rounded-3xl bg-[var(--surface)] p-10 text-center">Cargando talleres…</p>
         : catalog.errorMessage ? <div role="alert" className="rounded-3xl bg-[var(--surface)] p-8 text-center">

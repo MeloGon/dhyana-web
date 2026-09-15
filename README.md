@@ -5,17 +5,17 @@ acceso mensual a talleres grupales en línea. La entrega se coordina personalmen
 por WhatsApp y Google Meet.
 
 Este archivo reúne objetivo, alcance, estado y próximos pasos. Las decisiones del
-responsable prevalecen sobre los borradores externos. Actualizado: 9 de septiembre
+responsable prevalecen sobre los borradores externos. Actualizado: 15 de septiembre
 de 2026.
 
 ## Estado actual
 
 - Landing de una página con navegación por scroll y diseño integrado desde Google
   AI Studio. El diseño se afinará al incorporar funcionalidades.
-- Presentación, servicios, talleres y contacto con contenido de prueba en el código.
+- Contenido editorial de prueba editable desde el panel: identidad, inicio, servicios, títulos, footer y visibilidad. Video y logo subibles. Tema claro/oscuro en web y administración.
 - Catálogo público conectado a Supabase, con talleres y horarios editables desde el panel.
 - Preguntas frecuentes conectadas a Supabase y editables desde el panel; carga inicial con los cuatro textos del diseño.
-- Citas y reflexiones conectadas a Supabase y editables desde `/admin/quotes`, visualizadas como un mazo interactivo de cartas apiladas en la landing (#citas).
+- Opiniones conectadas a Supabase y editables desde `/admin/quotes`, visualizadas como un mazo interactivo de cartas apiladas en la landing (#opiniones).
 - Tarjeta de datos de consulta configurable en el panel: dirección, teléfono, correo, horarios y botón de WhatsApp.
 - Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
 - Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
@@ -258,7 +258,7 @@ interno en el entorno de verificación; no se cambió la configuración del proy
 horarios principal/adicional y botón de WhatsApp (número, texto y mensaje inicial).
 Teléfono de contacto y WhatsApp pueden ser distintos. Las notas y el mensaje son
 opcionales. Guardar actualiza toda la tarjeta en la siguiente carga del sitio.
-El footer conserva sus textos de demo; esta configuración corresponde a la tarjeta.
+El footer usa esta misma dirección, teléfono, correo, WhatsApp y horarios. Su visibilidad se configura por separado en Diseño del sitio.
 
 Migración `20260910132359_editable_contact_settings.sql` aplicada con los valores
 originales del diseño. `contact_settings` admite una sola fila y el servidor solo
@@ -293,10 +293,10 @@ La barra de navegación (`Navbar.tsx`) y el ancla pública se actualizaron a `so
 y rechazo de orígenes no autorizados. Pruebas SQL en `commerce.test.mjs` cubren
 configuración única, permisos RLS, denegación a anon/authenticated y validación de campos.
 
-## Citas y reflexiones editables en mazo de cartas
+## Opiniones editables en mazo de cartas
 
 `/admin/quotes` permite crear, editar, reordenar (`order_index`), publicar u ocultar y
-eliminar reflexiones/citas de psicoterapia. La sección pública `#citas` (`QuoteDeckSection`)
+eliminar opiniones (con los mismos campos de las antiguas reflexiones). La sección pública `#opiniones` (`QuoteDeckSection`)
 presenta las citas como un mazo de cartas apiladas tridimensional interactivo ("card deck stack"):
 la carta superior muestra la reflexión completa con comillas decorativas, autor y rol;
 las cartas de fondo tienen rotaciones sutiles y traslación vertical creando profundidad
@@ -307,8 +307,7 @@ Características del mazo:
 - Pausa automática de la rotación al posar el cursor o interactuar (hover/pause).
 - Controles de navegación manual: botón "Anterior", botón "Siguiente" e indicadores de posición.
 - Animación fluida de deslizamiento y desvanecimiento al cambiar de carta.
-- Cero saltos visuales (CLS=0): `usePublicQuotes()` usa `INITIAL_QUOTES` con las citas
-  emblemáticas del centro durante SSR o fallas de red, y sincroniza inmediatamente con `/api/quotes`.
+- Carga, error con reintento y estado vacío reales: no se restauran opiniones ocultas o borradas mediante textos de muestra.
 
 Migración `20260910152352_editable_quotes.sql` aplicada en Supabase. La tabla `quotes`
 cuenta con RLS y permisos restringidos exclusivamente a `service_role`. La API pública
@@ -316,6 +315,58 @@ cuenta con RLS y permisos restringidos exclusivamente a `service_role`. La API p
 La API privada (`/api/admin/quotes`) exige `requireAdmin()` y validación estricta de `Origin`.
 Pruebas automáticas en `tests/quotes/quotes-http.test.mjs` (`npm run test:quotes`) y reglas
 de base de datos en `tests/database/commerce.test.mjs` (51 pruebas SQL).
+
+## Diseño, servicios y archivos editables
+
+`/admin/site` reúne identidad compartida entre navbar y footer, textos de inicio,
+cabeceras de servicios/talleres/opiniones/contacto, título de preguntas frecuentes,
+descripción, credenciales, frase y aviso del footer. Sobre nosotros y datos de consulta
+conservan sus editores. Los títulos visibles y el nombre del navbar dejan de usar cursiva.
+
+La visibilidad controla Inicio, Servicios, Talleres, Opiniones, Sobre nosotros y Contacto,
+así como formulario, tarjeta de consulta, preguntas, aviso y contacto del footer por separado.
+Ocultar una sección retira sus enlaces de navbar/footer. Formulario y tarjeta de consulta
+empiezan ocultos; las preguntas se mantienen. El formulario sigue siendo demostrativo,
+no envía mensajes, y el panel lo indica antes de reactivarlo.
+
+Orden: Inicio → Servicios → Talleres → Opiniones → Sobre nosotros → Contacto.
+El navbar ya no tiene botón para agendar. Inicio lleva a Talleres y pierde la fila de
+credenciales/modalidad/duración de video. Se retira la tarjeta de orientación de servicios
+y el texto «mes calendario» de las tarjetas de taller; la regla comercial mensual no cambia.
+
+`/admin/services` permite crear, editar, ordenar, publicar/ocultar y quitar servicios con
+confirmación y guardado conjunto. Incluye título, descripción, hasta ocho beneficios,
+duración, modalidad, etiqueta e icono de una lista cerrada. Carga inicial: cuatro tarjetas
+originales. Especialidades del footer y opciones del formulario usan servicios publicados.
+
+Archivos en `/admin/site`: logo SVG hasta 256 KB, cuadrado con viewBox; recomendado
+128 × 128, mostrado a 40 px. Exportar textos como trazados y sin CSS, scripts, enlaces
+ni imágenes incrustadas. Video MP4/WebM hasta 50 MB, recomendado 16:9 y 1920 × 1080
+comprimido para web. Se inicia silenciado y permite pausar/activar sonido. Sin archivo
+personalizado, conserva video de muestra y usa un icono de bienestar como logo.
+En la revisión del 15/09/2026, el proveedor del video demo respondió 403: se conserva
+su imagen de portada y se ocultan controles de reproducción. La carga, guardado y
+reproducción de un MP4 desde el panel sí quedaron verificados; falta subir el video real.
+
+Migración `20260915035909_editable_site.sql` aplicada y alineada con Supabase:
+`site_settings` singleton con columnas JSONB independientes para contenido y servicios,
+RLS y solo SELECT/UPDATE del servidor. Validación completa de campos antes de guardar.
+Bucket público `site-media`, limitado a formatos/tamaño; visitantes no pueden subir.
+Logo validado con `@xmldom/xmldom`, nunca incrustado como HTML. Video subido directamente
+por URL firmada después de autorizar al administrador; el guardado verifica que el
+archivo exista y que sus metadatos sean válidos. Subir deja un borrador hasta guardar.
+Reemplazar/quitar no borra archivos anteriores; mantenimiento desde Storage si hace falta.
+
+Tema claro/oscuro: botón en navbar y panel; sigue sistema inicialmente y recuerda selección
+en ese navegador. Colores de fondo, texto, tarjetas y formularios adaptados con variables CSS.
+`npm run test:site` cubre contratos, permisos HTTP, validación SVG, servicios y visibilidad.
+`test:db` incluye permisos, configuración única y límites del bucket. Compilación de
+producción verificada con Webpack; Turbopack continúa bloqueado por su puerto interno
+en este entorno. Lint correcto; 54 pruebas SQL, 6 de diseño, 2 de contacto, 2 de opiniones
+y 1 de catálogo aprobadas (otra de catálogo omitida por falta de fixture autenticado).
+Verificación en navegador: guardado y restauración de textos/servicios/visibilidad,
+logo SVG, video MP4, tema persistente y navegación móvil sin recortes. Los archivos
+de prueba se retiraron de Storage. Culqi y reservas temporales siguen pendientes.
 
 ## Ventas manuales y participantes
 

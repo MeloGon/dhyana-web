@@ -1,189 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Menu, X, Calendar } from 'lucide-react';
-import { useScrollTo } from '@/hooks/useScrollTo';
+import { useMemo, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
+import { visibleSiteLinks } from '@/lib/site-navigation';
+import { SiteLogo } from '@/components/layout/SiteLogo';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import type { SiteSettings } from '@/lib/types/site-settings';
 
-// Enlaces de la navbar. Fuera del componente a propósito: así el array no se
-// recrea en cada render y useScrollSpy no re-suscribe su listener.
-const NAV_LINKS = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'sobre-nosotros', label: 'Sobre Nosotros' },
-  { id: 'servicios', label: 'Servicios' },
-  { id: 'citas', label: 'Reflexiones' },
-  { id: 'talleres', label: 'Talleres' },
-  { id: 'contacto', label: 'Contacto' },
-];
-
-const SECTION_IDS = NAV_LINKS.map((link) => link.id);
-
-// Barra de navegación fija arriba de toda la página (sticky). Cambia de estilo
-// al hacer scroll y resalta la sección visible — esa lógica vive en
-// hooks/useScrollSpy.ts, acá solo se pinta el resultado.
 interface NavbarProps {
-  onNavigate?: (sectionId: string) => void;
+  settings: SiteSettings;
+  logoUrl: string;
+  onNavigate: (sectionId: string) => void;
 }
 
-export default function Navbar({ onNavigate }: NavbarProps) {
+export default function Navbar({ settings, logoUrl, onNavigate }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { activeSection, setActiveSection, isScrolled } = useScrollSpy(SECTION_IDS);
-  const scrollTo = useScrollTo();
-
-  const navLinks = NAV_LINKS;
-
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>, sectionId: string) => {
-    e.preventDefault();
-    setMobileMenuOpen(false);
-
-    if (onNavigate) {
-      onNavigate(sectionId);
-    } else {
-      scrollTo(sectionId);
-    }
-
-    setActiveSection(sectionId);
-  };
-
-  return (
-    <header
-      id="navbar-header"
-      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-[var(--surface)]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3 border-b border-[#D1D3E8]/40'
-          : 'bg-[#3D4C5A]/85 backdrop-blur-sm py-4 border-b border-white/10 text-white'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Brand Logo */}
-          <a
-            href="#inicio"
-            onClick={(e) => scrollToSection(e, 'inicio')}
-            className="flex items-center gap-2.5 group focus:outline-none"
-            id="nav-brand-link"
-          >
-            <div
-              className={`w-9 h-9 rounded-full border-2 border-[#83D0C6] flex items-center justify-center transition-all duration-300 ${
-                isScrolled
-                  ? 'bg-[#83D0C6]/15 text-[color:var(--ink)]'
-                  : 'bg-white/10 text-white backdrop-blur-xs'
-              }`}
-            >
-              <span className="text-xs font-bold font-sans">D</span>
-            </div>
-            <div className="flex flex-col">
-              <span
-                className={`font-serif italic font-bold text-base sm:text-lg tracking-tight transition-colors ${
-                  isScrolled ? 'text-[color:var(--ink)]' : 'text-white'
-                }`}
-              >
-                Centro de Desarrollo Integral Dhyana
-              </span>
-              <span
-                className={`text-[10px] sm:text-xs uppercase tracking-widest font-sans transition-colors ${
-                  isScrolled ? 'text-[color:var(--ink)]/70' : 'text-[#84B0DF]'
-                }`}
-              >
-                Psicología & Terapia Consciente
-              </span>
-            </div>
-          </a>
-
-          {/* Desktop Nav Items */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8" id="desktop-nav-menu">
-            {navLinks.map((link) => {
-              const isActive = activeSection === link.id;
-              return (
-                <a
-                  key={link.id}
-                  id={`nav-link-${link.id}`}
-                  href={`#${link.id}`}
-                  onClick={(e) => scrollToSection(e, link.id)}
-                  className={`text-xs uppercase tracking-wider font-medium transition-all duration-200 ${
-                    isActive
-                      ? isScrolled
-                        ? 'text-[color:var(--ink)] font-bold border-b-2 border-[#83D0C6] pb-0.5'
-                        : 'text-white font-bold border-b-2 border-[#83D0C6] pb-0.5'
-                      : isScrolled
-                      ? 'text-[color:var(--ink)]/80 hover:text-[#83D0C6]'
-                      : 'text-white/85 hover:text-[#83D0C6]'
-                  }`}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-          </nav>
-
-          {/* CTA Button and Phone Quick Access */}
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              id="nav-cta-contact-btn"
-              onClick={(e) => scrollToSection(e, 'contacto')}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs uppercase tracking-wider font-semibold bg-[var(--mint-solid)] text-white hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Agendar Cita</span>
-            </button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center gap-2">
-            <button
-              id="mobile-menu-toggle-btn"
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-xl transition-colors ${
-                isScrolled
-                  ? 'text-[color:var(--ink)] hover:bg-[var(--surface-soft)]'
-                  : 'text-white hover:bg-white/10'
-              }`}
-              aria-label="Abrir menú"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+  const links = useMemo(() => visibleSiteLinks(settings), [settings]);
+  const ids = useMemo(() => links.map((link) => link.id), [links]);
+  const { activeSection, setActiveSection } = useScrollSpy(ids);
+  const navigate = (id: string) => { setMobileMenuOpen(false); setActiveSection(id); onNavigate(id); };
+  return <header id="navbar-header" className="sticky top-0 z-50 border-b border-[#D1D3E8]/40 bg-[var(--surface)]/95 py-3 shadow-sm backdrop-blur-md">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between gap-4">
+        <a href={links[0] ? `#${links[0].id}` : '#'} onClick={(e) => { e.preventDefault(); if (links[0]) navigate(links[0].id); else window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex min-w-0 items-center gap-2.5" id="nav-brand-link">
+          <SiteLogo url={logoUrl} />
+          <span className="flex min-w-0 flex-col">
+            <span className="font-serif text-sm font-bold leading-tight tracking-tight sm:text-base">{settings.texts.brandTitle}</span>
+            <span className="mt-1 text-[9px] uppercase tracking-wider text-[color:var(--ink)]/70 sm:text-[10px]">{settings.texts.brandSubtitle}</span>
+          </span>
+        </a>
+        <nav aria-label="Navegación principal" className="hidden shrink-0 items-center gap-5 xl:flex" id="desktop-nav-menu">
+          {links.map((link) => <a key={link.id} href={`#${link.id}`} id={`nav-link-${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`border-b-2 py-2 text-xs font-medium uppercase tracking-wide transition-colors ${activeSection === link.id ? 'border-[#83D0C6]' : 'border-transparent hover:border-[#83D0C6]/50'}`}>{link.label}</a>)}
+        </nav>
+        <div className="flex shrink-0 items-center gap-1">
+          <ThemeToggle />
+          <button id="mobile-menu-toggle-btn" type="button" aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={mobileMenuOpen} aria-controls="mobile-drawer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="rounded-xl p-2 hover:bg-[#83D0C6]/15 xl:hidden">{mobileMenuOpen ? <X /> : <Menu />}</button>
         </div>
       </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div
-          id="mobile-drawer"
-          className="md:hidden bg-[var(--surface)] border-b border-[#D1D3E8] px-4 pt-3 pb-6 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200"
-        >
-          <div className="flex flex-col gap-1">
-            {navLinks.map((link) => {
-              const isActive = activeSection === link.id;
-              return (
-                <a
-                  key={link.id}
-                  id={`mobile-nav-link-${link.id}`}
-                  href={`#${link.id}`}
-                  onClick={(e) => scrollToSection(e, link.id)}
-                  className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                    isActive
-                      ? 'bg-[#83D0C6]/20 text-[color:var(--ink)] font-semibold'
-                      : 'text-[color:var(--ink)]/80 hover:bg-[var(--page)]'
-                  }`}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-            <div className="pt-3 mt-2 border-t border-[#D1D3E8]/50 flex flex-col gap-2">
-              <button
-                id="mobile-drawer-cta-btn"
-                onClick={(e) => scrollToSection(e, 'contacto')}
-                className="w-full text-center py-3 rounded-xl text-base font-semibold bg-[var(--mint-solid)] text-[color:var(--ink)] shadow-md hover:bg-[#72c2b8]"
-              >
-                Agendar Consulta
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </header>
-  );
+      {mobileMenuOpen && <nav id="mobile-drawer" aria-label="Navegación móvil" className="absolute top-full right-0 left-0 flex max-h-[calc(100svh-80px)] flex-col gap-1 overflow-y-auto border-b border-[#D1D3E8]/40 bg-[var(--surface)] px-4 py-3 shadow-lg xl:hidden">
+        {links.map((link) => <a key={link.id} href={`#${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`rounded-xl px-4 py-3 text-sm ${activeSection === link.id ? 'bg-[#83D0C6]/20 font-semibold' : 'hover:bg-[#83D0C6]/10'}`}>{link.label}</a>)}
+      </nav>}
+    </div>
+  </header>;
 }

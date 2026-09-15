@@ -23,7 +23,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
   );
   return (
     <div className="rounded-[24px] p-6 sm:p-8 bg-[var(--page)] border border-[color:var(--ink)]/10 shadow-sm">
-      <h3 className="font-serif italic text-2xl font-bold text-[color:var(--ink)] mb-6">
+      <h3 className="font-serif text-2xl font-bold text-[color:var(--ink)] mb-6">
         {settings.title}
       </h3>
 

@@ -22,10 +22,10 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
       }}
       className="rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-6 sm:p-8"
     >
-      <h2 className="font-serif text-2xl">{isEditing ? 'Editar reflexión' : 'Nueva reflexión'}</h2>
+      <h2 className="font-serif text-2xl">{isEditing ? 'Editar opinión' : 'Nueva opinión'}</h2>
       <fieldset disabled={isSaving || isDisabled} className="mt-6 space-y-5 disabled:opacity-60">
         <label className="block text-sm font-medium">
-          Cita o reflexión
+          Opinión
           <textarea
             required
             maxLength={1000}
@@ -117,14 +117,14 @@ export function QuoteEditor({ form, isEditing, isSaving, isDisabled, onChange, o
           Publicar en el sitio
         </label>
         <p className="text-xs text-[color:var(--ink)]/75">
-          Si desmarcas esta opción, la cita queda guardada como borrador sin mostrarse a los visitantes.
+          Si desmarcas esta opción, la opinión queda guardada como borrador sin mostrarse a los visitantes.
         </p>
 
         <button
           type="submit"
           className="rounded-xl bg-[#3D4C5A] px-6 py-3 font-medium text-white hover:bg-[#2F3C47] transition-all"
         >
-          {isSaving ? 'Guardando…' : 'Guardar reflexión'}
+          {isSaving ? 'Guardando…' : 'Guardar opinión'}
         </button>
       </fieldset>
     </form>

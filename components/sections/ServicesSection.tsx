@@ -2,49 +2,52 @@
 
 import React from 'react';
 import { Check, Clock, MapPin, ArrowRight, Sparkles } from 'lucide-react';
-import { SERVICES } from '@/lib/data/services';
+import { User, Users2, Wind, Compass } from 'lucide-react';
+import type { SiteContent } from '@/lib/types/site-settings';
+const icons = { user: User, users: Users2, wind: Wind, compass: Compass };
 
-// Grilla de servicios terapéuticos. El catálogo vive en lib/data/services.ts;
+// Grilla de servicios editados desde el panel; recibe el contenido público.
 // acá solo se recorre con .map() para no repetir el mismo bloque de tarjeta
 // 4 veces (equivalente a un ListView.builder en Flutter).
 interface ServicesSectionProps {
-  onSelectService: (serviceName: string) => void;
+  onSelectService?: (serviceName: string) => void;
+  content: SiteContent;
 }
 
-export default function ServicesSection({ onSelectService }: ServicesSectionProps) {
+export default function ServicesSection({ onSelectService, content }: ServicesSectionProps) {
   return (
     <section id="servicios" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#84B0DF]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <Sparkles className="w-3.5 h-3.5 text-[#84B0DF]" />
-          <span>Servicios Terapéuticos</span>
+          <span>{content.settings.texts.servicesEyebrow}</span>
         </div>
         <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
-          Cuidado Psicológico para Cada Momento de tu Vida
+          {content.settings.texts.servicesTitle}
         </h2>
         <p className="font-sans text-base sm:text-lg text-[color:var(--ink)]/80 font-normal leading-relaxed">
-          Cada espacio terapéutico está diseñado para brindarte comprensión, herramientas clínicas rigurosas y un acompañamiento cálido hacia tu estabilidad emocional.
+          {content.settings.texts.servicesSubtitle}
         </p>
       </div>
 
       {/* Services Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-12">
-        {SERVICES.map((svc) => {
-          const Icon = svc.icon;
+        {content.services.map((svc) => {
+          const Icon = icons[svc.icon];
           return (
             <div
               key={svc.id}
               id={`service-card-${svc.id}`}
-              className={`rounded-3xl p-6 sm:p-8 ${svc.cardBg} border ${svc.borderAccent} shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 flex flex-col justify-between`}
+              className={`rounded-3xl p-6 sm:p-8 bg-[var(--surface)] border border-[#B2C9DC]/60 hover:border-[#83D0C6] shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 flex flex-col justify-between`}
             >
               <div>
                 {/* Top icon and badge */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className={`w-14 h-14 rounded-2xl ${svc.iconBg} flex items-center justify-center shadow-xs`}>
+                  <div className={`w-14 h-14 rounded-2xl bg-[#83D0C6]/25 text-[color:var(--ink)] flex items-center justify-center shadow-xs`}>
                     <Icon className="w-7 h-7 stroke-[1.75]" />
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${svc.badgeColor}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-[#83D0C6]/25 text-[color:var(--ink)]`}>
                     {svc.badge}
                   </span>
                 </div>
@@ -86,37 +89,20 @@ export default function ServicesSection({ onSelectService }: ServicesSectionProp
                   </div>
                 </div>
 
-                <button
+                {onSelectService && <button
                   id={`btn-consult-service-${svc.id}`}
                   onClick={() => onSelectService(svc.title)}
                   className="w-full py-3 rounded-full text-sm font-semibold bg-[#3D4C5A] text-white hover:bg-[#2F3C47] transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs"
                 >
                   <span>Solicitar Consulta para este Servicio</span>
                   <ArrowRight className="w-4 h-4 text-[#83D0C6] group-hover:translate-x-1 transition-transform" />
-                </button>
+                </button>}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Clarification banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#B2C9DC]/30 to-[#D1D3E8]/30 p-6 sm:p-8 text-center border border-[#B2C9DC]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-left">
-          <h4 className="font-serif text-lg font-bold text-[color:var(--ink)] mb-1">
-            ¿Tienes dudas sobre qué tipo de acompañamiento necesitas?
-          </h4>
-          <p className="text-sm text-[color:var(--ink)]/80 font-sans">
-            Podemos realizar una primera sesión de valoración para determinar el plan terapéutico más adecuado para ti.
-          </p>
-        </div>
-        <button
-          onClick={() => onSelectService('Sesión de Valoración y Orientación')}
-          className="shrink-0 px-6 py-3 rounded-full text-sm font-semibold bg-[var(--mint-solid)] text-[color:var(--ink)] hover:bg-[#72c2b8] shadow-sm transition-all cursor-pointer"
-        >
-          Pedir Sesión de Valoración
-        </button>
-      </div>
     </section>
   );
 }

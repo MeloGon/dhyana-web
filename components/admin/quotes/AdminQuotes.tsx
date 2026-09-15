@@ -21,9 +21,9 @@ export function AdminQuotes({ initial }: { initial: AdminQuote[] }) {
           <Link href="/admin" className="text-sm text-[color:var(--positive)] underline underline-offset-4">
             Volver al panel
           </Link>
-          <h1 className="mt-3 font-serif text-3xl">Citas y reflexiones</h1>
+          <h1 className="mt-3 font-serif text-3xl">Opiniones</h1>
           <p className="mt-3 max-w-xl text-sm text-[color:var(--ink)]/75">
-            Gestiona las reflexiones del mazo interactivo de la página principal. Los cambios se verán al recargar la web.
+            Gestiona las opiniones del mazo interactivo de la página principal. Los cambios se verán al recargar la web.
           </p>
         </div>
         <button
@@ -31,7 +31,7 @@ export function AdminQuotes({ initial }: { initial: AdminQuote[] }) {
           disabled={model.isSaving}
           className="rounded-xl bg-[var(--mint-solid)] px-5 py-3 font-medium disabled:opacity-60 cursor-pointer"
         >
-          Nueva reflexión
+          Nueva opinión
         </button>
       </header>
 
@@ -52,7 +52,7 @@ export function AdminQuotes({ initial }: { initial: AdminQuote[] }) {
           aria-label="Confirmar eliminación"
           className="mt-6 rounded-2xl border border-[#9B3024]/30 bg-[var(--surface)] p-5"
         >
-          <h2 className="font-semibold">¿Eliminar esta reflexión?</h2>
+          <h2 className="font-semibold">¿Eliminar esta opinión?</h2>
           <p className="mt-2 break-words text-sm italic">&ldquo;{model.pendingDelete.quote}&rdquo;</p>
           <p className="mt-1 text-xs text-[color:var(--ink)]/70">— {model.pendingDelete.author}</p>
           <p className="mt-3 text-sm">Se quitará del mazo de cartas de la web. Esta acción no se puede deshacer.</p>
@@ -76,10 +76,10 @@ export function AdminQuotes({ initial }: { initial: AdminQuote[] }) {
       )}
 
       <div className="mt-8 grid items-start gap-7 lg:grid-cols-2">
-        <section aria-label="Reflexiones guardadas" className="space-y-4">
+        <section aria-label="Opiniones guardadas" className="space-y-4">
           {model.quotes.length === 0 && (
             <p className="rounded-2xl bg-[var(--surface)] p-6 text-sm">
-              Todavía no hay reflexiones. Crea la primera con el formulario.
+              Todavía no hay opiniones. Crea la primera con el formulario.
             </p>
           )}
           {model.quotes.map((q) => (

@@ -75,7 +75,7 @@ de preguntas frecuentes ya se edita en `/admin/faqs`, sin tocar código.
 | Cómo se ve algo | `components/` |
 | Qué pasa al enviar un formulario | `hooks/` |
 | Cambiar el transporte hacia el backend | `lib/api/` |
-| El orden de las secciones | `app/page.tsx` |
+| El orden de las secciones | `components/HomePage.tsx`; visibilidad y enlaces en `lib/data/site-fields.ts` |
 
 Los talleres, precios y horarios ya se editan desde el panel. Conectar
 un endpoint manteniendo su contrato puede cambiar solo `lib/api/`; incorporar pagos
@@ -184,7 +184,7 @@ se comparte desde un ancestro común. Hoy no hace falta agregar una librería gl
 Cuando dos componentes hermanos necesitan compartir datos (ej: elegís un
 servicio en `ServicesSection` y el formulario de `ContactSection` se
 actualiza), el estado vive en el ancestro común más cercano —
-`app/page.tsx` — y baja a los hijos por props. Es el mismo patrón que usarías
+`components/HomePage.tsx` — y baja a los hijos por props. Es el mismo patrón que usarías
 en Flutter subiendo el estado a un widget padre en vez de manejarlo en cada
 hijo por separado (sin Provider/Riverpod de por medio, porque el árbol es
 chico).
@@ -533,7 +533,7 @@ guarda todos los valores de forma atómica. Las notas pueden quedar vacías.
 pinta datos y enlaces recibidos. El servidor genera `tel:`, `mailto:` y `https://wa.me/`
 con destinos validados y mensaje codificado, sin aceptar URLs libres. No se añaden
 clientes Supabase de navegador. La tarjeta tiene carga y error con reintento, sin
-fallback al contenido estático. El footer sigue fuera de esta configuración.
+fallback al contenido estático. El footer comparte estos datos y enlaces validados. La visibilidad de cada bloque se configura en Diseño del sitio.
 
 ### Sobre nosotros (implementado)
 
@@ -544,7 +544,7 @@ tabla singleton `about_settings`, permitiendo configurar sus 22 campos desde `/a
 - **En Flutter:** Equivaldría a reemplazar constantes estáticas en un widget por un
   `ChangeNotifierProvider` o `Bloc` que consume un endpoint HTTP. Mientras se espera la
   respuesta, un `FutureBuilder` renderiza un estado de carga o error con botón de reintento.
-- **En Next.js:** El orquestador `app/page.tsx` invoca el hook `usePublicAboutSettings()`,
+- **En Next.js:** El orquestador `components/HomePage.tsx` invoca el hook `usePublicAboutSettings()`,
   el cual usa `AbortController` (análogo a cancelar suscripciones en el `dispose()` de un
   `StatefulWidget`) para consultar `/api/about-settings` y pasar los datos como props inmutables
   a `AboutSection`.
@@ -556,15 +556,61 @@ tabla singleton `about_settings`, permitiendo configurar sus 22 campos desde `/a
   evitar inyección de markup arbitrario. Las mutaciones son atómicas sobre la fila única
   y exigen coincidencia de cabecera `Origin` con `APP_URL`.
 
-### Citas y reflexiones en mazo de cartas (implementado)
+### Opiniones en mazo de cartas (implementado)
 
-La sección pública `#citas` presenta reflexiones en un mazo de cartas tridimensional ("card deck stack") interactivo, editable en `/admin/quotes`.
+La sección pública `#opiniones` presenta opiniones en un mazo de cartas tridimensional ("card deck stack") interactivo, editable en `/admin/quotes`.
 
 - **En Flutter:** Equivale a un `Stack` con widgets superpuestos estilizados con `Transform` (`Matrix4` para rotación y traslación vertical). Un `Timer.periodic` rota el índice activo cada 6 segundos y se pausa cuando el usuario toca la tarjeta (`GestureDetector.onTapDown`/`onLongPress`). El estado de la lista lo gestiona un `Cubit` o `ChangeNotifier` conectado a un repositorio HTTP.
 - **En Next.js:** El componente interactivo `QuoteDeckSection.tsx` (`'use client'`) maneja el índice activo con `useState` y la rotación automática con `useEffect` (`setInterval` a 6000ms con limpieza en desmontaje o cambio de índice). Pausa el temporizador en `onMouseEnter` y lo reanuda en `onMouseLeave`.
 - **Diseño del mazo:** La carta frontal activa muestra la reflexión completa con comillas decorativas, autor y rol profesional, con `p-8 sm:p-12 md:p-14` y ancho `max-w-4xl`. Las cartas de fondo se renderizan en capas sutiles con `scale`, `translateY` y `rotate` sin textos internos que distraigan, dando una sensación táctil de baraja física.
-- **ViewModel / Hooks:** `usePublicQuotes()` pre-carga `INITIAL_QUOTES` para entrega inmediata sin parpadeos visuales (CLS=0) y sincroniza con `/api/quotes`. `useAdminQuotes()` gestiona el formulario, orden, borrador/publicado y borrado confirmado en el panel `/admin/quotes`.
+- **ViewModel / Hooks:** `usePublicQuotes()` consulta `/api/quotes` con carga, error/reintento y vacío reales; no restaura contenido oculto mediante una copia estática. `useAdminQuotes()` gestiona el formulario, orden, borrador/publicado y borrado confirmado en el panel `/admin/quotes`.
 - **Seguridad:** Tabla `quotes` privada con RLS en Supabase. Lectura pública solo de citas activas (`is_published = true`); mutaciones administrativas protegidas por `requireAdmin()` y verificación de `Origin`.
+
+### Diseño del sitio, servicios y archivos (implementado)
+
+`app/page.tsx` ahora es Server Component: llama `getPublicHomeContent()` y compone
+`components/HomePage.tsx`, que mantiene interacción y conecta las secciones. La configuración
+se obtiene antes de pintar para no mostrar secciones ocultas durante la carga. `connection()`
+evita fijar estos valores durante la compilación. En Flutter sería cargar configuración
+antes de construir la pantalla y pasarla al widget que mantiene selección y navegación.
+
+`/admin/site` → `AdminSiteSettings` → `useSiteSettings` → `lib/api/site-settings.ts`
+→ rutas privadas → `lib/server/site-http.ts` y `site-settings.ts`. La tabla singleton
+`site_settings` tiene `content` y `services` JSONB. Cada editor actualiza su propia columna
+atómicamente; guardar servicios no sobrescribe diseño. El servidor valida todos los campos,
+limita longitudes y solo acepta iconos conocidos. No se interpreta HTML de los textos.
+JSONB permite guardar juntos estos pequeños conjuntos editoriales; no reemplaza tablas
+relacionales del catálogo, compras o reservas. RLS y permisos bloquean acceso directo;
+toda mutación verifica Origin y administrador activo. Cuerpos leídos con límite real de bytes.
+
+`/admin/services` permite editar hasta 24 tarjetas, ordenar, publicar/ocultar y quitar con
+confirmación. Servicios publicados alimentan tarjetas, especialidades del footer y selector
+del formulario. Los cuatro originales se cargan una sola vez por migración; no hay fallback.
+El formulario de contacto sigue siendo demo y está oculto inicialmente, junto con la tarjeta
+de consulta. El panel lo indica. Datos y contacto del footer siguen en `contact_settings`.
+
+`site-fields.ts` contiene metadatos de campos y enlaces, no copias de textos publicados.
+`visibleSiteLinks` comparte filtro con navbar y footer. Orden fijo: inicio, servicios,
+talleres, opiniones, sobre nosotros y contacto. Las partes ocultas no se montan; CTA hacia
+formulario o secciones ocultas también se retiran. La sección «Opiniones» mantiene contratos,
+rutas privadas y campos del módulo quotes. Sus títulos visibles ya no usan cursiva.
+
+Archivos: bucket público `site-media`; solo servidor autorizado sube logos o emite una URL
+firmada para un video. `lib/api` envía MP4/WebM directamente a Storage (50 MB), sin cliente
+Auth/Supabase de navegador. Cada subida usa UUID nuevo, no sobrescribe archivos existentes.
+El logo SVG (256 KB) se analiza con `@xmldom/xmldom` y se limita a formas/gradientes locales;
+requiere viewBox y rechaza scripts, entidades, CSS y recursos externos. Se renderiza con
+`img`, nunca `dangerouslySetInnerHTML`. Recomendado 128 × 128 para presentación de 40 px.
+Al guardar, `Storage.info()` verifica `contentType` y `size` antes de publicar la ruta.
+Reemplazar/quitar conserva objetos anteriores; limpieza es mantenimiento explícito por Storage.
+Pruebas SQL reproducen contrato de buckets, no toda la implementación del servicio Storage.
+
+Tema oscuro: `globals.css` define superficies/textos semánticos para ambos temas. Acentos
+pueden conservar hex; fondo y texto adaptables usan `--surface`, `--page` y `--ink`.
+`useTheme` sincroniza clase del documento y preferencia local mediante `useSyncExternalStore`,
+con avisos entre controles y pestañas. Script inicial establece tema antes de hidratar;
+sin elección guardada sigue el sistema. No hay Context global ni librería de estado.
+`ThemeToggle` aparece en navbar y administración. Imágenes/videos conservan sus colores.
 
 ## 11. Recorrido de una compra
 
@@ -619,8 +665,8 @@ Para Next.js, consultar `node_modules/next/dist/docs/`, especialmente las guías
 1. Contenido en `lib/data/<section>.ts` y tipo compartido si corresponde.
 2. UI en `components/sections/<Section>.tsx`; piezas internas si crece demasiado.
 3. Hook si hay estado y coordinación de acciones; piezas reciben props y callbacks.
-4. Montar en `app/page.tsx` con `id` y `scroll-mt-20`.
-5. Agregar a `NAV_LINKS` de Navbar si requiere navegación y comprobar móvil/teclado.
+4. Montar en `components/HomePage.tsx` con `id`, visibilidad y `scroll-mt-20`.
+5. Agregar a `SITE_NAV_LINKS` y visibilidad en `lib/data/site-fields.ts` si requiere navegación; comprobar móvil y teclado.
 
 ### Agregar un módulo con backend: ejemplo de compra
 

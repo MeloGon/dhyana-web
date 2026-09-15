@@ -12,7 +12,7 @@ export function AdminContactSettings({ initial }: { initial: ContactSettings }) 
       <header className="mb-8 border-b border-[color:var(--ink)]/15 pb-7">
         <Link href="/admin" className="text-sm text-[color:var(--positive)] underline underline-offset-4">Volver al panel</Link>
         <h1 className="mt-3 font-serif text-3xl">Datos de la consulta</h1>
-        <p className="mt-3 text-sm text-[color:var(--ink)]/75">Personaliza la tarjeta de contacto. Al guardar, los cambios estarán disponibles en la siguiente carga del sitio.</p>
+        <p className="mt-3 text-sm text-[color:var(--ink)]/75">Personaliza la tarjeta de contacto y el contacto directo del footer. Al guardar, los cambios estarán disponibles en la siguiente carga del sitio.</p>
       </header>
       <ContactSettingsForm form={model.form} isSaving={model.isSaving} onChange={model.setForm} onSubmit={model.handleSave} />
       {model.errorMessage && <p role="alert" className="mt-5 text-sm text-[color:var(--danger)]">{model.errorMessage}</p>}

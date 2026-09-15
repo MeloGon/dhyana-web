@@ -17,6 +17,8 @@ const PILLAR_STYLES = [
 ];
 
 interface AboutSectionProps {
+  showContact: boolean;
+  showServices: boolean;
   settings: AboutSettings;
   onScrollTo: (sectionId: string) => void;
 }
@@ -24,7 +26,7 @@ interface AboutSectionProps {
 // Sección "Sobre Nosotros". Ahora recibe todos los textos por props desde
 // la base de datos, en vez de tenerlos hardcodeados. Los datos se cargan
 // en el componente padre (page.tsx) con usePublicAboutSettings.
-export default function AboutSection({ settings, onScrollTo }: AboutSectionProps) {
+export default function AboutSection({ settings, onScrollTo, showContact, showServices }: AboutSectionProps) {
   // Arma la lista de pilares desde los campos numerados del settings.
   const pillars = [
     { title: settings.pillar1Title, description: settings.pillar1Description },
@@ -40,7 +42,7 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
           <span>{settings.badge}</span>
         </div>
-        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
           {settings.heading}
         </h2>
         <p className="font-sans text-base sm:text-lg text-[color:var(--ink)]/80 font-normal leading-relaxed">
@@ -65,7 +67,7 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#3D4C5A]/70 via-transparent to-transparent z-10" />
               <div className="absolute bottom-4 left-4 right-4 text-white z-20">
-                <span className="font-serif italic text-lg font-bold block">{settings.profileName}</span>
+                <span className="font-serif text-lg font-bold block">{settings.profileName}</span>
                 <span className="text-xs text-white/90 font-sans">{settings.profileTitle}</span>
               </div>
             </div>
@@ -104,7 +106,7 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
         {/* Right Side: Pillars & Philosophy */}
         <div className="lg:col-span-7 space-y-6">
           <div className="prose text-[color:var(--ink)]/90">
-            <h3 className="font-serif italic text-2xl sm:text-3xl text-[color:var(--ink)] font-bold mb-3">
+            <h3 className="font-serif text-2xl sm:text-3xl text-[color:var(--ink)] font-bold mb-3">
               {settings.approachTitle}
             </h3>
             <p className="text-base leading-relaxed mb-4">
@@ -141,19 +143,19 @@ export default function AboutSection({ settings, onScrollTo }: AboutSectionProps
 
           {/* Call to action inside about */}
           <div className="pt-4 flex flex-wrap items-center gap-4">
-            <button
+            {showContact && <button
               onClick={() => onScrollTo('contacto')}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-wider font-bold bg-[#3D4C5A] text-white hover:bg-[#2F3C47] shadow-sm transition-all cursor-pointer"
             >
               <span>Conoce cómo puedo ayudarte</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#83D0C6]" />
-            </button>
-            <button
+            </button>}
+            {showServices && <button
               onClick={() => onScrollTo('servicios')}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-xs uppercase tracking-wider font-semibold text-[color:var(--ink)] border border-[color:var(--ink)]/20 hover:bg-[var(--surface)] hover:shadow-xs transition-all cursor-pointer"
             >
               <span>Ver áreas de consulta</span>
-            </button>
+            </button>}
           </div>
         </div>
       </div>

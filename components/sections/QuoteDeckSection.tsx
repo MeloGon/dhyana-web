@@ -4,7 +4,10 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Quote, Sparkles, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import type { QuoteItem, QuoteVariant } from '@/lib/types/quotes';
 
+import type { SiteSettings } from '@/lib/types/site-settings';
+
 interface QuoteDeckSectionProps {
+  settings: SiteSettings;
   quotes: QuoteItem[];
 }
 
@@ -32,7 +35,7 @@ const variantStyles: Record<
   },
 };
 
-export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
+export default function QuoteDeckSection({ quotes, settings }: QuoteDeckSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -84,14 +87,14 @@ export default function QuoteDeckSection({ quotes }: QuoteDeckSectionProps) {
   const activeQuote = quotes[currentIndex];
 
   return (
-    <section id="citas" className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto scroll-mt-20">
+    <section id="opiniones" className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto scroll-mt-20">
       {/* Cabecera de la sección */}
       <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
-          <span>Reflexiones & Bienestar</span>
+          <span>{settings.texts.opinionsEyebrow}</span>
         </div>
-        <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight">
-          Palabras para acompañar tu proceso
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight">
+          {settings.texts.opinionsTitle}
         </h2>
       </div>
 

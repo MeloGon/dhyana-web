@@ -17,12 +17,12 @@ export function PublicWorkshopCard({ workshop }: { workshop: PublicWorkshop }) {
           {workshop.groups.map((group) => <li key={group.id} className="rounded-2xl bg-[var(--page)] p-4">
             <p className="flex gap-2 text-sm"><Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--positive)]" aria-hidden="true" /><span className="whitespace-pre-line break-words">{group.scheduleDescription}</span></p>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p><span className="font-semibold">{formatPrice(group.priceCents)}</span><span className="ml-1 text-xs">/ mes calendario</span></p>
+              <p><span className="font-semibold">{formatPrice(group.priceCents)}</span></p>
               <span className="rounded-full bg-[#83D0C6]/25 px-3 py-1 text-xs font-semibold">{group.remainingSpots > 0 ? `${group.remainingSpots} cupos restantes` : 'Agotado'}</span>
             </div>
           </li>)}
         </ul>}
-      {!isIndividual && <p className="mt-5 text-xs leading-relaxed text-[color:var(--ink)]/65">Inscripciones en línea próximamente. Cada compra dará acceso por un mes calendario, sin renovación automática.</p>}
+      {!isIndividual && <p className="mt-5 text-xs leading-relaxed text-[color:var(--ink)]/65">Inscripciones en línea próximamente.</p>}
     </article>
   );
 }

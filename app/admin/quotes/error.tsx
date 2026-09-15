@@ -8,8 +8,8 @@ export default function AdminQuotesError({ reset }: { reset: () => void }) {
       <Link href="/admin" className="text-sm text-[color:var(--positive)] underline underline-offset-4">
         Volver al panel
       </Link>
-      <h1 className="mt-3 font-serif text-3xl">Citas y reflexiones</h1>
-      <p className="mt-6 text-sm">No se pudieron cargar las citas. Verifica tu conexión e inténtalo de nuevo.</p>
+      <h1 className="mt-3 font-serif text-3xl">Opiniones</h1>
+      <p className="mt-6 text-sm">No se pudieron cargar las opiniones. Verifica tu conexión e inténtalo de nuevo.</p>
       <button onClick={reset} className="mt-4 rounded-xl bg-[#3D4C5A] px-6 py-3 font-medium text-white">
         Reintentar
       </button>

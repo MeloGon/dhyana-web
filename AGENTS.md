@@ -89,9 +89,15 @@ app/
   admin/about/          Configuración de la sección Sobre nosotros
   api/admin/about-settings/ Lectura y edición privadas de Sobre nosotros
   api/about-settings/   Datos públicos de la sección Sobre nosotros
-  admin/quotes/         Editor de citas y reflexiones
+  admin/quotes/         Editor de opiniones (contratos quotes conservados)
   api/admin/quotes/     Lectura y mutaciones privadas de citas
-  api/quotes/           Reflexiones publicadas para el mazo interactivo
+  api/quotes/           Opiniones publicadas para el mazo interactivo
+  admin/site/           Textos, visibilidad, logo SVG y video de inicio
+  admin/services/       Editor de tarjetas de servicios
+  api/admin/site-settings/ Configuración privada del sitio
+  api/admin/site-media/ Subidas privadas de logo y video
+  api/admin/services/   Guardado conjunto de servicios
+  api/site-settings/    Configuración pública y servicios publicados
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -153,19 +159,17 @@ scripts/check-database.mjs  Comprobación de conexión por Data API
   persistido será consultado por servicios y editado en el panel.
 - **Tipos nuevos**: agrupar contratos por módulo en `lib/types/<module>.ts`.
   Mantener los tipos existentes hasta migrarlos por necesidad; no agregar reexports.
-- **Colores**: hex directo en las clases (`bg-[#83D0C6]`), siguiendo la paleta
-  ya definida en `globals.css`.
+- **Colores**: fondos y texto adaptables usan variables de `globals.css` (`bg-[var(--surface)]`, `text-[color:var(--ink)]`). Mantener hex para acentos y contrastes fijos; comprobar ambos temas. No invertir imágenes para simular modo oscuro.
 
 ## Receta: agregar una sección nueva a la landing
 
 1. `lib/data/<seccion>.ts` — el contenido (si tiene lista o textos largos).
 2. `lib/types/<seccion>.ts` — el tipo, si lo usa más de un archivo.
 3. `components/sections/<Seccion>.tsx` — con `'use client'` si es interactiva.
-4. Montarla en `app/page.tsx`, en el orden visual que corresponda.
+4. Montarla en `components/HomePage.tsx`, respetando visibilidad y orden. `app/page.tsx` carga configuración inicial desde servidor.
 5. `<section id="mi-seccion" className="... scroll-mt-20">` — el `id` es lo que
    permite el scroll.
-6. Si va en la navbar: agregar `{ id, label }` a `NAV_LINKS` en
-   `components/layout/Navbar.tsx`.
+6. Si va en la navbar: agregar enlace y visibilidad en `lib/data/site-fields.ts`; `visibleSiteLinks` comparte navegación con el footer.
 
 ## Receta: agregar un módulo con backend
 
@@ -183,12 +187,28 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 
 ## Estado actual / pendientes
 
-- Citas y reflexiones editables en `/admin/quotes` y visualizadas como mazo de cartas
-  interactivo en `#citas` (`QuoteDeckSection`). Tabla `quotes` privada con RLS y
+- Diseño y servicios: `/admin/site` edita identidad compartida navbar/footer, inicio,
+  cabeceras, aviso, logo/video y visibilidad. `/admin/services` edita tarjetas y orden.
+  `site_settings` singleton: JSONB content/services, guardados independientes y RLS,
+  permisos SELECT/UPDATE solo de service_role tras requireAdmin y validación de Origin.
+  `site-media` público: sin políticas de subida para visitantes. SVG estático validado
+  (256 KB); video MP4/WebM (50 MB) por URL firmada para un archivo, sin SDK cliente.
+  Validar existencia y contentType/size mediante Storage.info antes de publicar rutas.
+  Archivos sustituidos se conservan; no eliminarlos automáticamente sin revisar referencias.
+  Nunca incrustar SVG como HTML. Registrar migraciones de buckets también en pruebas SQL.
+- `app/page.tsx` es servidor: obtiene configuración inicial y compone `HomePage` cliente.
+  Orden Inicio, Servicios, Talleres, Opiniones, Sobre nosotros, Contacto. Visibilidad también
+  controla enlaces. Formulario y tarjeta de contacto inicialmente ocultos; formulario sigue
+  simulado y el panel lo advierte. Culqi y reservas no se modificaron.
+- Tema claro/oscuro en web y administración: variables CSS, `useTheme` y `ThemeToggle`.
+  Script inicial aplica selección local o preferencia del sistema antes de hidratar.
+
+- Opiniones editables en `/admin/quotes` y visualizadas como mazo de cartas
+  interactivo en `#opiniones` (`QuoteDeckSection`); campos y tabla quotes conservados. Tabla `quotes` privada con RLS y
   escritura restringida a `service_role` tras `requireAdmin()` y verificación de Origin.
   `/api/quotes` devuelve solo citas publicadas ordenadas por `order_index`. Carga inicial
-  con tres citas representativas del centro; el hook público incluye `INITIAL_QUOTES`
-  para CLS=0 y soporte offline/SSR. Mazo interactivo con rotación automática (6s),
+  con textos del centro; el hook usa estados de carga/error/vacío reales, sin restaurar
+  contenido despublicado desde un fallback. Mazo con rotación automática (6s),
   pausa al posar el cursor, controles de avance/retroceso e indicadores.
 - Sección Sobre nosotros editable en `/admin/about`. Tabla única `about_settings`,
   RLS y permisos solo SELECT/UPDATE para service_role. 22 campos (cabecera,
@@ -199,7 +219,7 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   RLS y permisos solo SELECT/UPDATE para service_role. Guardado conjunto tras
   `requireAdmin()` y validación de Origin. Enlaces tel/mailto/WhatsApp generados
   desde datos validados; no aceptar URLs libres. Carga inicial del diseño.
-  Solo configura la tarjeta de contacto; el footer conserva su contenido demo.
+  Comparte datos y enlaces con el contacto directo del footer. Visibilidad independiente.
 - Preguntas frecuentes editables en `/admin/faqs`: pregunta, respuesta, orden y
   publicación; eliminación confirmada. Tabla `faqs` privada con RLS, escritura
   tras `requireAdmin()` y validación de Origin. `/api/faqs` solo entrega publicadas.
@@ -247,7 +267,8 @@ npm run test:sales # privacidad HTTP; variables explícitas habilitan pruebas RP
 npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
 npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
 npm run test:about # privacidad HTTP y lectura de Sobre nosotros
-npm run test:quotes # privacidad HTTP y lectura de citas
+npm run test:quotes # privacidad HTTP y lectura de opiniones
+npm run test:site # configuración, privacidad, servicios, SVG y visibilidad
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos

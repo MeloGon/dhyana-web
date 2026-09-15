@@ -8,6 +8,7 @@ import type { ContactFormData } from '@/lib/types';
 // ContactSection, que a su vez lo saca del hook useContactForm. Componente
 // "tonto" a propósito: se puede leer entero sin saber cómo funciona el envío.
 interface ContactFormProps {
+  services: string[];
   formData: ContactFormData;
   setFormData: React.Dispatch<React.SetStateAction<ContactFormData>>;
   isSubmitting: boolean;
@@ -19,6 +20,7 @@ interface ContactFormProps {
 }
 
 export default function ContactForm({
+  services,
   formData,
   setFormData,
   isSubmitting,
@@ -37,7 +39,7 @@ export default function ContactForm({
         <div className="w-16 h-16 rounded-full bg-[var(--mint-solid)] text-[color:var(--ink)] flex items-center justify-center mx-auto mb-4 shadow-sm">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h4 className="font-serif italic text-2xl sm:text-3xl font-bold text-[color:var(--ink)] mb-2">
+        <h4 className="font-serif text-2xl sm:text-3xl font-bold text-[color:var(--ink)] mb-2">
           ¡Mensaje Enviado con Éxito!
         </h4>
         <p className="text-sm text-[color:var(--ink)]/85 font-sans mb-4 max-w-lg mx-auto">
@@ -62,7 +64,7 @@ export default function ContactForm({
   return (
     <form onSubmit={onSubmit} className="space-y-5" id="main-contact-form">
       <div>
-        <h3 className="font-serif italic text-2xl font-bold text-[color:var(--ink)] mb-1">
+        <h3 className="font-serif text-2xl font-bold text-[color:var(--ink)] mb-1">
           Formulario de Contacto & Consulta
         </h3>
         <p className="text-xs sm:text-sm text-[color:var(--ink)]/75 font-sans">
@@ -124,12 +126,7 @@ export default function ContactForm({
             onChange={(e) => setFormData({ ...formData, service: e.target.value })}
             className="w-full px-4 py-2.5 rounded-xl border border-[color:var(--ink)]/10 bg-[var(--page)] text-sm text-[color:var(--ink)] focus:outline-none focus:ring-1 focus:ring-[#83D0C6]"
           >
-            <option value="Psicoterapia Individual">Psicoterapia Individual para Adultos</option>
-            <option value="Terapia de Pareja">Terapia de Pareja y Vínculos</option>
-            <option value="Tratamiento de Ansiedad & Estrés">Tratamiento de Ansiedad & Estrés</option>
-            <option value="Duelo & Transiciones Vitales">Duelo & Transiciones de Vida</option>
-            <option value="Sesión de Valoración y Orientación">Primera Sesión de Valoración</option>
-            <option value="Consulta sobre Talleres">Consulta sobre Talleres</option>
+            {services.map((service) => <option key={service} value={service}>{service}</option>)}
             <option value="Otro Motivo">Otro Motivo</option>
           </select>
         </div>
