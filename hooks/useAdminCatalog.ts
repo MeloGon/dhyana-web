@@ -6,9 +6,17 @@ import { workshopSlug } from '@/lib/workshop-slug';
 import type { AdminGroup, AdminWorkshop, GroupDraft, WorkshopInput } from '@/lib/types/admin-catalog';
 
 function groupDraft(group?: AdminGroup): GroupDraft {
-  return { key: group?.id ?? crypto.randomUUID(), id: group?.id,
-    scheduleDescription: group?.scheduleDescription ?? '', price: group ? (group.priceCents / 100).toFixed(2) : '',
-    capacity: group ? String(group.capacity) : '', isPublished: group?.isPublished ?? false };
+  const regularCents = group ? (group.regularPriceCents ?? group.priceCents) : 0;
+  const discountCents = group?.discountCents ?? 0;
+  return {
+    key: group?.id ?? crypto.randomUUID(),
+    id: group?.id,
+    scheduleDescription: group?.scheduleDescription ?? '',
+    regularPrice: group ? (regularCents / 100).toFixed(2) : '',
+    discount: discountCents > 0 ? (discountCents / 100).toFixed(2) : '',
+    capacity: group ? String(group.capacity) : '',
+    isPublished: group?.isPublished ?? false,
+  };
 }
 
 export function useAdminCatalog(initial: AdminWorkshop[]) {
@@ -58,12 +66,38 @@ export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: 
     setIsSubmitting(true); onBusyChange(true); setErrorMessage('');
     try {
       const inputs = groups.map((group, index) => {
-        const price = group.price.trim().replace(',', '.');
-        if (!/^\d+(\.\d{1,2})?$/.test(price)) throw new Error(`Horario ${index + 1}: ingresa un precio con máximo dos decimales.`);
-        // Igual que un ViewModel: convertir lo escrito antes de llamar al servicio.
-        const [soles, cents = ''] = price.split('.');
-        return { ...(group.id ? { id: group.id } : {}), scheduleDescription: group.scheduleDescription,
-          priceCents: Number(soles) * 100 + Number(cents.padEnd(2, '0')), capacity: Number(group.capacity), isPublished: group.isPublished };
+        const regularPriceStr = group.regularPrice.trim().replace(',', '.');
+        if (!/^\d+(\.\d{1,2})?$/.test(regularPriceStr) || Number(regularPriceStr) <= 0) {
+          throw new Error(`Horario ${index + 1}: ingresa un precio regular válido en soles (mayor a 0 con máximo dos decimales).`);
+        }
+        const [regSoles, regCents = ''] = regularPriceStr.split('.');
+        const regularPriceCents = Number(regSoles) * 100 + Number(regCents.padEnd(2, '0'));
+
+        const discountStr = group.discount.trim().replace(',', '.');
+        let discountCents = 0;
+        if (discountStr) {
+          if (!/^\d+(\.\d{1,2})?$/.test(discountStr)) {
+            throw new Error(`Horario ${index + 1}: el descuento debe tener un formato numérico con máximo dos decimales.`);
+          }
+          const [discSoles, discCents = ''] = discountStr.split('.');
+          discountCents = Number(discSoles) * 100 + Number(discCents.padEnd(2, '0'));
+        }
+
+        if (discountCents >= regularPriceCents) {
+          throw new Error(`Horario ${index + 1}: el descuento no puede ser igual o mayor al precio regular.`);
+        }
+
+        const priceCents = regularPriceCents - discountCents;
+
+        return {
+          ...(group.id ? { id: group.id } : {}),
+          scheduleDescription: group.scheduleDescription,
+          regularPriceCents,
+          discountCents,
+          priceCents,
+          capacity: Number(group.capacity),
+          isPublished: group.isPublished,
+        };
       });
       const saved = await saveWorkshop({ ...form, groups: inputs }, workshop?.id);
       // Conservar los IDs recién creados: el siguiente guardado debe editar, no duplicar.

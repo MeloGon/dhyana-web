@@ -14,8 +14,16 @@ type WorkshopRow = Database['public']['Tables']['workshops']['Row'];
 type GroupRow = Database['public']['Tables']['workshop_groups']['Row'];
 
 function groupDto(group: GroupRow): AdminGroup {
-  return { id: group.id, workshopId: group.workshop_id, scheduleDescription: group.schedule_description,
-    priceCents: group.price_cents, capacity: group.capacity, isPublished: group.is_published };
+  return {
+    id: group.id,
+    workshopId: group.workshop_id,
+    scheduleDescription: group.schedule_description,
+    priceCents: group.price_cents,
+    regularPriceCents: group.regular_price_cents ?? group.price_cents,
+    discountCents: group.discount_cents ?? 0,
+    capacity: group.capacity,
+    isPublished: group.is_published,
+  };
 }
 
 function workshopDto(workshop: WorkshopRow, groups: GroupRow[] = []): AdminWorkshop {
@@ -73,7 +81,7 @@ async function activeAccessCount(groupId: string, at: string) {
 
 export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
   const { data, error } = await createDatabaseAdminClient().from('workshops')
-    .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,capacity,created_at,sort_order)')
+    .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,capacity,created_at,sort_order)')
     .eq('is_published', true).eq('workshop_groups.is_published', true).order('created_at');
   if (error) throw new Error('No se pudo leer el catálogo público.');
   const at = new Date().toISOString();
@@ -82,10 +90,20 @@ export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
     id: row.id, slug: row.slug, title: row.title, summary: row.summary,
     category: row.category === 'individual' ? 'individual' as const : 'group' as const,
     groups: row.category === 'individual' ? [] : await Promise.all(row.workshop_groups
-      .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map(async (group) => ({
-        id: group.id, scheduleDescription: group.schedule_description,
-        priceCents: group.price_cents, currency: 'PEN' as const,
-        remainingSpots: Math.max(0, group.capacity - await activeAccessCount(group.id, at)),
-      }))),
+      .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map(async (group) => {
+        const discountCents = group.discount_cents || 0;
+        const regularPriceCents = group.regular_price_cents || (group.price_cents + discountCents);
+        const hasDiscount = discountCents > 0 && regularPriceCents > group.price_cents;
+        return {
+          id: group.id,
+          scheduleDescription: group.schedule_description,
+          priceCents: group.price_cents,
+          regularPriceCents: hasDiscount ? regularPriceCents : undefined,
+          discountCents: hasDiscount ? discountCents : undefined,
+          discountPercentage: hasDiscount ? Math.round((discountCents / regularPriceCents) * 100) : undefined,
+          currency: 'PEN' as const,
+          remainingSpots: Math.max(0, group.capacity - await activeAccessCount(group.id, at)),
+        };
+      })),
   })));
 }

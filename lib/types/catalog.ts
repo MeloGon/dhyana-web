@@ -5,8 +5,14 @@ export type WorkshopCategory = 'group' | 'individual';
 export interface PublicWorkshopGroup {
   id: string;
   scheduleDescription: string;
-  /** Entero en céntimos: S/ 120.00 se representa como 12000. */
+  /** Entero en céntimos: precio final con descuento si aplica (ej: S/ 100.00 -> 10000). */
   priceCents: number;
+  /** Precio regular antes de descuento (presente solo si tiene descuento activo). */
+  regularPriceCents?: number;
+  /** Descuento en céntimos (presente solo si tiene descuento activo). */
+  discountCents?: number;
+  /** Porcentaje de descuento calculado (ej: 17 para 17% de rebaja). */
+  discountPercentage?: number;
   currency: 'PEN';
   /** Capacidad menos accesos vigentes. Se añadirán reservas al implementar checkout. */
   remainingSpots: number;

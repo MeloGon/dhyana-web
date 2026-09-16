@@ -383,9 +383,11 @@ export type Database = {
           capacity: number
           created_at: string
           currency: string
+          discount_cents: number
           id: string
           is_published: boolean
           price_cents: number
+          regular_price_cents: number
           schedule_description: string
           sort_order: number
           workshop_id: string
@@ -394,9 +396,11 @@ export type Database = {
           capacity: number
           created_at?: string
           currency?: string
+          discount_cents?: number
           id?: string
           is_published?: boolean
           price_cents: number
+          regular_price_cents?: number
           schedule_description?: string
           sort_order?: number
           workshop_id: string
@@ -405,9 +409,11 @@ export type Database = {
           capacity?: number
           created_at?: string
           currency?: string
+          discount_cents?: number
           id?: string
           is_published?: boolean
           price_cents?: number
+          regular_price_cents?: number
           schedule_description?: string
           sort_order?: number
           workshop_id?: string

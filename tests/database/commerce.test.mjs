@@ -428,6 +428,25 @@ test('catálogo: un segundo horario inválido revierte toda la creación', () =>
   assert.equal((await db.query('select id from public.workshop_groups')).rows.length, 0);
 }));
 
+test('catálogo: guarda descuentos válidos y rechaza descuentos iguales o mayores al precio regular', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const saved = await saveCatalog({
+    ...catalogInput,
+    groups: [{ ...catalogGroup, regularPriceCents: 12000, discountCents: 2000, priceCents: 10000 }],
+  });
+  assert.equal(saved.groups[0].regular_price_cents, 12000);
+  assert.equal(saved.groups[0].discount_cents, 2000);
+  assert.equal(saved.groups[0].price_cents, 10000);
+
+  // Descuento igual o mayor al precio regular debe fallar por constraint 23514
+  await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '23514', [
+    JSON.stringify({
+      ...catalogInput,
+      groups: [{ ...catalogGroup, regularPriceCents: 12000, discountCents: 12000, priceCents: 0 }],
+    }), 'prueba-descuento',
+  ]);
+}));
+
 test('catálogo: grupo ajeno o repetido revierte edición y no mueve relaciones', () => withRollback(async () => {
   const first = await saveCatalog(); const other = await saveCatalog();
   for (const [groups, code] of [

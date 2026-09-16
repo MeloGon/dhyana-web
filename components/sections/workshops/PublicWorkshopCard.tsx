@@ -19,7 +19,23 @@ export function PublicWorkshopCard({ workshop }: { workshop: PublicWorkshop }) {
             {workshop.groups.map((group) => <li key={group.id} className="rounded-2xl bg-[var(--page)] p-4">
               <p className="flex gap-2 text-sm"><Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" aria-hidden="true" /><span className="whitespace-pre-line break-words">{group.scheduleDescription}</span></p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <p><span className="font-semibold">{formatPrice(group.priceCents)}</span></p>
+                <div className="flex items-baseline flex-wrap gap-2">
+                  {group.discountPercentage && group.regularPriceCents ? (
+                    <>
+                      <span className="text-xs sm:text-sm text-[color:var(--ink)]/50 line-through">
+                        {formatPrice(group.regularPriceCents)}
+                      </span>
+                      <span className="font-bold text-lg text-[#6366F1] dark:text-[#818CF8]">
+                        {formatPrice(group.priceCents)}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-[#EC4899]/15 text-[#EC4899] px-2 py-0.5 text-xs font-bold tracking-wide">
+                        -{group.discountPercentage}%
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-semibold">{formatPrice(group.priceCents)}</span>
+                  )}
+                </div>
                 <span className="rounded-full bg-[#06B6D4]/15 text-[#06B6D4] px-3 py-1 text-xs font-semibold">{group.remainingSpots > 0 ? `${group.remainingSpots} cupos restantes` : 'Agotado'}</span>
               </div>
             </li>)}

@@ -42,12 +42,29 @@ export function parseWorkshop(body: Record<string, unknown>): WorkshopSaveInput 
 
 export function parseGroup(body: Record<string, unknown>): GroupInput {
   const priceCents = body.priceCents;
+  const regularPriceCents = body.regularPriceCents !== undefined ? body.regularPriceCents : priceCents;
+  const discountCents = body.discountCents !== undefined ? body.discountCents : 0;
   const capacity = body.capacity;
-  if (typeof priceCents !== 'number' || !Number.isSafeInteger(priceCents) || priceCents <= 0 || priceCents > 2147483647) {
-    throw new HttpError(400, 'Ingresa un precio válido en soles, con máximo dos decimales.');
+
+  if (typeof regularPriceCents !== 'number' || !Number.isSafeInteger(regularPriceCents) || regularPriceCents <= 0 || regularPriceCents > 2147483647) {
+    throw new HttpError(400, 'Ingresa un precio regular válido en soles, con máximo dos decimales.');
+  }
+  if (typeof discountCents !== 'number' || !Number.isSafeInteger(discountCents) || discountCents < 0 || discountCents >= regularPriceCents) {
+    throw new HttpError(400, 'El descuento debe ser un monto menor al precio regular.');
+  }
+  const finalPriceCents = regularPriceCents - discountCents;
+  if (typeof priceCents === 'number' && priceCents !== finalPriceCents) {
+    throw new HttpError(400, 'El precio final no coincide con el precio regular menos el descuento.');
   }
   if (typeof capacity !== 'number' || !Number.isSafeInteger(capacity) || capacity <= 0 || capacity > 2147483647) {
     throw new HttpError(400, 'La capacidad debe ser un número entero mayor que cero.');
   }
-  return { scheduleDescription: text(body, 'scheduleDescription', 'Horario', 500), priceCents, capacity, isPublished: published(body) };
+  return {
+    scheduleDescription: text(body, 'scheduleDescription', 'Horario', 500),
+    priceCents: finalPriceCents,
+    regularPriceCents,
+    discountCents,
+    capacity,
+    isPublished: published(body),
+  };
 }
