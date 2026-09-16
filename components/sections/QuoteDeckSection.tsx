@@ -17,21 +17,21 @@ const variantStyles: Record<
 > = {
   mint: {
     cardBg: 'bg-[var(--surface-mint)]',
-    borderColor: 'border-[#83D0C6]/30',
-    iconColor: 'text-[#83D0C6]',
-    badgeBg: 'bg-[#83D0C6]/15',
+    borderColor: 'border-[#06B6D4]/30',
+    iconColor: 'text-[#06B6D4]',
+    badgeBg: 'bg-[#06B6D4]/15',
   },
   sky: {
     cardBg: 'bg-[var(--surface-sky)]',
-    borderColor: 'border-[#84B0DF]/30',
-    iconColor: 'text-[#84B0DF]',
-    badgeBg: 'bg-[#84B0DF]/15',
+    borderColor: 'border-[#6366F1]/30',
+    iconColor: 'text-[#6366F1]',
+    badgeBg: 'bg-[#6366F1]/15',
   },
   lavender: {
     cardBg: 'bg-[var(--surface-lavender)]',
-    borderColor: 'border-[#D1D3E8]/50',
-    iconColor: 'text-[color:var(--lavender-ink)]',
-    badgeBg: 'bg-[#D1D3E8]/30',
+    borderColor: 'border-[#8B5CF6]/30',
+    iconColor: 'text-[#8B5CF6]',
+    badgeBg: 'bg-[#8B5CF6]/15',
   },
 };
 
@@ -150,6 +150,9 @@ export default function QuoteDeckSection({ quotes, settings }: QuoteDeckSectionP
                   shadow-[0_8px_30px_rgba(61,76,90,0.06)] overflow-hidden transition-all duration-500 ease-out select-none
                   ${transformClass} ${opacityClass} ${isFront ? 'cursor-pointer' : 'pointer-events-none'}`}
               >
+                {/* Franja superior con degradado curvado */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#06B6D4] shrink-0" />
+
                 {/* Destellos decorativos ambientales */}
                 <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-[var(--surface)]/60 blur-2xl pointer-events-none" />
                 <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-[var(--surface)]/70 blur-2xl pointer-events-none" />
@@ -233,7 +236,7 @@ export default function QuoteDeckSection({ quotes, settings }: QuoteDeckSectionP
                   }}
                   aria-label={`Ver carta ${idx + 1}`}
                   className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                    idx === currentIndex ? 'w-6 bg-[var(--mint-solid)]' : 'w-2 bg-[#3D4C5A]/20 hover:bg-[#3D4C5A]/40'
+                    idx === currentIndex ? 'w-6 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]' : 'w-2 bg-[color:var(--ink)]/20 hover:bg-[color:var(--ink)]/40'
                   }`}
                 />
               ))}

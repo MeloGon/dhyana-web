@@ -22,7 +22,9 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
     </div>
   );
   return (
-    <div className="rounded-[24px] p-6 sm:p-8 bg-[var(--page)] border border-[color:var(--ink)]/10 shadow-sm">
+    <div className="relative overflow-hidden rounded-[24px] bg-[var(--page)] border border-[color:var(--ink)]/10 shadow-sm">
+      <div className="h-1.5 w-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#06B6D4] shrink-0" />
+      <div className="p-6 sm:p-8">
       <h3 className="font-serif text-2xl font-bold text-[color:var(--ink)] mb-6">
         {settings.title}
       </h3>
@@ -30,7 +32,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
       <div className="space-y-4">
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-full bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shrink-0 border border-[color:var(--ink)]/10 shadow-xs">
-            <MapPin className="w-4 h-4 text-[#84B0DF]" />
+            <MapPin className="w-4 h-4 text-[#8B5CF6]" />
           </div>
           <div className="min-w-0 break-words">
             <span className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/60 block">
@@ -45,7 +47,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
 
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-full bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shrink-0 border border-[color:var(--ink)]/10 shadow-xs">
-            <Phone className="w-4 h-4 text-[#83D0C6]" />
+            <Phone className="w-4 h-4 text-[#06B6D4]" />
           </div>
           <div className="min-w-0 break-words">
             <span className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/60 block">
@@ -53,7 +55,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
             </span>
             <a
               href={settings.phoneHref}
-              className="text-sm font-medium text-[color:var(--ink)] hover:text-[#83D0C6] transition-colors"
+              className="text-sm font-medium text-[color:var(--ink)] hover:text-[#06B6D4] transition-colors"
             >
               {settings.phone}
             </a>
@@ -63,7 +65,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
 
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-full bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shrink-0 border border-[color:var(--ink)]/10 shadow-xs">
-            <Mail className="w-4 h-4 text-[#84B0DF]" />
+            <Mail className="w-4 h-4 text-[#6366F1]" />
           </div>
           <div className="min-w-0 break-words">
             <span className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/60 block">
@@ -71,7 +73,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
             </span>
             <a
               href={settings.emailHref}
-              className="text-sm font-medium text-[color:var(--ink)] hover:text-[#83D0C6] transition-colors"
+              className="text-sm font-medium text-[color:var(--ink)] hover:text-[#6366F1] transition-colors"
             >
               {settings.email}
             </a>
@@ -80,7 +82,7 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
 
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-full bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shrink-0 border border-[color:var(--ink)]/10 shadow-xs">
-            <Clock className="w-4 h-4 text-[#83D0C6]" />
+            <Clock className="w-4 h-4 text-[#EC4899]" />
           </div>
           <div className="min-w-0 break-words">
             <span className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/60 block">
@@ -100,11 +102,12 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
           href={settings.whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full px-3 py-3 rounded-xl bg-[#3D4C5A] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#2F3C47] transition-all shadow-sm"
+          className="btn-cosmic-glow w-full px-3 py-3.5 rounded-xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all"
         >
-          <MessageSquare className="w-4 h-4 shrink-0 text-[#83D0C6]" />
+          <MessageSquare className="w-4 h-4 shrink-0 text-[#06B6D4]" />
           <span className="min-w-0 break-words text-center">{settings.whatsappLabel}</span>
         </a>
+      </div>
       </div>
     </div>
   );

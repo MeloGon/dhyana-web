@@ -10,10 +10,10 @@ import type { AboutSettings } from '@/lib/types/about-settings';
 // y elegir uno desde un formulario web no aporta valor suficiente por ahora.
 const PILLAR_ICONS = [HeartHandshake, Brain, Sparkles, ShieldCheck];
 const PILLAR_STYLES = [
-  { accentBg: 'bg-[#83D0C6]/20', iconColor: 'text-[color:var(--ink)]' },
-  { accentBg: 'bg-[#84B0DF]/20', iconColor: 'text-[color:var(--ink)]' },
-  { accentBg: 'bg-[#D1D3E8]/40', iconColor: 'text-[color:var(--ink)]' },
-  { accentBg: 'bg-[#B2C9DC]/30', iconColor: 'text-[color:var(--ink)]' },
+  { accentBg: 'bg-[#6366F1]/15', iconColor: 'text-[#6366F1]' },
+  { accentBg: 'bg-[#8B5CF6]/15', iconColor: 'text-[#8B5CF6]' },
+  { accentBg: 'bg-[#06B6D4]/15', iconColor: 'text-[#06B6D4]' },
+  { accentBg: 'bg-[#EC4899]/15', iconColor: 'text-[#EC4899]' },
 ];
 
 interface AboutSectionProps {
@@ -39,7 +39,7 @@ export default function AboutSection({ settings, onScrollTo, showContact, showSe
     <section id="sobre-nosotros" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#83D0C6]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#6366F1]/15 text-[#6366F1] text-xs font-semibold uppercase tracking-wider mb-3">
           <span>{settings.badge}</span>
         </div>
         <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
@@ -54,7 +54,9 @@ export default function AboutSection({ settings, onScrollTo, showContact, showSe
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center mb-16">
         {/* Left Side: Profile Presentation Card */}
         <div className="lg:col-span-5">
-          <div className="relative rounded-[24px] bg-[var(--page)] p-6 sm:p-8 border border-[color:var(--ink)]/10 shadow-sm">
+          <div className="relative overflow-hidden rounded-[24px] bg-[var(--page)] border border-[color:var(--ink)]/10 shadow-sm">
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#06B6D4] shrink-0" />
+            <div className="p-6 sm:p-8">
             {/* Visual Portrait Container */}
             <div className="relative w-full aspect-4/3 rounded-2xl overflow-hidden mb-6 bg-[#3D4C5A]/10 shadow-sm flex items-center justify-center">
               <Image
@@ -99,6 +101,7 @@ export default function AboutSection({ settings, onScrollTo, showContact, showSe
               <span className="font-handwriting text-2xl text-[color:var(--ink)] font-semibold">
                 &ldquo;{settings.quote}&rdquo;
               </span>
+            </div>
             </div>
           </div>
         </div>
@@ -145,10 +148,10 @@ export default function AboutSection({ settings, onScrollTo, showContact, showSe
           <div className="pt-4 flex flex-wrap items-center gap-4">
             {showContact && <button
               onClick={() => onScrollTo('contacto')}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-wider font-bold bg-[#3D4C5A] text-white hover:bg-[#2F3C47] shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-wider font-bold bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:opacity-95 shadow-[0_10px_25px_-5px_rgba(99,102,241,0.35)] transition-all cursor-pointer"
             >
               <span>Conoce cómo puedo ayudarte</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#83D0C6]" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#06B6D4]" />
             </button>}
             {showServices && <button
               onClick={() => onScrollTo('servicios')}

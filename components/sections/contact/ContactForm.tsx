@@ -53,7 +53,7 @@ export default function ContactForm({
         </p>
         <button
           onClick={onReset}
-          className="px-6 py-2.5 rounded-full text-xs font-semibold bg-[#3D4C5A] text-white hover:bg-[#2F3C47] transition-all cursor-pointer"
+          className="px-6 py-2.5 rounded-full text-xs font-semibold bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:opacity-95 transition-all cursor-pointer shadow-xs"
         >
           Enviar otro mensaje o consulta
         </button>
@@ -144,7 +144,7 @@ export default function ContactForm({
               onClick={() => setFormData({ ...formData, modality: 'online' })}
               className={`py-2.5 px-3 rounded-xl text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${
                 formData.modality === 'online'
-                  ? 'bg-[#3D4C5A] text-white shadow-xs'
+                  ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white shadow-xs'
                   : 'bg-[var(--page)] text-[color:var(--ink)]/70 border border-[color:var(--ink)]/10 hover:text-[color:var(--ink)]'
               }`}
             >
@@ -155,7 +155,7 @@ export default function ContactForm({
               onClick={() => setFormData({ ...formData, modality: 'presencial' })}
               className={`py-2.5 px-3 rounded-xl text-xs uppercase tracking-wider font-bold transition-all cursor-pointer ${
                 formData.modality === 'presencial'
-                  ? 'bg-[#3D4C5A] text-white shadow-xs'
+                  ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white shadow-xs'
                   : 'bg-[var(--page)] text-[color:var(--ink)]/70 border border-[color:var(--ink)]/10 hover:text-[color:var(--ink)]'
               }`}
             >
@@ -223,11 +223,11 @@ export default function ContactForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3.5 rounded-xl font-bold text-sm bg-[#3D4C5A] text-white hover:bg-[#2F3C47] active:scale-98 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+          className="btn-cosmic-glow w-full py-3.5 rounded-xl font-bold text-sm text-white active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-[#83D0C6] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#06B6D4] border-t-transparent rounded-full animate-spin" />
               <span>Enviando Solicitud...</span>
             </span>
           ) : (

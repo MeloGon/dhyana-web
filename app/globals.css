@@ -1,51 +1,96 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Paleta de colores y fuentes del sitio. Ver GUIA-NEXTJS.md para cómo funcionan
+@theme {
+  --color-primary: #6366F1;
+  --color-secondary: #8B5CF6;
+  --color-accent: #06B6D4;
+  --color-highlight: #EC4899;
+  --color-light: #F5F7FF;
+  --color-dark: #111827;
+}
+
+/* Paleta Aurora Cósmica & Amatista Místico. Ver GUIA-NEXTJS.md para cómo funcionan
    las fuentes (--font-playfair, --font-montserrat, --font-caveat) — se inyectan
    desde app/layout.tsx usando next/font. */
 @layer base {
   :root {
     color-scheme: light;
-    --ink: #3D4C5A;
-    --page: #F7F7F5;
+    /* Códigos de Color Aurora Cósmica & Amatista Místico */
+    --color-primary: #6366F1;   /* Índigo Eléctrico Celestial */
+    --color-secondary: #8B5CF6; /* Violeta Amatista Místico */
+    --color-accent: #06B6D4;    /* Cian Neón / Turquesa Cósmico */
+    --color-highlight: #EC4899; /* Rosa Magenta Vibrante */
+    --color-light: #F5F7FF;     /* Hielo Índigo Muy Tenue */
+    --color-dark: #111827;      /* Azul Noche Abisal Profundo */
+
+    /* Degradados Principales y Capas */
+    --gradient-cosmic: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+    --gradient-aurora: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+    --gradient-btn: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+    --shadow-glow: 0 10px 25px -5px rgba(99, 102, 241, 0.35), 0 8px 10px -6px rgba(99, 102, 241, 0.35);
+    --hero-overlay: linear-gradient(180deg, rgba(17, 22, 44, 0.90) 0%, rgba(30, 27, 75, 0.75) 50%, rgba(15, 23, 42, 0.95) 100%);
+
+    /* Adaptación de variables funcionales al tema Aurora Cósmica (Modo Claro) */
+    --ink: #111827;
+    --page: #F5F7FF;
     --surface: #FFFFFF;
-    --surface-soft: #F0F2F4;
-    --surface-mint: #F9FCFB;
-    --surface-sky: #F8FAFD;
-    --surface-lavender: #FAF9FC;
-    --mint-solid: #83D0C6;
-    --sky-solid: #84B0DF;
-    --lavender-solid: #D1D3E8;
-    --blue-solid: #B2C9DC;
-    --positive: #467E76;
-    --danger: #9B3024;
-    --lavender-ink: #7D82B8;
-    --primary: #3D4C5A;
-    --secondary: #83D0C6;
-    --accent: #84B0DF;
-    --card-blue: #B2C9DC;
-    --card-lavender: #D1D3E8;
-    --bg-main: #F7F7F5;
+    --surface-soft: #EEF2FF;
+    --surface-mint: #F0FDFA;
+    --surface-sky: #F5F3FF;
+    --surface-lavender: #FDF2F8;
+    --mint-solid: #06B6D4;
+    --sky-solid: #6366F1;
+    --lavender-solid: #8B5CF6;
+    --blue-solid: #8B5CF6;
+    --positive: #06B6D4;
+    --danger: #EC4899;
+    --lavender-ink: #8B5CF6;
+    --primary: #6366F1;
+    --secondary: #8B5CF6;
+    --accent: #06B6D4;
+    --card-blue: #C7D2FE;
+    --card-lavender: #DDD6FE;
+    --bg-main: #F5F7FF;
   }
 
   :root.dark {
     color-scheme: dark;
-    --ink: #E2EBF1;
-    --page: #111C24;
-    --surface: #1D2C37;
-    --surface-soft: #263844;
-    --surface-mint: #1C302F;
-    --surface-sky: #1D2D3D;
-    --surface-lavender: #2C293D;
-    --mint-solid: #295C54;
-    --sky-solid: #365D86;
-    --lavender-solid: #474461;
-    --blue-solid: #354E66;
-    --positive: #9CE3D6;
-    --danger: #FFA99C;
-    --lavender-ink: #BCBFF1;
-    --bg-main: #111C24;
+    /* Códigos de Color Aurora Cósmica & Amatista Místico (Modo Oscuro) */
+    --color-primary: #818CF8;
+    --color-secondary: #A78BFA;
+    --color-accent: #22D3EE;
+    --color-highlight: #F472B6;
+    --color-light: #F5F7FF;
+    --color-dark: #111827;
+
+    --gradient-cosmic: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+    --gradient-aurora: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+    --gradient-btn: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+    --shadow-glow: 0 10px 25px -5px rgba(99, 102, 241, 0.45), 0 8px 10px -6px rgba(139, 92, 246, 0.35);
+    --hero-overlay: linear-gradient(180deg, rgba(17, 22, 44, 0.95) 0%, rgba(30, 27, 75, 0.85) 50%, rgba(15, 23, 42, 0.98) 100%);
+
+    /* Adaptación de variables funcionales al tema Aurora Cósmica (Modo Oscuro) */
+    --ink: #F5F7FF;
+    --page: #111827;
+    --surface: #1E1B4B;
+    --surface-soft: #2E1065;
+    --surface-mint: #164E63;
+    --surface-sky: #312E81;
+    --surface-lavender: #4C1D95;
+    --mint-solid: #06B6D4;
+    --sky-solid: #8B5CF6;
+    --lavender-solid: #EC4899;
+    --blue-solid: #6366F1;
+    --positive: #22D3EE;
+    --danger: #F472B6;
+    --lavender-ink: #C4B5FD;
+    --primary: #818CF8;
+    --secondary: #A78BFA;
+    --accent: #22D3EE;
+    --card-blue: #312E81;
+    --card-lavender: #4C1D95;
+    --bg-main: #111827;
   }
 
   html {
@@ -54,7 +99,7 @@
   }
 
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-  :focus-visible { outline: 2px solid #84B0DF; outline-offset: 3px; }
+  :focus-visible { outline: 2px solid #8B5CF6; outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -73,17 +118,69 @@
   font-family: var(--font-caveat), cursive;
 }
 
-/* Scrollbar personalizado (solo aplica en navegadores basados en WebKit/Blink) */
+/* Scrollbar personalizado Aurora */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #F0F2F4;
+  background: var(--surface-soft);
 }
 ::-webkit-scrollbar-thumb {
-  background: #B2C9DC;
+  background: #8B5CF6;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #84B0DF;
+  background: #6366F1;
 }
+
+/* Clases utilitarias de la paleta Aurora Cósmica & Amatista Místico */
+.bg-cosmic-gradient {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+}
+
+.text-cosmic-gradient {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-aurora-gradient {
+  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+}
+
+.text-aurora-gradient {
+  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-cosmic-glow {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35), 0 8px 10px -6px rgba(99, 102, 241, 0.35);
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+.btn-cosmic-glow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5), 0 10px 12px -6px rgba(139, 92, 246, 0.4);
+}
+
+.hero-overlay-cosmic {
+  background: linear-gradient(180deg, rgba(17, 22, 44, 0.90) 0%, rgba(30, 27, 75, 0.75) 50%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+@keyframes zen-sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+
+.animate-zen-sway {
+  animation: zen-sway 9s ease-in-out infinite;
+  transform-origin: top center;
+}
+

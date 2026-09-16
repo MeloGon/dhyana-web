@@ -19,8 +19,8 @@ export default function ServicesSection({ onSelectService, content }: ServicesSe
     <section id="servicios" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#84B0DF]/20 text-[color:var(--ink)] text-xs font-semibold uppercase tracking-wider mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-[#84B0DF]" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#6366F1]/15 text-[#6366F1] text-xs font-semibold uppercase tracking-wider mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-[#6366F1]" />
           <span>{content.settings.texts.servicesEyebrow}</span>
         </div>
         <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[color:var(--ink)] font-bold tracking-tight mb-4">
@@ -39,15 +39,17 @@ export default function ServicesSection({ onSelectService, content }: ServicesSe
             <div
               key={svc.id}
               id={`service-card-${svc.id}`}
-              className={`rounded-3xl p-6 sm:p-8 bg-[var(--surface)] border border-[#B2C9DC]/60 hover:border-[#83D0C6] shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 flex flex-col justify-between`}
+              className="relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[color:var(--ink)]/15 hover:border-[#8B5CF6]/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] hover:-translate-y-1 flex flex-col justify-between"
             >
+              <div className="h-1.5 w-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#06B6D4] shrink-0" />
+              <div className="p-6 sm:p-8 flex flex-col justify-between grow">
               <div>
                 {/* Top icon and badge */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className={`w-14 h-14 rounded-2xl bg-[#83D0C6]/25 text-[color:var(--ink)] flex items-center justify-center shadow-xs`}>
+                  <div className={`w-14 h-14 rounded-2xl bg-[#6366F1]/15 text-[#6366F1] flex items-center justify-center shadow-xs`}>
                     <Icon className="w-7 h-7 stroke-[1.75]" />
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-[#83D0C6]/25 text-[color:var(--ink)]`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-[#8B5CF6]/15 text-[#8B5CF6]`}>
                     {svc.badge}
                   </span>
                 </div>
@@ -60,31 +62,26 @@ export default function ServicesSection({ onSelectService, content }: ServicesSe
                   {svc.description}
                 </p>
 
-                {/* Benefits checklist */}
-                <div className="space-y-2.5 mb-6 pt-4 border-t border-[#D1D3E8]/40">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink)]/60 block mb-2">
-                    Enfoque y Beneficios
-                  </span>
-                  {svc.benefits.map((benefit, bIdx) => (
-                    <div key={bIdx} className="flex items-start gap-2.5 text-sm text-[color:var(--ink)]/90">
-                      <div className="w-4 h-4 rounded-full bg-[#83D0C6]/30 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check className="w-2.5 h-2.5 text-[color:var(--ink)] stroke-[3]" />
-                      </div>
+                {/* Beneficios */}
+                <ul className="space-y-2.5 mb-8 border-t border-[color:var(--ink)]/10 pt-6">
+                  {svc.benefits.map((benefit, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm text-[color:var(--ink)]/85">
+                      <Check className="w-4 h-4 text-[#06B6D4] shrink-0 mt-0.5" />
                       <span>{benefit}</span>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
 
-              {/* Card Footer info and action */}
-              <div className="pt-6 border-t border-[#D1D3E8]/40">
-                <div className="flex items-center justify-between text-xs text-[color:var(--ink)]/70 mb-4">
+              <div>
+                {/* Duration & modality metadata */}
+                <div className="flex items-center justify-between text-xs text-[color:var(--ink)]/70 py-4 border-t border-[color:var(--ink)]/10 mb-6 font-medium">
                   <div className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#83D0C6]" />
+                    <Clock className="w-3.5 h-3.5 text-[#06B6D4]" />
                     <span>{svc.duration}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#84B0DF]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#8B5CF6]" />
                     <span>{svc.modality}</span>
                   </div>
                 </div>
@@ -92,11 +89,12 @@ export default function ServicesSection({ onSelectService, content }: ServicesSe
                 {onSelectService && <button
                   id={`btn-consult-service-${svc.id}`}
                   onClick={() => onSelectService(svc.title)}
-                  className="w-full py-3 rounded-full text-sm font-semibold bg-[#3D4C5A] text-white hover:bg-[#2F3C47] transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs"
+                  className="w-full py-3.5 rounded-full text-sm font-semibold bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white hover:opacity-95 shadow-[0_4px_15px_rgba(99,102,241,0.25)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
                 >
                   <span>Solicitar Consulta para este Servicio</span>
-                  <ArrowRight className="w-4 h-4 text-[#83D0C6] group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 text-[#06B6D4] group-hover:translate-x-1 transition-transform" />
                 </button>}
+              </div>
               </div>
             </div>
           );

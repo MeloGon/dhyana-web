@@ -31,15 +31,15 @@ export default function Navbar({ settings, logoUrl, onNavigate }: NavbarProps) {
           </span>
         </a>
         <nav aria-label="Navegación principal" className="hidden shrink-0 items-center gap-5 xl:flex" id="desktop-nav-menu">
-          {links.map((link) => <a key={link.id} href={`#${link.id}`} id={`nav-link-${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`border-b-2 py-2 text-xs font-medium uppercase tracking-wide transition-colors ${activeSection === link.id ? 'border-[#83D0C6]' : 'border-transparent hover:border-[#83D0C6]/50'}`}>{link.label}</a>)}
+          {links.map((link) => <a key={link.id} href={`#${link.id}`} id={`nav-link-${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`border-b-2 py-2 text-xs font-medium uppercase tracking-wide transition-colors ${activeSection === link.id ? 'border-[#6366F1] text-[#6366F1] font-semibold' : 'border-transparent hover:border-[#8B5CF6]/50'}`}>{link.label}</a>)}
         </nav>
         <div className="flex shrink-0 items-center gap-1">
           <ThemeToggle />
-          <button id="mobile-menu-toggle-btn" type="button" aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={mobileMenuOpen} aria-controls="mobile-drawer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="rounded-xl p-2 hover:bg-[#83D0C6]/15 xl:hidden">{mobileMenuOpen ? <X /> : <Menu />}</button>
+          <button id="mobile-menu-toggle-btn" type="button" aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={mobileMenuOpen} aria-controls="mobile-drawer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="rounded-xl p-2 hover:bg-[#6366F1]/15 xl:hidden">{mobileMenuOpen ? <X /> : <Menu />}</button>
         </div>
       </div>
-      {mobileMenuOpen && <nav id="mobile-drawer" aria-label="Navegación móvil" className="absolute top-full right-0 left-0 flex max-h-[calc(100svh-80px)] flex-col gap-1 overflow-y-auto border-b border-[#D1D3E8]/40 bg-[var(--surface)] px-4 py-3 shadow-lg xl:hidden">
-        {links.map((link) => <a key={link.id} href={`#${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`rounded-xl px-4 py-3 text-sm ${activeSection === link.id ? 'bg-[#83D0C6]/20 font-semibold' : 'hover:bg-[#83D0C6]/10'}`}>{link.label}</a>)}
+      {mobileMenuOpen && <nav id="mobile-drawer" aria-label="Navegación móvil" className="absolute top-full right-0 left-0 flex max-h-[calc(100svh-80px)] flex-col gap-1 overflow-y-auto border-b border-[color:var(--ink)]/15 bg-[var(--surface)] px-4 py-3 shadow-lg xl:hidden">
+        {links.map((link) => <a key={link.id} href={`#${link.id}`} onClick={(e) => { e.preventDefault(); navigate(link.id); }} aria-current={activeSection === link.id ? 'location' : undefined} className={`rounded-xl px-4 py-3 text-sm transition-colors ${activeSection === link.id ? 'bg-[#6366F1]/15 text-[#6366F1] font-semibold' : 'hover:bg-[#6366F1]/10'}`}>{link.label}</a>)}
       </nav>}
     </div>
   </header>;

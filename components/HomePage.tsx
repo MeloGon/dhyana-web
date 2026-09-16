@@ -4,6 +4,7 @@ import { useScrollTo } from '@/hooks/useScrollTo';
 import { usePublicAboutSettings } from '@/hooks/useAboutSettings';
 import { usePublicQuotes } from '@/hooks/useQuotes';
 import { visibleSiteLinks } from '@/lib/site-navigation';
+import SideDecorations from '@/components/layout/SideDecorations';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import HeroVideo from '@/components/sections/HeroVideo';
@@ -36,7 +37,8 @@ export function HomePage({ content, contact }: { content: SiteContent; contact: 
   const { visibility } = content.settings;
   const showContact = visibleSiteLinks(content.settings).some((link) => link.id === 'contacto');
   const selectService = visibility.contacto && visibility.contactForm ? (name: string) => { setPreselectedService(name); scrollTo('contacto'); } : undefined;
-  return <div className="flex min-h-screen flex-col bg-[var(--page)] text-[color:var(--ink)]">
+  return <div className="relative flex min-h-screen flex-col bg-[var(--page)] text-[color:var(--ink)] overflow-x-clip">
+    <SideDecorations />
     <Navbar settings={content.settings} logoUrl={content.logoUrl} onNavigate={scrollTo} />
     <main className="grow">
       {visibility.inicio && <HeroVideo content={content} onScrollTo={scrollTo} />}
