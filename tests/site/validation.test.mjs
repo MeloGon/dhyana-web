@@ -17,13 +17,22 @@ function moduleUrl(path) {
 const { parseSiteSettings, parseSiteServices, parseAssetPath } = await import(moduleUrl('lib/server/site-validation.ts'));
 const { validateLogoSvg } = await import(moduleUrl('lib/server/svg-validation.ts'));
 const { visibleSiteLinks } = await import(moduleUrl('lib/site-navigation.ts'));
-const { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS } = await import(moduleUrl('lib/data/site-fields.ts'));
-const settings = () => ({ texts: Object.fromEntries(Object.keys(SITE_TEXT_FIELDS).map((key) => [key, 'Texto válido'])), visibility: Object.fromEntries(Object.keys(SITE_VISIBILITY_FIELDS).map((key) => [key, true])), logoPath: '', videoPath: '' });
+const { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, DEFAULT_SECTION_ORDER } = await import(moduleUrl('lib/data/site-fields.ts'));
+const settings = () => ({ texts: Object.fromEntries(Object.keys(SITE_TEXT_FIELDS).map((key) => [key, 'Texto válido'])), visibility: Object.fromEntries(Object.keys(SITE_VISIBILITY_FIELDS).map((key) => [key, true])), sectionOrder: [...DEFAULT_SECTION_ORDER], logoPath: '', videoPath: '' });
 const service = () => ({ id: 'test-service', title: 'Servicio', description: 'Descripción', benefits: ['Beneficio'], duration: '50 min', modality: 'Online', badge: '', icon: 'user', isPublished: false });
 
 test('configuración: valida todos los campos y no acepta rutas arbitrarias', () => {
   assert.deepEqual(parseSiteSettings(settings()), settings());
-  for (const input of [null, {}, { ...settings(), visibility: {} }, { ...settings(), logoPath: 'https://example.com/logo.svg' }, { ...settings(), texts: { ...settings().texts, heroTitle: '' } }]) assert.throws(() => parseSiteSettings(input));
+  const customOrder = ['contacto', 'opiniones', 'talleres', 'servicios', 'sobre-nosotros', 'inicio'];
+  assert.deepEqual(parseSiteSettings({ ...settings(), sectionOrder: customOrder }).sectionOrder, customOrder);
+  for (const input of [
+    null, {}, { ...settings(), visibility: {} },
+    { ...settings(), logoPath: 'https://example.com/logo.svg' },
+    { ...settings(), texts: { ...settings().texts, heroTitle: '' } },
+    { ...settings(), sectionOrder: ['inicio', 'servicios'] },
+    { ...settings(), sectionOrder: ['inicio', 'servicios', 'talleres', 'opiniones', 'sobre-nosotros', 'inicio'] },
+    { ...settings(), sectionOrder: ['inicio', 'servicios', 'talleres', 'opiniones', 'sobre-nosotros', 'invalid'] },
+  ]) assert.throws(() => parseSiteSettings(input));
   assert.equal(parseAssetPath('video/12345678-1234-4123-8123-123456789abc.mp4', 'video'), 'video/12345678-1234-4123-8123-123456789abc.mp4');
   for (const path of ['../secret', 'logo/12345678-1234-4123-8123-123456789abc.svg', 'video/12345678-1234-4123-8123-123456789abc.html']) assert.throws(() => parseAssetPath(path, 'video'));
 });
@@ -37,6 +46,9 @@ test('servicios: mantiene orden y borradores; rechaza iconos, IDs y tamaños inv
 test('visibilidad: retira secciones y enlaces; contacto requiere algún bloque visible', () => {
   const input = settings();
   assert.deepEqual(visibleSiteLinks(input).map((link) => link.id), ['inicio', 'servicios', 'talleres', 'opiniones', 'sobre-nosotros', 'contacto']);
+  // Orden personalizado se refleja en visibleSiteLinks
+  const inverted = { ...input, sectionOrder: ['contacto', 'sobre-nosotros', 'opiniones', 'talleres', 'servicios', 'inicio'] };
+  assert.deepEqual(visibleSiteLinks(inverted).map((link) => link.id), ['contacto', 'sobre-nosotros', 'opiniones', 'talleres', 'servicios', 'inicio']);
   input.visibility.opiniones = false;
   input.visibility.contactForm = input.visibility.contactInfo = input.visibility.faqs = false;
   assert.deepEqual(visibleSiteLinks(input).map((link) => link.id), ['inicio', 'servicios', 'talleres', 'sobre-nosotros']);

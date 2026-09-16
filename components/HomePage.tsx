@@ -13,7 +13,8 @@ import WorkshopsSection from '@/components/sections/WorkshopsSection';
 import AboutSection from '@/components/sections/AboutSection';
 import QuoteDeckSection from '@/components/sections/QuoteDeckSection';
 import ContactSection from '@/components/sections/ContactSection';
-import type { SiteContent, SiteSettings } from '@/lib/types/site-settings';
+import { DEFAULT_SECTION_ORDER } from '@/lib/data/site-fields';
+import type { SiteContent, SiteSettings, SiteSectionKey } from '@/lib/types/site-settings';
 import type { PublicContactSettings } from '@/lib/types/contact-settings';
 
 function About({ settings, onScrollTo }: { settings: SiteSettings; onScrollTo: (id: string) => void }) {
@@ -37,16 +38,32 @@ export function HomePage({ content, contact }: { content: SiteContent; contact: 
   const { visibility } = content.settings;
   const showContact = visibleSiteLinks(content.settings).some((link) => link.id === 'contacto');
   const selectService = visibility.contacto && visibility.contactForm ? (name: string) => { setPreselectedService(name); scrollTo('contacto'); } : undefined;
+  const sectionOrder = content.settings.sectionOrder?.length ? content.settings.sectionOrder : DEFAULT_SECTION_ORDER;
+
+  const renderSection = (key: SiteSectionKey) => {
+    switch (key) {
+      case 'inicio':
+        return visibility.inicio ? <HeroVideo key="inicio" content={content} onScrollTo={scrollTo} /> : null;
+      case 'servicios':
+        return visibility.servicios ? <ServicesSection key="servicios" content={content} onSelectService={selectService} /> : null;
+      case 'talleres':
+        return visibility.talleres ? <WorkshopsSection key="talleres" settings={content.settings} /> : null;
+      case 'opiniones':
+        return visibility.opiniones ? <Opinions key="opiniones" settings={content.settings} /> : null;
+      case 'sobre-nosotros':
+        return visibility['sobre-nosotros'] ? <About key="sobre-nosotros" settings={content.settings} onScrollTo={scrollTo} /> : null;
+      case 'contacto':
+        return showContact ? <ContactSection key="contacto" content={content} contact={contact} preselectedService={preselectedService} /> : null;
+      default:
+        return null;
+    }
+  };
+
   return <div className="relative flex min-h-screen flex-col bg-[var(--page)] text-[color:var(--ink)] overflow-x-clip">
     <SideDecorations />
     <Navbar settings={content.settings} logoUrl={content.logoUrl} onNavigate={scrollTo} />
     <main className="grow">
-      {visibility.inicio && <HeroVideo content={content} onScrollTo={scrollTo} />}
-      {visibility.servicios && <ServicesSection content={content} onSelectService={selectService} />}
-      {visibility.talleres && <WorkshopsSection settings={content.settings} />}
-      {visibility.opiniones && <Opinions settings={content.settings} />}
-      {visibility['sobre-nosotros'] && <About settings={content.settings} onScrollTo={scrollTo} />}
-      {showContact && <ContactSection content={content} contact={contact} preselectedService={preselectedService} />}
+      {sectionOrder.map(renderSection)}
     </main>
     <Footer content={content} contact={contact} onScrollTo={scrollTo} />
   </div>;

@@ -1,6 +1,6 @@
-import { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, SERVICE_ICONS } from '@/lib/data/site-fields';
+import { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, SERVICE_ICONS, DEFAULT_SECTION_ORDER } from '@/lib/data/site-fields';
 import { HttpError } from '@/lib/server/http-error';
-import type { SiteSettings, SiteService, SiteTextKey, SiteVisibilityKey } from '@/lib/types/site-settings';
+import type { SiteSettings, SiteService, SiteTextKey, SiteVisibilityKey, SiteSectionKey } from '@/lib/types/site-settings';
 
 export function inputObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new HttpError(400, 'Datos inválidos.');
@@ -23,6 +23,24 @@ export function parseAssetPath(value: unknown, kind: 'logo' | 'video') {
   return path;
 }
 
+export function parseSectionOrder(value: unknown): SiteSectionKey[] {
+  if (value === undefined || value === null) {
+    return [...DEFAULT_SECTION_ORDER];
+  }
+  if (!Array.isArray(value) || value.length !== DEFAULT_SECTION_ORDER.length) {
+    throw new HttpError(400, 'El orden de las secciones debe incluir todas las secciones.');
+  }
+  const validKeys = new Set<string>(DEFAULT_SECTION_ORDER);
+  const seen = new Set<string>();
+  for (const item of value) {
+    if (typeof item !== 'string' || !validKeys.has(item) || seen.has(item)) {
+      throw new HttpError(400, 'El orden de secciones contiene elementos inválidos o repetidos.');
+    }
+    seen.add(item);
+  }
+  return value as SiteSectionKey[];
+}
+
 export function parseSiteSettings(value: unknown): SiteSettings {
   const body = inputObject(value);
   const sourceTexts = inputObject(body.texts);
@@ -37,7 +55,13 @@ export function parseSiteSettings(value: unknown): SiteSettings {
     if (typeof sourceVisibility[key] !== 'boolean') throw new HttpError(400, 'Revisa la visibilidad de las secciones.');
     visibility[key] = sourceVisibility[key];
   }
-  return { texts, visibility, logoPath: parseAssetPath(body.logoPath, 'logo'), videoPath: parseAssetPath(body.videoPath, 'video') };
+  return {
+    texts,
+    visibility,
+    sectionOrder: parseSectionOrder(body.sectionOrder),
+    logoPath: parseAssetPath(body.logoPath, 'logo'),
+    videoPath: parseAssetPath(body.videoPath, 'video'),
+  };
 }
 
 export function parseSiteServices(value: unknown): SiteService[] {

@@ -1,10 +1,12 @@
-import type { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS } from '@/lib/data/site-fields';
+import type { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, DEFAULT_SECTION_ORDER } from '@/lib/data/site-fields';
 
 export type SiteTextKey = keyof typeof SITE_TEXT_FIELDS;
 export type SiteVisibilityKey = keyof typeof SITE_VISIBILITY_FIELDS;
+export type SiteSectionKey = (typeof DEFAULT_SECTION_ORDER)[number];
 export interface SiteSettings {
   texts: Record<SiteTextKey, string>;
   visibility: Record<SiteVisibilityKey, boolean>;
+  sectionOrder: SiteSectionKey[];
   logoPath: string;
   videoPath: string;
 }

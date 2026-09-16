@@ -38,4 +38,18 @@ export const SITE_NAV_LINKS = [
   { id: 'sobre-nosotros', label: 'Sobre nosotros' }, { id: 'contacto', label: 'Contacto' },
 ] as const;
 
+export const DEFAULT_SECTION_ORDER = [
+  'inicio', 'servicios', 'talleres', 'opiniones', 'sobre-nosotros', 'contacto',
+] as const;
+
+export const SECTION_NAMES = {
+  inicio: 'Inicio (Video y presentación principal)',
+  servicios: 'Servicios terapéuticos',
+  talleres: 'Talleres grupales',
+  opiniones: 'Opiniones y testimonios',
+  'sobre-nosotros': 'Sobre nosotros (Lic. Alejandro Morales)',
+  contacto: 'Contacto y preguntas frecuentes',
+} as const;
+
 export const SERVICE_ICONS = { user: 'Persona', users: 'Pareja / grupo', wind: 'Respiración', compass: 'Orientación' } as const;
+
