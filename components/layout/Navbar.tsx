@@ -23,7 +23,7 @@ export default function Navbar({ settings, logoUrl, onNavigate }: NavbarProps) {
   return <header id="navbar-header" className="sticky top-0 z-50 border-b border-[#D1D3E8]/40 bg-[var(--surface)]/95 py-3 shadow-sm backdrop-blur-md">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-4">
-        <a href={links[0] ? `#${links[0].id}` : '#'} onClick={(e) => { e.preventDefault(); if (links[0]) navigate(links[0].id); else window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex min-w-0 items-center gap-2.5" id="nav-brand-link">
+        <a href={links[0] ? `#${links[0].id}` : '#'} onClick={(e) => { e.preventDefault(); if (links[0]) navigate(links[0].id); else window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex min-w-0 items-center gap-3" id="nav-brand-link">
           <SiteLogo url={logoUrl} />
           <span className="flex min-w-0 flex-col">
             <span className="font-serif text-sm font-bold leading-tight tracking-tight sm:text-base">{settings.texts.brandTitle}</span>

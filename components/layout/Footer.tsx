@@ -23,7 +23,7 @@ export default function Footer({ content, contact, onScrollTo }: FooterProps) {
       </div>}
       <div className="grid grid-cols-1 gap-8 border-b border-white/15 pb-12 md:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4">
-          <div className="flex items-center gap-3"><SiteLogo url={content.logoUrl} /><div><span className="block font-serif text-lg font-bold leading-tight">{texts.brandTitle}</span><span className="text-xs text-[#8B5CF6]">{texts.brandSubtitle}</span></div></div>
+          <div className="flex items-center gap-3"><SiteLogo url={content.logoUrl} className="h-14 w-14 sm:h-16 sm:w-16" /><div><span className="block font-serif text-lg font-bold leading-tight">{texts.brandTitle}</span><span className="text-xs text-[#8B5CF6]">{texts.brandSubtitle}</span></div></div>
           <p className="whitespace-pre-line text-sm leading-relaxed text-white/75">{texts.footerDescription}</p>
           {texts.footerCredentials && <div className="flex items-start gap-2 text-xs text-white/60"><ShieldCheck className="h-4 w-4 shrink-0 text-[#06B6D4]" /><span>{texts.footerCredentials}</span></div>}
         </div>
