@@ -13,3 +13,16 @@ export const getPublicAboutSettings = (signal?: AbortSignal) =>
 
 export const saveAboutSettings = (input: AboutSettings) =>
   requestSettings<AboutSettings>('/api/admin/about-settings', 'PUT', input);
+
+export async function uploadAboutImage(file: File): Promise<{ url: string; path: string }> {
+  const form = new FormData();
+  form.set('file', file);
+  const response = await fetch('/api/admin/about-media', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: form,
+  });
+  const result = await response.json().catch(() => { throw new Error('No se pudo leer la respuesta del servidor.'); });
+  if (!response.ok) throw new Error(result.message ?? 'No se pudo subir la imagen.');
+  return result;
+}

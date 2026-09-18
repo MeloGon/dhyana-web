@@ -700,5 +700,12 @@ test('archivos del sitio: bucket público con límite y formatos explícitos', a
   const { rows } = await db.query("select * from storage.buckets where id = 'site-media'");
   assert.equal(rows[0].public, true);
   assert.equal(Number(rows[0].file_size_limit), 52428800);
-  assert.deepEqual(rows[0].allowed_mime_types, ['video/mp4', 'video/webm', 'image/svg+xml']);
+  assert.deepEqual(rows[0].allowed_mime_types, [
+    'video/mp4',
+    'video/webm',
+    'image/svg+xml',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ]);
 });

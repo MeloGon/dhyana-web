@@ -37,10 +37,22 @@ test('sobre nosotros: visitante sin acceso privado y origen ajeno rechazado', as
     assert.equal(response.status, 401);
     assert.match(response.headers.get('cache-control'), /no-store/);
   }
+  const mediaResponse = await fetch(`${origin}/api/admin/about-media`, {
+    method: 'POST',
+    headers: { Origin: origin, Cookie: 'sb-fake-auth-token=fake' },
+  });
+  assert.equal(mediaResponse.status, 401);
+
   const foreign = await fetch(`${origin}/api/admin/about-settings`, {
     method: 'PUT',
     headers: { Origin: 'https://example.com', 'Content-Type': 'application/json' },
     body: '{}',
   });
   assert.equal(foreign.status, 403);
+
+  const foreignMedia = await fetch(`${origin}/api/admin/about-media`, {
+    method: 'POST',
+    headers: { Origin: 'https://example.com' },
+  });
+  assert.equal(foreignMedia.status, 403);
 });
