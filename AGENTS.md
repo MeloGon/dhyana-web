@@ -92,6 +92,10 @@ app/
   admin/quotes/         Editor de opiniones (contratos quotes conservados)
   api/admin/quotes/     Lectura y mutaciones privadas de citas
   api/quotes/           Opiniones publicadas para el mazo interactivo
+  admin/legal/           Editor de Términos, Privacidad y Cambios/devoluciones
+  api/admin/legal-settings/ Lectura y edición privadas de textos legales
+  api/legal-settings/    Textos legales publicados para /legal
+  legal/                 Página pública de Términos y políticas (fuera de la landing)
   admin/site/           Textos, visibilidad, logo SVG y video de inicio
   admin/services/       Editor de tarjetas de servicios
   api/admin/site-settings/ Configuración privada del sitio
@@ -224,6 +228,13 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   publicación; eliminación confirmada. Tabla `faqs` privada con RLS, escritura
   tras `requireAdmin()` y validación de Origin. `/api/faqs` solo entrega publicadas.
   Cuatro textos originales cargados por migración; no hay fallback hardcodeado.
+- Términos y políticas editables en `/admin/legal`, publicados en `/legal` (ruta propia,
+  fuera de la landing y sin Navbar/Footer completos). Tabla única `legal_settings`
+  (Términos, Privacidad, Cambios/devoluciones), RLS y permisos solo SELECT/UPDATE de
+  service_role, mismo patrón que `contact_settings`/`about_settings`. Carga inicial con
+  texto provisional explícito ("en preparación"), no contenido legal real: reemplazar
+  desde el panel antes de publicar o de habilitar cobros con Culqi. Enlace desde el
+  footer. `getPublicLegalSettings()` usa `connection()` para no fijar el texto en el build.
 - Contacto mantiene su stub. La inscripción demo ya no se monta en la landing;
   sus archivos quedan como referencia sin formar parte del flujo público.
 - Catálogo persistido: formulario conjunto de taller y horarios; slug automático; eliminación con confirmación solo sin compras. Guardado por save_workshop_catalog y borrado por delete_workshop_catalog, SECURITY INVOKER exclusivos de service_role. sort_order conserva el orden de horarios. Talleres y grupos editables, borradores y publicación
@@ -269,6 +280,7 @@ npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
 npm run test:about # privacidad HTTP y lectura de Sobre nosotros
 npm run test:quotes # privacidad HTTP y lectura de opiniones
 npm run test:site # configuración, privacidad, servicios, SVG y visibilidad
+npm run test:legal # privacidad HTTP y lectura pública de /legal
 ```
 
 Antes de dar por terminado un cambio: `npm run build` y `npm run lint`, ambos

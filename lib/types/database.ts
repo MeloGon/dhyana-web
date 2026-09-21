@@ -194,6 +194,36 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_settings: {
+        Row: {
+          id: boolean
+          privacy_body: string
+          privacy_title: string
+          returns_body: string
+          returns_title: string
+          terms_body: string
+          terms_title: string
+        }
+        Insert: {
+          id?: boolean
+          privacy_body: string
+          privacy_title: string
+          returns_body: string
+          returns_title: string
+          terms_body: string
+          terms_title: string
+        }
+        Update: {
+          id?: boolean
+          privacy_body?: string
+          privacy_title?: string
+          returns_body?: string
+          returns_title?: string
+          terms_body?: string
+          terms_title?: string
+        }
+        Relationships: []
+      }
       monthly_accesses: {
         Row: {
           created_at: string

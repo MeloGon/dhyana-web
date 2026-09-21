@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Palette,
   PhoneCall,
+  Scale,
   ArrowRight,
   KeyRound,
   ExternalLink,
@@ -98,6 +99,16 @@ const ADMIN_MODULES = [
     bgColor: 'bg-teal-500/10',
     hoverBorder: 'hover:border-teal-500/50',
   },
+  {
+    href: '/admin/legal',
+    title: 'Términos y Políticas',
+    description: 'Términos y condiciones, privacidad y cambios/devoluciones publicados en /legal.',
+    icon: Scale,
+    action: 'Editar textos legales',
+    accentColor: 'text-rose-600 dark:text-rose-400',
+    bgColor: 'bg-rose-500/10',
+    hoverBorder: 'hover:border-rose-500/50',
+  },
 ];
 
 export function AdminPanel({ admin }: { admin: AdminIdentity }) {
@@ -175,7 +186,7 @@ export function AdminPanel({ admin }: { admin: AdminIdentity }) {
           <h2 className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/70">
             Módulos del Sistema
           </h2>
-          <span className="text-xs text-[color:var(--ink)]/50">8 áreas configurables</span>
+          <span className="text-xs text-[color:var(--ink)]/50">{ADMIN_MODULES.length} áreas configurables</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">

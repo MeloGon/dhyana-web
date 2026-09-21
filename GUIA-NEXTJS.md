@@ -535,6 +535,36 @@ con destinos validados y mensaje codificado, sin aceptar URLs libres. No se aña
 clientes Supabase de navegador. La tarjeta tiene carga y error con reintento, sin
 fallback al contenido estático. El footer comparte estos datos y enlaces validados. La visibilidad de cada bloque se configura en Diseño del sitio.
 
+### Términos y políticas (implementado)
+
+`/admin/legal` verifica sesión y carga `AdminLegalSettings`. El hook `useAdminLegalSettings`
+conserva formulario y errores como un ViewModel, igual que en contacto; `lib/api/legal-settings.ts`
+transporta los datos y `lib/server/legal-settings.ts` valida permisos y campos. Una
+actualización de la única fila de `legal_settings` guarda los tres documentos (Términos,
+Privacidad, Cambios/devoluciones) de forma atómica.
+
+A diferencia de about/contact —que viven dentro del árbol cliente de `HomePage` y por eso
+leen con un hook + `fetch` en el navegador—, `/legal` es una ruta propia
+(`app/legal/page.tsx`) fuera de la landing: un Server Component que llama directo a
+`lib/server/legal-settings.ts` para su lectura inicial, sin duplicar esa lectura como
+`fetch` de cliente. En Flutter sería la diferencia entre una pantalla embebida en el árbol
+de navegación principal (necesita un `Provider`/`Bloc` propio) y una pantalla aparte que
+recibe sus datos ya resueltos antes de construirse (como pasarle el resultado de un
+`Future` ya esperado, en vez de un `FutureBuilder`).
+
+`getPublicLegalSettings()` llama `connection()` (de `next/server`) antes de leer, igual que
+`getPublicSiteContent()`: evita que Next intente prerenderizar `/legal` como página
+estática durante `next build` con el texto fijado en ese momento — sin esto, el build falla
+si la tabla remota aún no existe o queda desactualizado si el contenido cambia después.
+
+El contenido inicial es explícitamente provisional ("en preparación"), no un documento
+legal real, para no publicar por accidente un texto legal fabricado como si fuera vigente.
+`legal_settings` sigue el mismo patrón singleton que `contact_settings`/`about_settings`:
+RLS activado, permisos `SELECT, UPDATE` exclusivos de `service_role`, sin políticas
+públicas. El enlace público vive en el footer (`components/layout/Footer.tsx`), no en el
+panel de visibilidad de `site-fields.ts`: es contenido legal fijo, no una sección de la
+landing que se oculta o reordena.
+
 ### Sobre nosotros (implementado)
 
 La sección pública de presentación antes llamada "Sobre Mí" pasó a "Sobre Nosotros"

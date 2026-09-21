@@ -17,6 +17,9 @@ de 2026.
 - Preguntas frecuentes conectadas a Supabase y editables desde el panel; carga inicial con los cuatro textos del diseño.
 - Opiniones conectadas a Supabase y editables desde `/admin/quotes`, visualizadas como un mazo interactivo de cartas apiladas en la landing (#opiniones).
 - Tarjeta de datos de consulta configurable en el panel: dirección, teléfono, correo, horarios y botón de WhatsApp.
+- Términos y políticas editables desde `/admin/legal`, publicados en `/legal`. Contenido
+  provisional explícito hasta que se cargue el texto legal real; Culqi lo pedirá para
+  habilitar la cuenta comercial.
 - Contacto todavía simulado. Inscripción demo retirada; no hay checkout ni cobros web.
 - Ventas manuales verificadas por el administrador, participantes, acceso mensual y coordinación implementados.
 - Acceso administrativo conectado a Supabase Auth: login, recuperación, cambio de
@@ -272,6 +275,31 @@ Las pruebas SQL cubren configuración única, permisos y restricciones de campos
 Verificado: 46 pruebas SQL, 2 pruebas HTTP, build con Webpack y lint. Desde navegador
 se comprobó rechazo de teléfono inválido, guardado y lectura pública de una edición;
 después se restauró el texto original usado en la prueba.
+
+## Términos y políticas editables
+
+`/admin/legal` edita título y contenido de Términos y condiciones, Política de privacidad
+y Política de cambios/devoluciones. Guardar actualiza los tres documentos juntos en la
+siguiente carga del sitio. Se publican en `/legal`, una ruta propia fuera de la landing
+(no vive dentro de `HomePage`, por eso no monta Navbar/Footer completos), con un enlace
+desde el pie de página. No pasa por el panel de visibilidad de secciones de la home: es
+contenido legal fijo, no una sección que se oculta o reordena.
+
+Migración `20260921120000_editable_legal.sql` aplicada. `legal_settings` admite una sola
+fila (mismo patrón singleton que `contact_settings`/`about_settings`) y el servidor solo
+tiene permisos para leerla y actualizarla, tras verificar al administrador. Carga inicial
+con texto explícitamente provisional ("en preparación"), no contenido legal real ni
+aprobado — a diferencia del resto del contenido de demo del sitio, para no exponer un
+documento legal fabricado como si fuera vigente. Reemplazar desde el panel con el texto
+real antes de publicar o de habilitar cobros con Culqi, que suele pedir estas políticas
+para aprobar la cuenta comercial.
+
+`getPublicLegalSettings()` usa `connection()` para no fijar el texto en el build de
+producción, igual que la configuración pública del sitio. `npm run test:legal` comprueba
+contrato público, acceso privado y Origin. Las pruebas SQL cubren configuración única,
+permisos y restricciones de longitud de los seis campos. Verificado: 58 pruebas SQL
+totales (incluidas las 3 nuevas de este módulo), 3 pruebas HTTP, build con Turbopack y
+lint en verde. Migración aplicada y verificada también en el proyecto remoto.
 
 ## Sección Sobre Nosotros editable
 

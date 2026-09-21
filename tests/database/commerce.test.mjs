@@ -79,6 +79,42 @@ test('datos de consulta: rechaza enlaces y números inválidos sin guardar campo
   assert.equal((await db.query('select address_note from public.contact_settings')).rows[0].address_note, 'Zona céntrica, fácil aparcamiento y metro cercano');
 }));
 
+test('términos y políticas: configuración única y valores iniciales provisionales', async () => withRollback(async () => {
+  const { rows } = await db.query('select * from public.legal_settings');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].terms_title, 'Términos y condiciones');
+  assert.equal(rows[0].privacy_title, 'Política de privacidad');
+  assert.equal(rows[0].returns_title, 'Política de cambios y devoluciones');
+  assert.match(rows[0].terms_body, /en preparación/);
+  await expectSqlError('insert into public.legal_settings select * from public.legal_settings', '23505');
+  await expectSqlError('update public.legal_settings set id = false', '23514');
+}));
+
+test('términos y políticas: RLS, permisos privados y protección contra borrado', async () => withRollback(async () => {
+  assert.equal((await db.query("select relrowsecurity from pg_class where oid = 'public.legal_settings'::regclass")).rows[0].relrowsecurity, true);
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select * from public.legal_settings', '42501');
+    await expectSqlError("update public.legal_settings set terms_title = 'Cambio ajeno'", '42501');
+    await db.exec('reset role');
+  }
+  await db.exec('set local role service_role');
+  await expectSqlError('delete from public.legal_settings', '42501');
+  await expectSqlError('insert into public.legal_settings select * from public.legal_settings', '42501');
+  await db.exec("update public.legal_settings set terms_body = 'Texto legal actualizado' where id = true");
+  assert.equal((await db.query('select terms_body from public.legal_settings')).rows[0].terms_body, 'Texto legal actualizado');
+}));
+
+test('términos y políticas: rechaza textos vacíos o demasiado largos sin guardar campos parciales', async () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  for (const assignment of [
+    "terms_title = ' '", "terms_title = repeat('x', 201)", "terms_body = ''",
+    "terms_body = repeat('x', 20001)", "privacy_title = ''", "privacy_body = ''",
+    "returns_title = ''", "returns_body = ''",
+  ]) await expectSqlError(`update public.legal_settings set ${assignment}`, '23514');
+  assert.equal((await db.query('select terms_title from public.legal_settings')).rows[0].terms_title, 'Términos y condiciones');
+}));
+
 test('sobre nosotros: configuración única y valores iniciales del diseño', async () => withRollback(async () => {
   const { rows } = await db.query('select * from public.about_settings');
   assert.equal(rows.length, 1);
