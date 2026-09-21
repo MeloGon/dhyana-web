@@ -1,6 +1,6 @@
 'use client';
 
-import { PhoneCall, AlertTriangle, ShieldCheck, Mail, MapPin, ArrowUp, MessageCircle } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Mail, MapPin, ArrowUp, MessageCircle } from 'lucide-react';
 import { SiteLogo } from '@/components/layout/SiteLogo';
 import { visibleSiteLinks } from '@/lib/site-navigation';
 import type { SiteContent } from '@/lib/types/site-settings';
@@ -32,14 +32,19 @@ export default function Footer({ content, contact, onScrollTo }: FooterProps) {
         {visibility.footerContact && contact && <div className="space-y-3 text-sm text-white/80">
           <h3 className="font-serif font-semibold text-[#06B6D4]">Contacto Directo</h3>
           <p className="flex gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" /><span>{contact.address}</span></p>
-          <a href={contact.phoneHref} className="flex items-center gap-2 hover:text-[#06B6D4] transition-colors"><PhoneCall className="h-4 w-4 shrink-0 text-[#06B6D4]" />{contact.phone}</a>
+          <div>
+            {/* El número es solo WhatsApp (ver phoneNote): abre chat, no la app de llamadas. */}
+            <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#06B6D4] transition-colors"><MessageCircle className="h-4 w-4 shrink-0 text-[#06B6D4]" />{contact.phone}</a>
+            {contact.phoneNote && <p className="mt-1 pl-6 text-xs text-white/50">{contact.phoneNote}</p>}
+          </div>
           <a href={contact.emailHref} className="flex items-start gap-2 break-all hover:text-[#8B5CF6] transition-colors"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" />{contact.email}</a>
           <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[#06B6D4] hover:underline"><MessageCircle className="h-4 w-4 shrink-0" />WhatsApp</a>
           <p className="pt-2 text-xs text-white/60">{contact.hours}</p>{contact.hoursNote && <p className="text-xs text-white/60">{contact.hoursNote}</p>}
+          <a href="/legal" className="block pt-1 text-xs text-white/60 underline hover:text-white/90">Términos y políticas</a>
         </div>}
       </div>
       <div className="flex flex-col items-center justify-between gap-4 pt-8 text-xs text-white/60 sm:flex-row">
-        <p>© {new Date().getFullYear()} {texts.brandTitle}. Todos los derechos reservados.</p>
+        <p>© {new Date().getFullYear()} {texts.brandTitle}. Todos los derechos reservados. <a href="/legal" className="underline hover:text-white/90">Términos y políticas</a></p>
         <div className="flex items-center gap-4">{texts.footerMotto && <span className="font-handwriting text-xl text-transparent bg-clip-text bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#EC4899] font-bold">{texts.footerMotto}</span>}<button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors" aria-label="Volver al inicio"><ArrowUp className="h-4 w-4" /></button></div>
       </div>
     </div>

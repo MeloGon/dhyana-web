@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mail, Phone, MapPin, Clock, MessageSquare } from 'lucide-react';
+import { Mail, MapPin, Clock, MessageSquare } from 'lucide-react';
 import type { PublicContactSettings } from '@/lib/types/contact-settings';
 
 interface Props {
@@ -47,14 +47,17 @@ export default function ContactInfoCard({ settings, isLoading, errorMessage, han
 
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-full bg-[var(--surface)] text-[color:var(--ink)] flex items-center justify-center shrink-0 border border-[color:var(--ink)]/10 shadow-xs">
-            <Phone className="w-4 h-4 text-[#06B6D4]" />
+            <MessageSquare className="w-4 h-4 text-[#06B6D4]" />
           </div>
           <div className="min-w-0 break-words">
             <span className="text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/60 block">
               Teléfono & WhatsApp
             </span>
+            {/* El número es solo WhatsApp (ver phoneNote): abre chat, no la app de llamadas. */}
             <a
-              href={settings.phoneHref}
+              href={settings.whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-sm font-medium text-[color:var(--ink)] hover:text-[#06B6D4] transition-colors"
             >
               {settings.phone}
