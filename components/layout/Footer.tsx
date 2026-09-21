@@ -32,11 +32,6 @@ export default function Footer({ content, contact, onScrollTo }: FooterProps) {
         {visibility.footerContact && contact && <div className="space-y-3 text-sm text-white/80">
           <h3 className="font-serif font-semibold text-[#06B6D4]">Contacto Directo</h3>
           <p className="flex gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" /><span>{contact.address}</span></p>
-          <div>
-            {/* El número es solo WhatsApp (ver phoneNote): abre chat, no la app de llamadas. */}
-            <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#06B6D4] transition-colors"><MessageCircle className="h-4 w-4 shrink-0 text-[#06B6D4]" />{contact.phone}</a>
-            {contact.phoneNote && <p className="mt-1 pl-6 text-xs text-white/50">{contact.phoneNote}</p>}
-          </div>
           <a href={contact.emailHref} className="flex items-start gap-2 break-all hover:text-[#8B5CF6] transition-colors"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#8B5CF6]" />{contact.email}</a>
           <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[#06B6D4] hover:underline"><MessageCircle className="h-4 w-4 shrink-0" />WhatsApp</a>
           <p className="pt-2 text-xs text-white/60">{contact.hours}</p>{contact.hoursNote && <p className="text-xs text-white/60">{contact.hoursNote}</p>}

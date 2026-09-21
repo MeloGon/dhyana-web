@@ -1,8 +1,23 @@
 import { Calendar, Users } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
-import type { PublicWorkshop } from '@/lib/types/catalog';
+import type { PublicWorkshop, PublicWorkshopGroup } from '@/lib/types/catalog';
+import type { PublicContactSettings } from '@/lib/types/contact-settings';
 
-export function PublicWorkshopCard({ workshop }: { workshop: PublicWorkshop }) {
+interface Props {
+  workshop: PublicWorkshop;
+  /** null mientras carga o si falla: sin número no hay forma segura de armar el enlace. */
+  contact: PublicContactSettings | null;
+}
+
+// No hay checkout ni reserva todavía (ver README): el "Seleccionar horario" abre
+// WhatsApp con el taller y horario ya escritos, usando el mismo circuito de venta
+// manual que ya existe en /admin/sales. Nada de esto reserva cupo por sí solo.
+function whatsappSelectHref(contact: PublicContactSettings, workshop: PublicWorkshop, group: PublicWorkshopGroup) {
+  const message = `Hola, quiero inscribirme en "${workshop.title}" (horario: ${group.scheduleDescription}).`;
+  return `https://wa.me/${contact.whatsappPhone}?text=${encodeURIComponent(message)}`;
+}
+
+export function PublicWorkshopCard({ workshop, contact }: Props) {
   const isIndividual = workshop.category === 'individual';
   return (
     <article className="relative overflow-hidden min-w-0 rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] shadow-sm">
@@ -38,9 +53,19 @@ export function PublicWorkshopCard({ workshop }: { workshop: PublicWorkshop }) {
                 </div>
                 <span className="rounded-full bg-[#06B6D4]/15 text-[#06B6D4] px-3 py-1 text-xs font-semibold">{group.remainingSpots > 0 ? `${group.remainingSpots} cupos restantes` : 'Agotado'}</span>
               </div>
+              {group.remainingSpots > 0 && contact && (
+                <a
+                  href={whatsappSelectHref(contact, workshop, group)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-cosmic-glow mt-4 flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold uppercase tracking-wider"
+                >
+                  Comprar
+                </a>
+              )}
             </li>)}
           </ul>}
-        {!isIndividual && <p className="mt-5 text-xs leading-relaxed text-[color:var(--ink)]/65">Inscripciones en línea próximamente.</p>}
+        {!isIndividual && <p className="mt-5 text-xs leading-relaxed text-[color:var(--ink)]/65">Pago en línea próximamente. Por ahora coordinamos tu inscripción por WhatsApp.</p>}
       </div>
     </article>
   );

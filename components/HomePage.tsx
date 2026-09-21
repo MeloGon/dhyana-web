@@ -47,7 +47,7 @@ export function HomePage({ content, contact }: { content: SiteContent; contact: 
       case 'servicios':
         return visibility.servicios ? <ServicesSection key="servicios" content={content} onSelectService={selectService} /> : null;
       case 'talleres':
-        return visibility.talleres ? <WorkshopsSection key="talleres" settings={content.settings} /> : null;
+        return visibility.talleres ? <WorkshopsSection key="talleres" settings={content.settings} contact={contact} /> : null;
       case 'opiniones':
         return visibility.opiniones ? <Opinions key="opiniones" settings={content.settings} /> : null;
       case 'sobre-nosotros':
