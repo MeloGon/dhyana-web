@@ -102,6 +102,11 @@ app/
   api/admin/site-media/ Subidas privadas de logo y video
   api/admin/services/   Guardado conjunto de servicios
   api/site-settings/    Configuración pública y servicios publicados
+  libro-de-reclamaciones/ Formulario público del Libro de Reclamaciones (INDECOPI)
+  admin/complaint-book/  Listado, detalle/respuesta y datos del proveedor
+  api/complaint-book/    Configuración pública y envío de hojas
+  api/admin/complaint-book/ Listado, detalle, estado/respuesta y export privados
+  api/admin/complaint-book-settings/ Datos del proveedor y textos legales
 
 components/
   layout/               Presentes en toda la página (Navbar, Footer)
@@ -123,6 +128,8 @@ lib/
   server/auth-*.ts      Sesión SSR, configuración, Proxy y adaptadores HTTP
   server/catalog*.ts    Consultas, validación y RPC de guardado/eliminación de catálogo
   server/sales*.ts      Ventas manuales, filtros y coordinación mediante RPC
+  server/complaint-book*.ts Numeración por RPC, PDF (@react-pdf/renderer) y correo (Gmail temporal / Resend) del libro
+  types/complaint-book.ts Contratos públicos y privados del libro de reclamaciones
   types/admin-sales.ts  Contratos privados de ventas y participantes
   types/admin-catalog.ts Contratos privados de talleres y grupos
   types/index.ts        Tipos de la landing demo
@@ -139,6 +146,7 @@ tests/sales/            Privacidad HTTP y concurrencia remota de ventas con fixt
 tests/faqs/             Lectura pública y privacidad HTTP de preguntas frecuentes
 tests/contact/          Privacidad HTTP y enlaces de datos de consulta
 tests/about/            Privacidad HTTP y lectura pública de Sobre nosotros
+tests/complaint-book/   Configuración pública, envío de hojas y privacidad HTTP del libro
 tests/quotes/           Privacidad HTTP y lectura pública de citas
 proxy.ts                Renueva sesión y aplica cabeceras privadas
 scripts/check-database.mjs  Comprobación de conexión por Data API
@@ -253,6 +261,31 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 - Imágenes y videos apuntan a Unsplash / Pixabay / Mixkit. Cualquier dominio
   nuevo para `next/image` debe agregarse a `images.remotePatterns` en
   `next.config.ts`.
+- Libro de Reclamaciones virtual (`/libro-de-reclamaciones`, enlace con ícono solo en el footer, por decisión del responsable;
+  panel en `/admin/complaint-book`) conectado a Supabase, cumpliendo INDECOPI
+  (Ley 29571, DS 011-2011-PCM, Ley 32495): sin login, sin checkbox de aceptación,
+  numeración propia `WEB-{año}-{correlativo}` por `register_complaint_sheet`
+  (RPC con `pg_advisory_xact_lock`, sin huecos), PDF Anexo I generado una sola vez
+  con `@react-pdf/renderer` y guardado en el bucket privado `complaint-book`
+  (URL firmada, nunca pública), copia por correo en modo best-effort; sin
+  configurar, la hoja se registra igual y solo falla el envío. TEMPORAL sin
+  dominio propio: Gmail SMTP (`GMAIL_SMTP_USER`/`GMAIL_SMTP_APP_PASSWORD`, tiene
+  prioridad). Al comprar dominio: verificarlo en Resend, usar `RESEND_API_KEY`/
+  `COMPLAINT_BOOK_EMAIL_FROM` y quitar las de Gmail; pasos en
+  `lib/server/complaint-book-email.ts`. Ninguna hoja se puede eliminar ni editar
+  su Anexo I original (sin GRANT DELETE + trigger de columnas inmutables); estados
+  registrado → en_tramite → respondido con auditoría en `complaint_book_status_log`.
+  Datos del proveedor y textos legales editables en `/admin/complaint-book/settings`;
+  los textos de cumplimiento (aviso INDECOPI, plazo de 15 días) piden confirmación
+  aparte antes de guardarse. Migración `20260922120000_complaint_book.sql` aplicada
+  y tipos regenerados. `npm run test:complaint-book` cubre HTTP público/privado/Origin;
+  `test:db` cubre numeración, validación, transiciones e inmutabilidad (65 pruebas).
+- Se detectó en el proyecto remoto una tabla `public.legal_settings` (términos,
+  privacidad y devoluciones) y su migración `20260921182246_editable_legal`,
+  ninguna presente en este checkout local (ni en `supabase/migrations/`, ni en
+  `develop`/`main`, ni en el remoto de git). Es trabajo de otra sesión no
+  versionado acá: no se tocó ni se asumió como propio. Confirmar con el
+  responsable antes de modificar esa tabla o crear un módulo que choque con ella.
 
 ## No hacer (sobreingeniería para el tamaño de este proyecto)
 
@@ -279,6 +312,7 @@ npm run test:faqs # lectura pública y rechazo de visitantes/orígenes ajenos
 npm run test:contact # privacidad HTTP y enlaces de la tarjeta de consulta
 npm run test:about # privacidad HTTP y lectura de Sobre nosotros
 npm run test:quotes # privacidad HTTP y lectura de opiniones
+npm run test:complaint-book # público/privado/Origin del libro de reclamaciones
 npm run test:site # configuración, privacidad, servicios, SVG y visibilidad
 npm run test:legal # privacidad HTTP y lectura pública de /legal
 ```
