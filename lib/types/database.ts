@@ -110,6 +110,213 @@ export type Database = {
         }
         Relationships: []
       }
+      complaint_book_counters: {
+        Row: {
+          anio: number
+          codigo_establecimiento: string
+          ultimo_correlativo: number
+        }
+        Insert: {
+          anio: number
+          codigo_establecimiento: string
+          ultimo_correlativo?: number
+        }
+        Update: {
+          anio?: number
+          codigo_establecimiento?: string
+          ultimo_correlativo?: number
+        }
+        Relationships: []
+      }
+      complaint_book_entries: {
+        Row: {
+          anio: number
+          bien_descripcion: string
+          bien_tipo: string
+          codigo_establecimiento: string
+          consumidor_correo: string
+          consumidor_documento_numero: string
+          consumidor_documento_tipo: string
+          consumidor_domicilio: string
+          consumidor_nombre: string
+          consumidor_telefono: string
+          correlativo: number
+          created_at: string
+          detalle_hechos: string
+          detalle_pedido: string
+          email_consumidor_enviado: boolean
+          email_error: string
+          email_interno_enviado: boolean
+          es_menor_edad: boolean
+          estado: string
+          id: string
+          monto_reclamado_cents: number | null
+          numero_hoja: string
+          pdf_path: string
+          representante_documento_numero: string
+          representante_nombre: string
+          respondido_por: string | null
+          respuesta_evidencia_path: string
+          respuesta_fecha: string | null
+          respuesta_texto: string
+          tipo: string
+        }
+        Insert: {
+          anio: number
+          bien_descripcion: string
+          bien_tipo: string
+          codigo_establecimiento: string
+          consumidor_correo: string
+          consumidor_documento_numero: string
+          consumidor_documento_tipo: string
+          consumidor_domicilio: string
+          consumidor_nombre: string
+          consumidor_telefono: string
+          correlativo: number
+          created_at?: string
+          detalle_hechos: string
+          detalle_pedido: string
+          email_consumidor_enviado?: boolean
+          email_error?: string
+          email_interno_enviado?: boolean
+          es_menor_edad?: boolean
+          estado?: string
+          id?: string
+          monto_reclamado_cents?: number | null
+          numero_hoja: string
+          pdf_path?: string
+          representante_documento_numero?: string
+          representante_nombre?: string
+          respondido_por?: string | null
+          respuesta_evidencia_path?: string
+          respuesta_fecha?: string | null
+          respuesta_texto?: string
+          tipo: string
+        }
+        Update: {
+          anio?: number
+          bien_descripcion?: string
+          bien_tipo?: string
+          codigo_establecimiento?: string
+          consumidor_correo?: string
+          consumidor_documento_numero?: string
+          consumidor_documento_tipo?: string
+          consumidor_domicilio?: string
+          consumidor_nombre?: string
+          consumidor_telefono?: string
+          correlativo?: number
+          created_at?: string
+          detalle_hechos?: string
+          detalle_pedido?: string
+          email_consumidor_enviado?: boolean
+          email_error?: string
+          email_interno_enviado?: boolean
+          es_menor_edad?: boolean
+          estado?: string
+          id?: string
+          monto_reclamado_cents?: number | null
+          numero_hoja?: string
+          pdf_path?: string
+          representante_documento_numero?: string
+          representante_nombre?: string
+          respondido_por?: string | null
+          respuesta_evidencia_path?: string
+          respuesta_fecha?: string | null
+          respuesta_texto?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_book_entries_codigo_establecimiento_anio_fkey"
+            columns: ["codigo_establecimiento", "anio"]
+            isOneToOne: false
+            referencedRelation: "complaint_book_counters"
+            referencedColumns: ["codigo_establecimiento", "anio"]
+          },
+          {
+            foreignKeyName: "complaint_book_entries_respondido_por_fkey"
+            columns: ["respondido_por"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      complaint_book_settings: {
+        Row: {
+          correo_reclamos_interno: string
+          domicilio: string
+          id: boolean
+          razon_social: string
+          ruc: string
+          texto_aviso_otras_vias: string
+          texto_plazo_respuesta: string
+        }
+        Insert: {
+          correo_reclamos_interno: string
+          domicilio: string
+          id?: boolean
+          razon_social: string
+          ruc: string
+          texto_aviso_otras_vias: string
+          texto_plazo_respuesta: string
+        }
+        Update: {
+          correo_reclamos_interno?: string
+          domicilio?: string
+          id?: boolean
+          razon_social?: string
+          ruc?: string
+          texto_aviso_otras_vias?: string
+          texto_plazo_respuesta?: string
+        }
+        Relationships: []
+      }
+      complaint_book_status_log: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          entry_id: string
+          id: string
+          new_status: string
+          note: string
+          previous_status: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          entry_id: string
+          id?: string
+          new_status: string
+          note?: string
+          previous_status: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          entry_id?: string
+          id?: string
+          new_status?: string
+          note?: string
+          previous_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_book_status_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "complaint_book_status_log_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "complaint_book_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_settings: {
         Row: {
           address: string
@@ -430,7 +637,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           price_cents: number
-          regular_price_cents?: number
+          regular_price_cents: number
           schedule_description?: string
           sort_order?: number
           workshop_id: string
@@ -523,13 +730,31 @@ export type Database = {
         Args: { p_from: string; p_group_id: string; p_until: string }
         Returns: number
       }
+      register_complaint_sheet: {
+        Args: { p_codigo_establecimiento: string; p_input: Json }
+        Returns: Json
+      }
       register_manual_sale: {
         Args: { p_admin_id: string; p_input: Json }
         Returns: string
       }
+      respond_complaint_sheet: {
+        Args: {
+          p_admin_id: string
+          p_evidencia_path: string
+          p_id: string
+          p_respuesta_fecha: string
+          p_respuesta_texto: string
+        }
+        Returns: undefined
+      }
       save_workshop_catalog: {
         Args: { p_slug: string; p_workshop: Json; p_workshop_id: string }
         Returns: Json
+      }
+      set_complaint_sheet_status: {
+        Args: { p_admin_id: string; p_estado: string; p_id: string }
+        Returns: undefined
       }
       set_sale_coordination: {
         Args: {

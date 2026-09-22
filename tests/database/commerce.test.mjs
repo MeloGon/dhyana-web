@@ -745,3 +745,121 @@ test('archivos del sitio: bucket público con límite y formatos explícitos', a
     'image/webp',
   ]);
 });
+
+async function createComplaintAdmin() {
+  const adminId = randomUUID();
+  await db.query('insert into auth.users (id) values ($1)', [adminId]);
+  await db.query('insert into public.admin_users (user_id) values ($1)', [adminId]);
+  return adminId;
+}
+function complaintInput(changes = {}) {
+  return {
+    tipo: 'reclamo', consumidorNombre: 'Ana Torres', consumidorDomicilio: 'Av. Test 123, Arequipa',
+    consumidorDocumentoTipo: 'dni', consumidorDocumentoNumero: '12345678', consumidorTelefono: '+51999999999',
+    consumidorCorreo: 'ana@example.com', esMenorEdad: false, representanteNombre: '', representanteDocumentoNumero: '',
+    bienTipo: 'servicio', bienDescripcion: 'Taller grupal de bienestar', montoReclamadoCents: 5000,
+    detalleHechos: 'El taller no se dictó en la fecha acordada.', detallePedido: 'Solicito la devolución del pago.',
+    ...changes,
+  };
+}
+async function registerComplaint(changes = {}, codigo = 'WEB') {
+  return (await db.query('select public.register_complaint_sheet($1, $2) as result', [codigo, JSON.stringify(complaintInput(changes))])).rows[0].result;
+}
+
+test('libro de reclamaciones: configuración inicial con datos reales del proveedor', async () => {
+  const { rows } = await db.query('select * from public.complaint_book_settings');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].ruc, '10775304842');
+  assert.equal(rows[0].razon_social, 'Centro de Desarrollo Integral Dhyana');
+});
+
+test('libro de reclamaciones: RLS bloquea visitantes en todas las tablas', async () => withRollback(async () => {
+  for (const table of ['complaint_book_settings', 'complaint_book_counters', 'complaint_book_entries', 'complaint_book_status_log']) {
+    assert.equal((await db.query(`select relrowsecurity from pg_class where oid = 'public.${table}'::regclass`)).rows[0].relrowsecurity, true);
+    for (const role of ['anon', 'authenticated']) {
+      await db.exec(`set local role ${role}`);
+      await expectSqlError(`select * from public.${table}`, '42501');
+      await db.exec('reset role');
+    }
+  }
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec(`set local role ${role}`);
+    await expectSqlError('select public.register_complaint_sheet($1, $2)', '42501', ['WEB', JSON.stringify(complaintInput())]);
+    await db.exec('reset role');
+  }
+}));
+
+test('libro de reclamaciones: numeración correlativa sin huecos por establecimiento y año', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const first = await registerComplaint();
+  const second = await registerComplaint();
+  assert.equal(first.numeroHoja, `WEB-${new Date().getUTCFullYear()}-000001`);
+  assert.equal(second.numeroHoja, `WEB-${new Date().getUTCFullYear()}-000002`);
+  assert.notEqual(first.id, second.id);
+}));
+
+test('libro de reclamaciones: datos incompletos no crean hoja ni consumen número', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  for (const changes of [{ consumidorNombre: '' }, { consumidorCorreo: '' }, { detalleHechos: '  ' }, { bienDescripcion: '' }]) {
+    await expectSqlError('select public.register_complaint_sheet($1, $2)', 'PT400', ['WEB', JSON.stringify(complaintInput(changes))]);
+  }
+  assert.equal((await db.query('select id from public.complaint_book_entries')).rows.length, 0);
+  assert.equal((await db.query('select ultimo_correlativo from public.complaint_book_counters')).rows.length, 0);
+}));
+
+test('libro de reclamaciones: menor de edad exige datos del representante', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  await expectSqlError('select public.register_complaint_sheet($1, $2)', 'PT400', ['WEB', JSON.stringify(complaintInput({ esMenorEdad: true }))]);
+  const entry = await registerComplaint({ esMenorEdad: true, representanteNombre: 'Luis Torres', representanteDocumentoNumero: '87654321' });
+  assert.ok(entry.numeroHoja);
+}));
+
+test('libro de reclamaciones: transición de estado y respuesta con auditoría', () => withRollback(async () => {
+  const adminId = await createComplaintAdmin();
+  await db.exec('set local role service_role');
+  const { id } = await registerComplaint();
+  await expectSqlError('select public.set_complaint_sheet_status($1, $2, $3)', 'PT400', [adminId, id, 'respondido']);
+  await db.query('select public.set_complaint_sheet_status($1, $2, $3)', [adminId, id, 'en_tramite']);
+  await expectSqlError('select public.set_complaint_sheet_status($1, $2, $3)', 'PT409', [adminId, id, 'en_tramite']);
+  await expectSqlError('select public.respond_complaint_sheet($1, $2, $3, $4, $5)', 'PT400', [adminId, id, '', '2026-01-01', '']);
+  await expectSqlError('select public.respond_complaint_sheet($1, $2, $3, $4, $5)', 'PT400', [adminId, id, 'Respuesta', '2099-01-01', '']);
+  await db.query('select public.respond_complaint_sheet($1, $2, $3, $4, $5)', [adminId, id, 'Se coordinó una nueva fecha.', '2026-01-05', '']);
+  const { rows: [entry] } = await db.query('select estado, respuesta_texto, respondido_por from public.complaint_book_entries where id = $1', [id]);
+  assert.equal(entry.estado, 'respondido');
+  assert.equal(entry.respondido_por, adminId);
+  await expectSqlError('select public.respond_complaint_sheet($1, $2, $3, $4, $5)', 'PT409', [adminId, id, 'Otra respuesta', '2026-01-06', '']);
+  assert.equal((await db.query('select id from public.complaint_book_status_log where entry_id = $1', [id])).rows.length, 2);
+}));
+
+test('libro de reclamaciones: administrador inactivo no puede cambiar estado ni responder', () => withRollback(async () => {
+  const adminId = await createComplaintAdmin();
+  await db.exec('set local role service_role');
+  const { id } = await registerComplaint();
+  await db.exec('reset role');
+  await db.query('update public.admin_users set is_active = false where user_id = $1', [adminId]);
+  await db.exec('set local role service_role');
+  await expectSqlError('select public.set_complaint_sheet_status($1, $2, $3)', 'PT403', [adminId, id, 'en_tramite']);
+  await expectSqlError('select public.respond_complaint_sheet($1, $2, $3, $4, $5)', 'PT403', [adminId, id, 'Respuesta', '2026-01-01', '']);
+}));
+
+test('libro de reclamaciones: los datos originales del Anexo I quedan congelados', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const { id } = await registerComplaint();
+  await expectSqlError(`update public.complaint_book_entries set consumidor_nombre = 'Otro nombre' where id = $1`, 'PT403', [id]);
+  await expectSqlError(`update public.complaint_book_entries set numero_hoja = 'WEB-2026-999999' where id = $1`, 'PT403', [id]);
+  await db.query(`update public.complaint_book_entries set pdf_path = 'hojas/web/2026/test.pdf' where id = $1`, [id]);
+  assert.equal((await db.query('select pdf_path from public.complaint_book_entries where id = $1', [id])).rows[0].pdf_path, 'hojas/web/2026/test.pdf');
+}));
+
+test('libro de reclamaciones: ninguna hoja se puede eliminar', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const { id } = await registerComplaint();
+  await expectSqlError('delete from public.complaint_book_entries where id = $1', '42501', [id]);
+}));
+
+test('libro de reclamaciones: bucket privado con límite y formatos explícitos', async () => {
+  const { rows } = await db.query("select * from storage.buckets where id = 'complaint-book'");
+  assert.equal(rows[0].public, false);
+  assert.equal(Number(rows[0].file_size_limit), 10485760);
+  assert.deepEqual(rows[0].allowed_mime_types, ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']);
+});
