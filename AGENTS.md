@@ -280,12 +280,11 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   aparte antes de guardarse. Migración `20260922120000_complaint_book.sql` aplicada
   y tipos regenerados. `npm run test:complaint-book` cubre HTTP público/privado/Origin;
   `test:db` cubre numeración, validación, transiciones e inmutabilidad (65 pruebas).
-- Se detectó en el proyecto remoto una tabla `public.legal_settings` (términos,
-  privacidad y devoluciones) y su migración `20260921182246_editable_legal`,
-  ninguna presente en este checkout local (ni en `supabase/migrations/`, ni en
-  `develop`/`main`, ni en el remoto de git). Es trabajo de otra sesión no
-  versionado acá: no se tocó ni se asumió como propio. Confirmar con el
-  responsable antes de modificar esa tabla o crear un módulo que choque con ella.
+- Historial de migraciones local/remoto con versiones distintas para el mismo
+  contenido: `editable_legal` (local 20260921120000, remoto 20260921182246) y
+  `workshop_discounts` (local 20260916160000, remoto 20260916205545);
+  `about_media_types` (20260918150000) no figura en el historial remoto. Revisar
+  este desfase antes de usar `supabase db push` para no reaplicar cambios.
 
 ## No hacer (sobreingeniería para el tamaño de este proyecto)
 
