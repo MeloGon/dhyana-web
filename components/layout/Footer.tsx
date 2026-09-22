@@ -1,6 +1,7 @@
 'use client';
 
-import { AlertTriangle, ShieldCheck, Mail, MapPin, ArrowUp, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, ShieldCheck, Mail, MapPin, ArrowUp, MessageCircle, BookText } from 'lucide-react';
 import { SiteLogo } from '@/components/layout/SiteLogo';
 import { visibleSiteLinks } from '@/lib/site-navigation';
 import type { SiteContent } from '@/lib/types/site-settings';
@@ -39,7 +40,13 @@ export default function Footer({ content, contact, onScrollTo }: FooterProps) {
         </div>}
       </div>
       <div className="flex flex-col items-center justify-between gap-4 pt-8 text-xs text-white/60 sm:flex-row">
-        <p>© {new Date().getFullYear()} {texts.brandTitle}. Todos los derechos reservados. <a href="/legal" className="underline hover:text-white/90">Términos y políticas</a></p>
+        <div className="flex flex-col items-center gap-2 sm:items-start">
+          <p>© {new Date().getFullYear()} {texts.brandTitle}. Todos los derechos reservados. <a href="/legal" className="underline hover:text-white/90">Términos y políticas</a></p>
+          <Link href="/libro-de-reclamaciones" className="flex items-center gap-1.5 hover:text-[#06B6D4] transition-colors">
+            <BookText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            Libro de Reclamaciones
+          </Link>
+        </div>
         <div className="flex items-center gap-4">{texts.footerMotto && <span className="font-handwriting text-xl text-transparent bg-clip-text bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#EC4899] font-bold">{texts.footerMotto}</span>}<button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors" aria-label="Volver al inicio"><ArrowUp className="h-4 w-4" /></button></div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
   Palette,
   PhoneCall,
   Scale,
+  BookText,
   ArrowRight,
   KeyRound,
   ExternalLink,
@@ -108,6 +109,16 @@ const ADMIN_MODULES = [
     accentColor: 'text-rose-600 dark:text-rose-400',
     bgColor: 'bg-rose-500/10',
     hoverBorder: 'hover:border-rose-500/50',
+  },
+  {
+    href: '/admin/complaint-book',
+    title: 'Libro de Reclamaciones',
+    description: 'Hojas registradas, respuestas al consumidor y plazo de 15 días hábiles.',
+    icon: BookText,
+    action: 'Ver hojas',
+    accentColor: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-500/10',
+    hoverBorder: 'hover:border-orange-500/50',
   },
 ];
 
