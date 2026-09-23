@@ -1,6 +1,6 @@
-import { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, SERVICE_ICONS, DEFAULT_SECTION_ORDER } from '@/lib/data/site-fields';
+import { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, SERVICE_ICONS, DEFAULT_SECTION_ORDER, DEFAULT_FLOATING_SOCIAL } from '@/lib/data/site-fields';
 import { HttpError } from '@/lib/server/http-error';
-import type { SiteSettings, SiteService, SiteTextKey, SiteVisibilityKey, SiteSectionKey } from '@/lib/types/site-settings';
+import type { SiteSettings, SiteService, SiteTextKey, SiteVisibilityKey, SiteSectionKey, FloatingSocialSettings } from '@/lib/types/site-settings';
 
 export function inputObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new HttpError(400, 'Datos inválidos.');
@@ -41,6 +41,54 @@ export function parseSectionOrder(value: unknown): SiteSectionKey[] {
   return value as SiteSectionKey[];
 }
 
+function parseSocialUrl(value: unknown, label: string): string {
+  if (value === undefined || value === null || value === '') return '';
+  if (typeof value !== 'string') {
+    throw new HttpError(400, `${label}: ingresa un enlace válido.`);
+  }
+  const trimmed = value.trim();
+  if (trimmed === '') return '';
+  if (trimmed.length > 300) {
+    throw new HttpError(400, `${label}: el enlace no puede superar los 300 caracteres.`);
+  }
+  if (!/^https?:\/\/[^\s$.?#].[^\s]*$/i.test(trimmed)) {
+    throw new HttpError(400, `${label}: el enlace debe comenzar con http:// o https://`);
+  }
+  return trimmed;
+}
+
+export function parseFloatingSocial(value: unknown): FloatingSocialSettings {
+  if (value === undefined || value === null) {
+    return { ...DEFAULT_FLOATING_SOCIAL };
+  }
+  const body = inputObject(value);
+  const design = body.design;
+  if (design !== 'fab' && design !== 'pill' && design !== 'dock') {
+    throw new HttpError(400, 'Estilo de redes flotantes inválido.');
+  }
+  if (typeof body.isEnabled !== 'boolean') {
+    throw new HttpError(400, 'Revisa si las redes flotantes están habilitadas.');
+  }
+  if (
+    typeof body.facebookEnabled !== 'boolean' ||
+    typeof body.instagramEnabled !== 'boolean' ||
+    typeof body.youtubeEnabled !== 'boolean'
+  ) {
+    throw new HttpError(400, 'Revisa la visibilidad individual de cada red social.');
+  }
+
+  return {
+    isEnabled: body.isEnabled,
+    design,
+    facebookEnabled: body.facebookEnabled,
+    facebookUrl: parseSocialUrl(body.facebookUrl, 'Facebook'),
+    instagramEnabled: body.instagramEnabled,
+    instagramUrl: parseSocialUrl(body.instagramUrl, 'Instagram'),
+    youtubeEnabled: body.youtubeEnabled,
+    youtubeUrl: parseSocialUrl(body.youtubeUrl, 'YouTube'),
+  };
+}
+
 export function parseSiteSettings(value: unknown): SiteSettings {
   const body = inputObject(value);
   const sourceTexts = inputObject(body.texts);
@@ -61,6 +109,7 @@ export function parseSiteSettings(value: unknown): SiteSettings {
     sectionOrder: parseSectionOrder(body.sectionOrder),
     logoPath: parseAssetPath(body.logoPath, 'logo'),
     videoPath: parseAssetPath(body.videoPath, 'video'),
+    floatingSocial: parseFloatingSocial(body.floatingSocial),
   };
 }
 

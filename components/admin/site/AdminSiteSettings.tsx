@@ -12,6 +12,8 @@ import {
   Layers,
   FileImage,
   Video,
+  Share2,
+  CheckCircle2,
 } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import {
@@ -19,8 +21,10 @@ import {
   SITE_VISIBILITY_FIELDS,
   SECTION_NAMES,
   DEFAULT_SECTION_ORDER,
+  FLOATING_SOCIAL_DESIGNS,
+  DEFAULT_FLOATING_SOCIAL,
 } from '@/lib/data/site-fields';
-import type { SiteContent, SiteTextKey, SiteVisibilityKey } from '@/lib/types/site-settings';
+import type { SiteContent, SiteTextKey, SiteVisibilityKey, FloatingSocialDesign } from '@/lib/types/site-settings';
 
 const groups = [...new Set(Object.values(SITE_TEXT_FIELDS).map((field) => field.group))];
 const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/20 bg-[var(--page)] px-4 py-3 text-sm';
@@ -29,6 +33,7 @@ export function AdminSiteSettings({ initial }: { initial: SiteContent }) {
   const model = useSiteSettings(initial);
   const busy = model.isSaving || model.uploading !== null;
   const currentOrder = model.settings.sectionOrder || DEFAULT_SECTION_ORDER;
+  const social = model.settings.floatingSocial || DEFAULT_FLOATING_SOCIAL;
 
   return (
     <main className="mx-auto max-w-5xl px-5 py-10">
@@ -299,6 +304,200 @@ export function AdminSiteSettings({ initial }: { initial: SiteContent }) {
                 </div>
               )}
             </div>
+          </section>
+
+          {/* Redes Sociales Flotantes */}
+          <section className="rounded-3xl border border-[color:var(--ink)]/15 bg-[var(--surface)] p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-2xl flex items-center gap-2.5">
+                  <Share2 className="h-6 w-6 text-[#EC4899]" />
+                  Redes Sociales Flotantes
+                </h2>
+                <p className="mt-1 text-sm text-[color:var(--ink)]/75">
+                  Configura los botones flotantes que acompañan al visitante mientras navega por la web (Facebook, Instagram y YouTube).
+                </p>
+              </div>
+
+              {/* Interruptor maestro */}
+              <label className="self-start sm:self-auto inline-flex items-center gap-2.5 cursor-pointer bg-[var(--page)] px-4 py-2.5 rounded-xl border border-[color:var(--ink)]/15 hover:border-[color:var(--ink)]/30 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={social.isEnabled}
+                  onChange={(e) => model.setFloatingSocialEnabled(e.target.checked)}
+                  disabled={busy}
+                  className="h-4 w-4 rounded accent-[#6366F1]"
+                />
+                <span className="text-xs font-semibold">
+                  {social.isEnabled ? 'Botones activos' : 'Botones pausados'}
+                </span>
+              </label>
+            </div>
+
+            {social.isEnabled ? (
+              <div className="mt-6 space-y-6">
+                {/* Selector de los 3 estilos */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/70 mb-3">
+                    Estilo de los botones flotantes:
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    {(['fab', 'pill', 'dock'] as FloatingSocialDesign[]).map((designKey) => {
+                      const info = FLOATING_SOCIAL_DESIGNS[designKey];
+                      const isSelected = social.design === designKey;
+                      return (
+                        <button
+                          key={designKey}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => model.setFloatingSocialDesign(designKey)}
+                          className={`text-left p-4 rounded-2xl border transition-all relative flex flex-col justify-between cursor-pointer ${
+                            isSelected
+                              ? 'border-[#6366F1] bg-[#6366F1]/5 ring-2 ring-[#6366F1]/30 shadow-sm'
+                              : 'border-[color:var(--ink)]/15 bg-[var(--page)] hover:border-[color:var(--ink)]/30'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-sm font-bold text-[color:var(--ink)]">{info.label}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-[#6366F1] shrink-0" />}
+                            </div>
+                            <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[color:var(--ink)]/10 text-[color:var(--ink)]/80 mb-2">
+                              {info.badge}
+                            </span>
+                            <p className="text-xs text-[color:var(--ink)]/70 leading-relaxed">
+                              {info.description}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Configuración individual de cada red */}
+                <div className="space-y-4 pt-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[color:var(--ink)]/70">
+                    Redes visibles y enlaces de redirección:
+                  </label>
+
+                  {/* Facebook */}
+                  <div className="p-4 rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2.5 cursor-pointer font-semibold text-sm">
+                        <input
+                          type="checkbox"
+                          checked={social.facebookEnabled}
+                          onChange={(e) => model.setSocialNetwork('facebook', 'enabled', e.target.checked)}
+                          disabled={busy}
+                          className="h-4 w-4 rounded accent-[#1877F2]"
+                        />
+                        <span className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-[#1877F2] text-white flex items-center justify-center text-xs font-bold">f</span>
+                          Mostrar botón de Facebook
+                        </span>
+                      </label>
+                      <span className={`text-[11px] font-semibold ${social.facebookEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-[color:var(--ink)]/40'}`}>
+                        {social.facebookEnabled ? 'Visible' : 'Oculto'}
+                      </span>
+                    </div>
+                    {social.facebookEnabled && (
+                      <div>
+                        <label className="block text-xs text-[color:var(--ink)]/70 mb-1">
+                          Enlace a tu página de Facebook:
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://facebook.com/dhyanaterapia"
+                          value={social.facebookUrl}
+                          onChange={(e) => model.setSocialNetwork('facebook', 'url', e.target.value)}
+                          disabled={busy}
+                          className={inputClass}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Instagram */}
+                  <div className="p-4 rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2.5 cursor-pointer font-semibold text-sm">
+                        <input
+                          type="checkbox"
+                          checked={social.instagramEnabled}
+                          onChange={(e) => model.setSocialNetwork('instagram', 'enabled', e.target.checked)}
+                          disabled={busy}
+                          className="h-4 w-4 rounded accent-[#E1306C]"
+                        />
+                        <span className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FD1D1D] via-[#E1306C] to-[#833AB4] text-white flex items-center justify-center text-xs font-bold">ig</span>
+                          Mostrar botón de Instagram
+                        </span>
+                      </label>
+                      <span className={`text-[11px] font-semibold ${social.instagramEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-[color:var(--ink)]/40'}`}>
+                        {social.instagramEnabled ? 'Visible' : 'Oculto'}
+                      </span>
+                    </div>
+                    {social.instagramEnabled && (
+                      <div>
+                        <label className="block text-xs text-[color:var(--ink)]/70 mb-1">
+                          Enlace a tu perfil de Instagram:
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://instagram.com/dhyanaterapia"
+                          value={social.instagramUrl}
+                          onChange={(e) => model.setSocialNetwork('instagram', 'url', e.target.value)}
+                          disabled={busy}
+                          className={inputClass}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* YouTube */}
+                  <div className="p-4 rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2.5 cursor-pointer font-semibold text-sm">
+                        <input
+                          type="checkbox"
+                          checked={social.youtubeEnabled}
+                          onChange={(e) => model.setSocialNetwork('youtube', 'enabled', e.target.checked)}
+                          disabled={busy}
+                          className="h-4 w-4 rounded accent-[#FF0000]"
+                        />
+                        <span className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-[#FF0000] text-white flex items-center justify-center text-xs font-bold">yt</span>
+                          Mostrar botón de YouTube
+                        </span>
+                      </label>
+                      <span className={`text-[11px] font-semibold ${social.youtubeEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-[color:var(--ink)]/40'}`}>
+                        {social.youtubeEnabled ? 'Visible' : 'Oculto'}
+                      </span>
+                    </div>
+                    {social.youtubeEnabled && (
+                      <div>
+                        <label className="block text-xs text-[color:var(--ink)]/70 mb-1">
+                          Enlace a tu canal de YouTube:
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://youtube.com/@dhyanaterapia"
+                          value={social.youtubeUrl}
+                          onChange={(e) => model.setSocialNetwork('youtube', 'url', e.target.value)}
+                          disabled={busy}
+                          className={inputClass}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 p-4 rounded-2xl bg-[var(--page)] border border-[color:var(--ink)]/10 text-xs text-[color:var(--ink)]/60">
+                Los botones flotantes de redes sociales están actualmente desactivados en la web. Marca la casilla &quot;Botones activos&quot; arriba para habilitarlos.
+              </div>
+            )}
           </section>
 
           {groups.map((group) => (

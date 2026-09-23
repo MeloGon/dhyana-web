@@ -14,11 +14,11 @@ function moduleUrl(path) {
     .replace(/from ['"]([^'"]+)['"]/g, (_, name) => `from ${JSON.stringify(name.startsWith('@/') ? moduleUrl(`${name.slice(2)}.ts`) : pathToFileURL(require.resolve(name)).href)}`);
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 }
-const { parseSiteSettings, parseSiteServices, parseAssetPath } = await import(moduleUrl('lib/server/site-validation.ts'));
+const { parseSiteSettings, parseSiteServices, parseAssetPath, parseFloatingSocial } = await import(moduleUrl('lib/server/site-validation.ts'));
 const { validateLogoSvg } = await import(moduleUrl('lib/server/svg-validation.ts'));
 const { visibleSiteLinks } = await import(moduleUrl('lib/site-navigation.ts'));
-const { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, DEFAULT_SECTION_ORDER } = await import(moduleUrl('lib/data/site-fields.ts'));
-const settings = () => ({ texts: Object.fromEntries(Object.keys(SITE_TEXT_FIELDS).map((key) => [key, 'Texto válido'])), visibility: Object.fromEntries(Object.keys(SITE_VISIBILITY_FIELDS).map((key) => [key, true])), sectionOrder: [...DEFAULT_SECTION_ORDER], logoPath: '', videoPath: '' });
+const { SITE_TEXT_FIELDS, SITE_VISIBILITY_FIELDS, DEFAULT_SECTION_ORDER, DEFAULT_FLOATING_SOCIAL } = await import(moduleUrl('lib/data/site-fields.ts'));
+const settings = () => ({ texts: Object.fromEntries(Object.keys(SITE_TEXT_FIELDS).map((key) => [key, 'Texto válido'])), visibility: Object.fromEntries(Object.keys(SITE_VISIBILITY_FIELDS).map((key) => [key, true])), sectionOrder: [...DEFAULT_SECTION_ORDER], logoPath: '', videoPath: '', floatingSocial: { ...DEFAULT_FLOATING_SOCIAL } });
 const service = () => ({ id: 'test-service', title: 'Servicio', description: 'Descripción', benefits: ['Beneficio'], duration: '50 min', modality: 'Online', badge: '', icon: 'user', isPublished: false });
 
 test('configuración: valida todos los campos y no acepta rutas arbitrarias', () => {
@@ -60,3 +60,29 @@ test('SVG: acepta trazados y gradientes locales; bloquea scripts, entidades y re
   assert.match(validateLogoSvg(wrap('<defs><linearGradient id="a"><stop offset="0" stop-color="red"/></linearGradient></defs><rect width="10" height="10" fill="url(#a)"/>')), /url\(#a\)/);
   for (const source of [wrap('<script>alert(1)</script>'), wrap('<image href="https://example.com/a.png"/>'), wrap('<path onload="alert(1)"/>'), wrap('<style>svg{}</style>'), wrap('<foreignObject/>'), wrap('<rect fill="url(https://example.com/x)"/>'), wrap('<rect fill="url(&#104;ttps://example.com/x)"/>'), wrap('<g xmlns="https://example.com"/>'), '<!DOCTYPE svg [<!ENTITY x "a">]>' + wrap('<title>&x;</title>'), '<svg/>', wrap('<path>'), wrap('x'.repeat(262145))]) assert.throws(() => validateLogoSvg(source));
 });
+
+test('redes flotantes: valida estilos, visibilidad y enlaces seguros', () => {
+  assert.deepEqual(parseFloatingSocial(undefined), { ...DEFAULT_FLOATING_SOCIAL });
+  assert.deepEqual(parseFloatingSocial(null), { ...DEFAULT_FLOATING_SOCIAL });
+  const valid = {
+    isEnabled: true,
+    design: 'pill',
+    facebookEnabled: true,
+    facebookUrl: 'https://facebook.com/dhyana',
+    instagramEnabled: false,
+    instagramUrl: '',
+    youtubeEnabled: true,
+    youtubeUrl: 'https://youtube.com/@dhyana',
+  };
+  assert.deepEqual(parseFloatingSocial(valid), valid);
+  // Rechaza diseño no permitido
+  assert.throws(() => parseFloatingSocial({ ...valid, design: 'modal' }));
+  // Rechaza tipo no booleano
+  assert.throws(() => parseFloatingSocial({ ...valid, isEnabled: 'true' }));
+  assert.throws(() => parseFloatingSocial({ ...valid, facebookEnabled: null }));
+  // Rechaza URL sin protocolo http/https
+  assert.throws(() => parseFloatingSocial({ ...valid, facebookUrl: 'javascript:alert(1)' }));
+  assert.throws(() => parseFloatingSocial({ ...valid, facebookUrl: 'ftp://files.example.com' }));
+  assert.throws(() => parseFloatingSocial({ ...valid, facebookUrl: 'x'.repeat(301) }));
+});
+

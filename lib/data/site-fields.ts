@@ -53,3 +53,32 @@ export const SECTION_NAMES = {
 
 export const SERVICE_ICONS = { user: 'Persona', users: 'Pareja / grupo', wind: 'Respiración', compass: 'Orientación' } as const;
 
+export const DEFAULT_FLOATING_SOCIAL = {
+  isEnabled: true,
+  design: 'fab',
+  facebookEnabled: true,
+  facebookUrl: 'https://facebook.com',
+  instagramEnabled: true,
+  instagramUrl: 'https://instagram.com',
+  youtubeEnabled: true,
+  youtubeUrl: 'https://youtube.com',
+} as const;
+
+export const FLOATING_SOCIAL_DESIGNS = {
+  fab: {
+    label: 'Botón FAB Expandible (Speed Dial)',
+    badge: 'Recomendado para celulares',
+    description: 'Un botón circular flotante discreto que despliega suavemente los íconos hacia arriba al hacer clic o tap.',
+  },
+  pill: {
+    label: 'Cápsula Horizontal Glass',
+    badge: 'Acceso directo',
+    description: 'Pastilla horizontal de vidrio esmerilado con los íconos directos siempre visibles en la esquina inferior.',
+  },
+  dock: {
+    label: 'Dock Lateral Adosado',
+    badge: 'Estilo editorial',
+    description: 'Barra vertical adosada al marco lateral de la pantalla con etiquetas flotantes en computadora.',
+  },
+} as const;
+

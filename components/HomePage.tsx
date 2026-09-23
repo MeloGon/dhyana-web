@@ -7,6 +7,7 @@ import { visibleSiteLinks } from '@/lib/site-navigation';
 import SideDecorations from '@/components/layout/SideDecorations';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { FloatingSocialBar } from '@/components/layout/FloatingSocialBar';
 import HeroVideo from '@/components/sections/HeroVideo';
 import ServicesSection from '@/components/sections/ServicesSection';
 import WorkshopsSection from '@/components/sections/WorkshopsSection';
@@ -66,5 +67,6 @@ export function HomePage({ content, contact }: { content: SiteContent; contact: 
       {sectionOrder.map(renderSection)}
     </main>
     <Footer content={content} contact={contact} onScrollTo={scrollTo} />
+    <FloatingSocialBar settings={content.settings.floatingSocial} />
   </div>;
 }
