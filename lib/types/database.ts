@@ -627,6 +627,7 @@ export type Database = {
           regular_price_cents: number
           schedule_description: string
           sort_order: number
+          usd_price_cents: number | null
           workshop_id: string
         }
         Insert: {
@@ -640,6 +641,7 @@ export type Database = {
           regular_price_cents: number
           schedule_description?: string
           sort_order?: number
+          usd_price_cents?: number | null
           workshop_id: string
         }
         Update: {
@@ -653,6 +655,7 @@ export type Database = {
           regular_price_cents?: number
           schedule_description?: string
           sort_order?: number
+          usd_price_cents?: number | null
           workshop_id?: string
         }
         Relationships: [

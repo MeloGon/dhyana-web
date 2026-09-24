@@ -13,6 +13,8 @@ export interface PublicWorkshopGroup {
   discountCents?: number;
   /** Porcentaje de descuento calculado (ej: 17 para 17% de rebaja). */
   discountPercentage?: number;
+  /** Precio referencial en dólares (centavos USD, ej: 4800 para $48.00 USD). Opcional. */
+  usdPriceCents?: number | null;
   currency: 'PEN';
   /** Capacidad menos accesos vigentes. Se añadirán reservas al implementar checkout. */
   remainingSpots: number;

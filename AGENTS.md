@@ -246,7 +246,7 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
 - Contacto mantiene su stub. La inscripción demo ya no se monta en la landing;
   sus archivos quedan como referencia sin formar parte del flujo público.
 - Catálogo persistido: formulario conjunto de taller y horarios; slug automático; eliminación con confirmación solo sin compras. Guardado por save_workshop_catalog y borrado por delete_workshop_catalog, SECURITY INVOKER exclusivos de service_role. sort_order conserva el orden de horarios. Talleres y grupos editables, borradores y publicación
-  separada. Público solo recibe campos explícitos y cupos restantes; nunca capacidad.
+  separada. Público solo recibe campos explícitos y cupos restantes; nunca capacidad. Soporte para precio referencial opcional en USD (`usd_price_cents`) con selector interactivo PEN/USD en tarjetas públicas.
   No reactivar el formulario simulado como confirmación de venta.
 - Migración inicial en `supabase/migrations/` aplicada al proyecto remoto: catálogo,
   administradores, compras y accesos mensuales. Historial local/remoto alineado.

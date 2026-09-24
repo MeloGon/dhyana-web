@@ -8,12 +8,14 @@ import type { AdminGroup, AdminWorkshop, GroupDraft, WorkshopInput } from '@/lib
 function groupDraft(group?: AdminGroup): GroupDraft {
   const regularCents = group ? (group.regularPriceCents ?? group.priceCents) : 0;
   const discountCents = group?.discountCents ?? 0;
+  const usdCents = group?.usdPriceCents ?? 0;
   return {
     key: group?.id ?? crypto.randomUUID(),
     id: group?.id,
     scheduleDescription: group?.scheduleDescription ?? '',
     regularPrice: group ? (regularCents / 100).toFixed(2) : '',
     discount: discountCents > 0 ? (discountCents / 100).toFixed(2) : '',
+    usdPrice: usdCents > 0 ? (usdCents / 100).toFixed(2) : '',
     capacity: group ? String(group.capacity) : '',
     isPublished: group?.isPublished ?? false,
   };
@@ -89,12 +91,23 @@ export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: 
 
         const priceCents = regularPriceCents - discountCents;
 
+        const usdPriceStr = group.usdPrice ? group.usdPrice.trim().replace(',', '.') : '';
+        let usdPriceCents: number | null = null;
+        if (usdPriceStr) {
+          if (!/^\d+(\.\d{1,2})?$/.test(usdPriceStr) || Number(usdPriceStr) <= 0) {
+            throw new Error(`Horario ${index + 1}: el precio referencial en USD debe ser un monto mayor a 0 con máximo dos decimales.`);
+          }
+          const [usdWhole, usdDecimals = ''] = usdPriceStr.split('.');
+          usdPriceCents = Number(usdWhole) * 100 + Number(usdDecimals.padEnd(2, '0'));
+        }
+
         return {
           ...(group.id ? { id: group.id } : {}),
           scheduleDescription: group.scheduleDescription,
           regularPriceCents,
           discountCents,
           priceCents,
+          usdPriceCents,
           capacity: Number(group.capacity),
           isPublished: group.isPublished,
         };

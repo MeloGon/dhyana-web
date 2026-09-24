@@ -29,7 +29,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
           <input id={`${prefix}-schedule`} required maxLength={500} value={group.scheduleDescription} onChange={(e) => onChange(group.key, 'scheduleDescription', e.target.value)} placeholder="Sábados de 10:00 a 12:00, hora de Perú" className={inputClass} /></div>
 
         {/* Fila de Precios y Descuento */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label htmlFor={`${prefix}-regular-price`} className="text-sm font-medium">Precio regular (S/)</label>
             <input
@@ -79,6 +79,24 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
               aria-label="Precio final calculado automáticamente"
               className={`${inputClass} bg-[var(--surface-soft)] font-bold text-[#6366F1] cursor-not-allowed`}
             />
+          </div>
+
+          <div>
+            <label htmlFor={`${prefix}-usd-price`} className="text-sm font-medium">
+              Precio ref. USD ($) <span className="text-xs text-[color:var(--ink)]/60">(opcional)</span>
+            </label>
+            <input
+              id={`${prefix}-usd-price`}
+              type="text"
+              inputMode="decimal"
+              value={group.usdPrice}
+              onChange={(e) => onChange(group.key, 'usdPrice', e.target.value)}
+              placeholder="48.00"
+              className={inputClass}
+            />
+            <p className="mt-1 text-xs text-[color:var(--ink)]/60">
+              Habilita selector PEN/USD en la web.
+            </p>
           </div>
         </div>
 

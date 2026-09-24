@@ -21,6 +21,7 @@ function groupDto(group: GroupRow): AdminGroup {
     priceCents: group.price_cents,
     regularPriceCents: group.regular_price_cents ?? group.price_cents,
     discountCents: group.discount_cents ?? 0,
+    usdPriceCents: group.usd_price_cents ?? null,
     capacity: group.capacity,
     isPublished: group.is_published,
   };
@@ -80,16 +81,39 @@ async function activeAccessCount(groupId: string, at: string) {
 }
 
 export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
-  const { data, error } = await createDatabaseAdminClient().from('workshops')
-    .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,capacity,created_at,sort_order)')
+  const db = createDatabaseAdminClient();
+  let rows: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    summary: string;
+    category: string;
+    workshop_groups: GroupRow[];
+  }>;
+
+  const { data, error } = await db.from('workshops')
+    .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,usd_price_cents,capacity,created_at,sort_order)')
     .eq('is_published', true).eq('workshop_groups.is_published', true).order('created_at');
-  if (error) throw new Error('No se pudo leer el catálogo público.');
+
+  if (error) {
+    if (error.code === '42703' || error.message?.includes('usd_price_cents')) {
+      const fallback = await db.from('workshops')
+        .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,capacity,created_at,sort_order)')
+        .eq('is_published', true).eq('workshop_groups.is_published', true).order('created_at');
+      if (fallback.error || !fallback.data) throw new Error('No se pudo leer el catálogo público.');
+      rows = fallback.data as unknown as typeof rows;
+    } else {
+      throw new Error('No se pudo leer el catálogo público.');
+    }
+  } else {
+    rows = data as unknown as typeof rows;
+  }
   const at = new Date().toISOString();
   // Contrato público explícito: no propagar filas con spread, porque incluyen capacidad privada.
-  return Promise.all(data.map(async (row) => ({
+  return Promise.all(rows.map(async (row) => ({
     id: row.id, slug: row.slug, title: row.title, summary: row.summary,
     category: row.category === 'individual' ? 'individual' as const : 'group' as const,
-    groups: row.category === 'individual' ? [] : await Promise.all(row.workshop_groups
+    groups: row.category === 'individual' ? [] : await Promise.all((row.workshop_groups as GroupRow[])
       .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map(async (group) => {
         const discountCents = group.discount_cents || 0;
         const regularPriceCents = group.regular_price_cents || (group.price_cents + discountCents);
@@ -101,6 +125,7 @@ export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
           regularPriceCents: hasDiscount ? regularPriceCents : undefined,
           discountCents: hasDiscount ? discountCents : undefined,
           discountPercentage: hasDiscount ? Math.round((discountCents / regularPriceCents) * 100) : undefined,
+          usdPriceCents: group.usd_price_cents ?? null,
           currency: 'PEN' as const,
           remainingSpots: Math.max(0, group.capacity - await activeAccessCount(group.id, at)),
         };

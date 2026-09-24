@@ -59,11 +59,16 @@ export function parseGroup(body: Record<string, unknown>): GroupInput {
   if (typeof capacity !== 'number' || !Number.isSafeInteger(capacity) || capacity <= 0 || capacity > 2147483647) {
     throw new HttpError(400, 'La capacidad debe ser un número entero mayor que cero.');
   }
+  const usdPriceCents = body.usdPriceCents;
+  if (usdPriceCents !== undefined && usdPriceCents !== null && (typeof usdPriceCents !== 'number' || !Number.isSafeInteger(usdPriceCents) || usdPriceCents <= 0 || usdPriceCents > 100000000)) {
+    throw new HttpError(400, 'El precio referencial en USD debe ser un monto mayor a cero.');
+  }
   return {
     scheduleDescription: text(body, 'scheduleDescription', 'Horario', 500),
     priceCents: finalPriceCents,
     regularPriceCents,
     discountCents,
+    usdPriceCents: typeof usdPriceCents === 'number' ? usdPriceCents : null,
     capacity,
     isPublished: published(body),
   };

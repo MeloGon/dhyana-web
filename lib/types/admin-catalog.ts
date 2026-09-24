@@ -12,6 +12,7 @@ export interface GroupInput {
   priceCents: number;
   regularPriceCents?: number;
   discountCents?: number;
+  usdPriceCents?: number | null;
   capacity: number;
   isPublished: boolean;
 }
@@ -21,6 +22,7 @@ export interface AdminGroup extends GroupInput {
   workshopId: string;
   regularPriceCents: number;
   discountCents: number;
+  usdPriceCents?: number | null;
 }
 
 export interface AdminWorkshop extends WorkshopInput {
@@ -39,6 +41,7 @@ export interface GroupDraft {
   scheduleDescription: string;
   regularPrice: string;
   discount: string;
+  usdPrice: string;
   capacity: string;
   isPublished: boolean;
 }

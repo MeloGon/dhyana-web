@@ -483,6 +483,24 @@ test('catálogo: guarda descuentos válidos y rechaza descuentos iguales o mayor
   ]);
 }));
 
+test('catálogo: guarda precio referencial en USD y rechaza valores negativos o cero', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const saved = await saveCatalog({
+    ...catalogInput,
+    groups: [{ ...catalogGroup, usdPriceCents: 4800 }],
+  });
+  assert.equal(saved.groups[0].usd_price_cents, 4800);
+
+  // Valor <= 0 debe fallar por constraint check
+  await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '23514', [
+    JSON.stringify({
+      ...catalogInput,
+      groups: [{ ...catalogGroup, usdPriceCents: 0 }],
+    }), 'prueba-usd-cero',
+  ]);
+}));
+
+
 test('catálogo: grupo ajeno o repetido revierte edición y no mueve relaciones', () => withRollback(async () => {
   const first = await saveCatalog(); const other = await saveCatalog();
   for (const [groups, code] of [
