@@ -533,10 +533,38 @@ test('catálogo: capacidad inferior a accesos vigentes revierte título y precio
     JSON.stringify({ ...catalogInput, title: 'No guardar', groups: [{ ...catalogGroup, id: saved.groups[0].id, capacity: 1 }] }), 'no-guardar']);
 }));
 
+test('catálogo: orden manual, un taller nuevo entra al final sin desordenar', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const first = await saveCatalog(catalogInput, null, 'primero');
+  const second = await saveCatalog(catalogInput, null, 'segundo');
+  const third = await saveCatalog(catalogInput, null, 'tercero');
+  const order = async () => (await db.query('select id from public.workshops order by sort_order')).rows.map((r) => r.id);
+  assert.deepEqual(await order(), [first.workshop.id, second.workshop.id, third.workshop.id]);
+
+  await db.query('select public.reorder_workshop_catalog($1)', [[third.workshop.id, first.workshop.id, second.workshop.id]]);
+  assert.deepEqual(await order(), [third.workshop.id, first.workshop.id, second.workshop.id]);
+
+  // Editar título/horarios de un taller no debe tocar su posición manual.
+  await saveCatalog({ ...catalogInput, title: 'Editado' }, first.workshop.id, 'primero');
+  assert.deepEqual(await order(), [third.workshop.id, first.workshop.id, second.workshop.id]);
+}));
+
+test('catálogo: reordenar exige la lista completa y talleres existentes', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const first = await saveCatalog(catalogInput, null, 'primero');
+  const second = await saveCatalog(catalogInput, null, 'segundo');
+  await expectSqlError('select public.reorder_workshop_catalog($1)', 'PT400', [[first.workshop.id]]);
+  await expectSqlError('select public.reorder_workshop_catalog($1)', 'PT400', [[first.workshop.id, first.workshop.id]]);
+  await expectSqlError('select public.reorder_workshop_catalog($1)', 'PT404', [[first.workshop.id, randomUUID()]]);
+  assert.deepEqual((await db.query('select id from public.workshops order by sort_order')).rows.map((r) => r.id),
+    [first.workshop.id, second.workshop.id]);
+}));
+
 for (const role of ['anon', 'authenticated']) test(`${role}: no ejecuta funciones privadas del catálogo`, () => withRollback(async () => {
   await db.exec(`set local role ${role}`);
   await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '42501', [JSON.stringify(catalogInput), 'prueba']);
   await expectSqlError('select public.delete_workshop_catalog($1)', '42501', [randomUUID()]);
+  await expectSqlError('select public.reorder_workshop_catalog($1)', '42501', [[randomUUID()]]);
 }));
 
 function manualInput(groupId, changes = {}) {

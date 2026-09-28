@@ -44,9 +44,17 @@ function databaseError(error: { code: string; message: string }) {
 export async function getAdminCatalog(): Promise<AdminWorkshop[]> {
   await requireAdmin();
   const { data, error } = await createDatabaseAdminClient().from('workshops')
-    .select('*,workshop_groups(*)').order('created_at', { ascending: false });
+    .select('*,workshop_groups(*)').order('sort_order').order('created_at').order('id');
   if (error) throw new Error('No se pudo leer el catálogo.');
   return data.map((row) => workshopDto(row, row.workshop_groups.sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))));
+}
+
+export async function reorderWorkshops(ids: string[]) {
+  await requireAdmin();
+  ids.forEach(validateId);
+  const { error } = await createDatabaseAdminClient().rpc('reorder_workshop_catalog', { p_ids: ids });
+  if (error) databaseError(error);
+  return { reordered: true };
 }
 
 export async function saveWorkshop(body: Record<string, unknown>, id?: string) {
@@ -93,13 +101,13 @@ export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
 
   const { data, error } = await db.from('workshops')
     .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,usd_price_cents,capacity,created_at,sort_order)')
-    .eq('is_published', true).eq('workshop_groups.is_published', true).order('created_at');
+    .eq('is_published', true).eq('workshop_groups.is_published', true).order('sort_order').order('created_at').order('id');
 
   if (error) {
     if (error.code === '42703' || error.message?.includes('usd_price_cents')) {
       const fallback = await db.from('workshops')
         .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,capacity,created_at,sort_order)')
-        .eq('is_published', true).eq('workshop_groups.is_published', true).order('created_at');
+        .eq('is_published', true).eq('workshop_groups.is_published', true).order('sort_order').order('created_at').order('id');
       if (fallback.error || !fallback.data) throw new Error('No se pudo leer el catálogo público.');
       rows = fallback.data as unknown as typeof rows;
     } else {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { deleteWorkshop, saveWorkshop } from '@/lib/api/catalog';
+import { deleteWorkshop, reorderWorkshops, saveWorkshop } from '@/lib/api/catalog';
 import { workshopSlug } from '@/lib/workshop-slug';
 import type { AdminGroup, AdminWorkshop, GroupDraft, WorkshopInput } from '@/lib/types/admin-catalog';
 
@@ -29,8 +29,9 @@ export function useAdminCatalog(initial: AdminWorkshop[]) {
   const selected = workshops.find((workshop) => workshop.id === selectedId);
   function selectWorkshop(id: string | null) { setSelectedId(id); setMessage(''); }
   function handleWorkshopSaved(saved: AdminWorkshop) {
+    // Un taller nuevo entra al final: coincide con el orden que asigna el servidor.
     setWorkshops((previous) => previous.some((item) => item.id === saved.id)
-      ? previous.map((item) => item.id === saved.id ? saved : item) : [saved, ...previous]);
+      ? previous.map((item) => item.id === saved.id ? saved : item) : [...previous, saved]);
     setSelectedId(saved.id);
     setMessage('Taller y horarios guardados.');
   }
@@ -39,7 +40,38 @@ export function useAdminCatalog(initial: AdminWorkshop[]) {
     setSelectedId(null);
     setMessage('Taller eliminado.');
   }
-  return { workshops, selected, selectedId, selectWorkshop, handleWorkshopSaved, handleWorkshopDeleted, isBusy, setIsBusy, message };
+  async function persistOrder(reordered: AdminWorkshop[]) {
+    const previous = workshops;
+    setWorkshops(reordered);
+    setIsBusy(true); setMessage('');
+    try {
+      await reorderWorkshops(reordered.map((item) => item.id));
+      setMessage('Orden actualizado.');
+    } catch (error) {
+      setWorkshops(previous);
+      setMessage(error instanceof Error ? error.message : 'No se pudo actualizar el orden.');
+    } finally { setIsBusy(false); }
+  }
+  function moveWorkshop(id: string, direction: 'up' | 'down') {
+    const index = workshops.findIndex((item) => item.id === id);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (index === -1 || targetIndex < 0 || targetIndex >= workshops.length || isBusy) return;
+    const reordered = [...workshops];
+    [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
+    persistOrder(reordered);
+  }
+  function reorderWorkshop(draggedId: string, targetId: string) {
+    if (draggedId === targetId || isBusy) return;
+    const fromIndex = workshops.findIndex((item) => item.id === draggedId);
+    const toIndex = workshops.findIndex((item) => item.id === targetId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const reordered = [...workshops];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    persistOrder(reordered);
+  }
+  return { workshops, selected, selectedId, selectWorkshop, handleWorkshopSaved, handleWorkshopDeleted,
+    moveWorkshop, reorderWorkshop, isBusy, setIsBusy, message };
 }
 
 export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: (saved: AdminWorkshop) => void,

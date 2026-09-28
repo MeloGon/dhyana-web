@@ -15,3 +15,5 @@ export const saveWorkshop = (input: WorkshopSaveInput, id?: string) =>
   requestCatalog<AdminWorkshop>(`/api/admin/workshops${id ? `/${id}` : ''}`, id ? 'PUT' : 'POST', input);
 export const deleteWorkshop = (id: string) =>
   requestCatalog<{ deleted: boolean }>(`/api/admin/workshops/${id}`, 'DELETE', {});
+export const reorderWorkshops = (ids: string[]) =>
+  requestCatalog<{ reordered: boolean }>('/api/admin/workshops/reorder', 'PATCH', { ids });

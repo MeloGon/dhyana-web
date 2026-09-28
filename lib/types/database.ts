@@ -675,6 +675,7 @@ export type Database = {
           id: string
           is_published: boolean
           slug: string
+          sort_order: number
           summary: string
           title: string
         }
@@ -684,6 +685,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           slug: string
+          sort_order?: number
           summary?: string
           title: string
         }
@@ -693,6 +695,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           slug?: string
+          sort_order?: number
           summary?: string
           title?: string
         }
@@ -740,6 +743,10 @@ export type Database = {
       register_manual_sale: {
         Args: { p_admin_id: string; p_input: Json }
         Returns: string
+      }
+      reorder_workshop_catalog: {
+        Args: { p_ids: string[] }
+        Returns: undefined
       }
       respond_complaint_sheet: {
         Args: {

@@ -31,6 +31,7 @@ test('visitantes no pueden leer ni modificar catálogo privado', async () => {
   for (const [path, method] of [
     ['/api/admin/workshops', 'GET'], ['/api/admin/workshops', 'POST'],
     [`/api/admin/workshops/${id}`, 'PUT'], [`/api/admin/workshops/${id}`, 'DELETE'],
+    ['/api/admin/workshops/reorder', 'PATCH'],
   ]) assert.equal((await request(path, method, method === 'GET' ? undefined : {})).status, 401);
   assert.equal((await request('/api/admin/workshops', 'POST', {}, { Origin: 'https://example.com' })).status, 403);
   const publicResponse = await request('/api/workshops');
@@ -124,6 +125,29 @@ test('catálogo completo: persistencia, privacidad, publicación y ocupación', 
     assert.equal((await publicItem()).groups[0].remainingSpots, 0);
     assert.equal((await request(`/api/admin/workshops/${workshop.id}`, 'DELETE', {})).status, 409);
     assert.equal((await save({}, [])).status, 409);
+  });
+
+  await t.test('orden manual: persiste, se refleja en público y valida la lista completa', async () => {
+    const tempA = await (await request('/api/admin/workshops', 'POST', { ...input, groups: [] })).json();
+    artifacts.workshopIds.push(tempA.id); record();
+    const tempB = await (await request('/api/admin/workshops', 'POST', { ...input, groups: [] })).json();
+    artifacts.workshopIds.push(tempB.id); record();
+    const adminIds = (await (await request('/api/admin/workshops')).json()).map((item) => item.id);
+    assert.ok(adminIds.indexOf(tempA.id) < adminIds.indexOf(tempB.id), 'un taller nuevo entra después del anterior');
+
+    const swapped = [...adminIds];
+    const indexA = swapped.indexOf(tempA.id), indexB = swapped.indexOf(tempB.id);
+    [swapped[indexA], swapped[indexB]] = [swapped[indexB], swapped[indexA]];
+    assert.equal((await request('/api/admin/workshops/reorder', 'PATCH', { ids: swapped })).status, 200);
+    const reorderedAdminIds = (await (await request('/api/admin/workshops')).json()).map((item) => item.id);
+    assert.deepEqual(reorderedAdminIds, swapped);
+
+    assert.equal((await request('/api/admin/workshops/reorder', 'PATCH', { ids: swapped.slice(1) })).status, 400);
+    assert.equal((await request('/api/admin/workshops/reorder', 'PATCH', { ids: [...swapped, randomUUID()] })).status, 400);
+    assert.equal((await request('/api/admin/workshops/reorder', 'PATCH', { ids: [] })).status, 400);
+
+    assert.equal((await request(`/api/admin/workshops/${tempA.id}`, 'DELETE', {})).status, 200);
+    assert.equal((await request(`/api/admin/workshops/${tempB.id}`, 'DELETE', {})).status, 200);
   });
 
   await t.test('individual sin horarios públicos; despublicar taller lo retira', async () => {

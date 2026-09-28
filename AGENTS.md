@@ -247,7 +247,12 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   sus archivos quedan como referencia sin formar parte del flujo público.
 - Catálogo persistido: formulario conjunto de taller y horarios; slug automático; eliminación con confirmación solo sin compras. Guardado por save_workshop_catalog y borrado por delete_workshop_catalog, SECURITY INVOKER exclusivos de service_role. sort_order conserva el orden de horarios. Talleres y grupos editables, borradores y publicación
   separada. Público solo recibe campos explícitos y cupos restantes; nunca capacidad. Soporte para precio referencial opcional en USD (`usd_price_cents`) con selector interactivo PEN/USD en tarjetas públicas.
-  No reactivar el formulario simulado como confirmación de venta.
+  No reactivar el formulario simulado como confirmación de venta. Orden manual de talleres (no de horarios): columna `sort_order` propia en
+  `workshops`, taller nuevo entra al final por `save_workshop_catalog`. `reorder_workshop_catalog` (RPC, SECURITY INVOKER,
+  exclusiva de service_role) reordena la lista completa de una vez; exige que la lista recibida coincida exactamente con los
+  talleres existentes. En `/admin/workshops`: arrastrar y soltar (drag-and-drop nativo del
+  navegador, sin librería) o botones subir/bajar como respaldo de teclado/táctil. Lectura
+  admin y pública ordenan por `sort_order` antes que `created_at`.
 - Migración inicial en `supabase/migrations/` aplicada al proyecto remoto: catálogo,
   administradores, compras y accesos mensuales. Historial local/remoto alineado.
   Cliente de servidor conectado por Data API; Auth y panel inicial funcionan.
@@ -281,10 +286,14 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   y tipos regenerados. `npm run test:complaint-book` cubre HTTP público/privado/Origin;
   `test:db` cubre numeración, validación, transiciones e inmutabilidad (65 pruebas).
 - Historial de migraciones local/remoto con versiones distintas para el mismo
-  contenido: `editable_legal` (local 20260921120000, remoto 20260921182246) y
-  `workshop_discounts` (local 20260916160000, remoto 20260916205545);
-  `about_media_types` (20260918150000) no figura en el historial remoto. Revisar
-  este desfase antes de usar `supabase db push` para no reaplicar cambios.
+  contenido: `editable_legal` (local 20260921120000, remoto 20260921182246),
+  `workshop_discounts` (local 20260916160000, remoto 20260916205545),
+  `complaint_book` (local 20260922120000, remoto 20260922204056),
+  `workshop_usd_price` (local 20260924000000, remoto 20260924040644) y
+  `workshop_manual_order` (local 20260928120000, remoto 20260928195858, aplicada
+  por MCP de Supabase); `about_media_types` (20260918150000) no figura en el
+  historial remoto. Revisar este desfase antes de usar `supabase db push` para
+  no reaplicar cambios.
 
 ## No hacer (sobreingeniería para el tamaño de este proyecto)
 

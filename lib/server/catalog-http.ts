@@ -3,7 +3,7 @@ import 'server-only';
 import { HttpError } from '@/lib/server/http-error';
 
 import { getAuthConfig } from '@/lib/server/auth-config';
-import { getAdminCatalog, getPublicCatalog, deleteWorkshop, saveWorkshop } from '@/lib/server/catalog';
+import { getAdminCatalog, getPublicCatalog, deleteWorkshop, saveWorkshop, reorderWorkshops } from '@/lib/server/catalog';
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
@@ -39,5 +39,15 @@ export async function handleWorkshopDelete(request: Request, id: string) {
   try {
     await readBody(request);
     return json(await deleteWorkshop(id));
+  } catch (error) { return errorResponse(error); }
+}
+
+export async function handleWorkshopReorder(request: Request) {
+  try {
+    const body = await readBody(request);
+    if (!Array.isArray(body.ids) || !body.ids.every((id) => typeof id === 'string') || !body.ids.length) {
+      throw new HttpError(400, 'Lista de talleres inválida.');
+    }
+    return json(await reorderWorkshops(body.ids));
   } catch (error) { return errorResponse(error); }
 }
