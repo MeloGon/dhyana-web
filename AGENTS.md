@@ -208,6 +208,8 @@ seguir también las recetas de datos, servicios de servidor y endpoints de la gu
   Validar existencia y contentType/size mediante Storage.info antes de publicar rutas.
   Archivos sustituidos se conservan; no eliminarlos automáticamente sin revisar referencias.
   Nunca incrustar SVG como HTML. Registrar migraciones de buckets también en pruebas SQL.
+  `app/icon.tsx` sirve el favicon de la pestaña con el mismo logo (dinámico, sin archivo
+  estático): si no hay logo subido cae a un ícono por defecto embebido en el propio archivo.
 - `app/page.tsx` es servidor: obtiene configuración inicial y compone `HomePage` cliente.
   Orden Inicio, Servicios, Talleres, Opiniones, Sobre nosotros, Contacto. Visibilidad también
   controla enlaces. Formulario y tarjeta de contacto inicialmente ocultos; formulario sigue
