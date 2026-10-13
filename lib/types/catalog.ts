@@ -26,5 +26,6 @@ export interface PublicWorkshop {
   title: string;
   summary: string;
   category: WorkshopCategory;
+  imageUrl?: string | null;
   groups: PublicWorkshopGroup[];
 }

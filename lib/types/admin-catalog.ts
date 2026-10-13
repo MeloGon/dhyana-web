@@ -4,6 +4,7 @@ export interface WorkshopInput {
   title: string;
   summary: string;
   category: WorkshopCategory;
+  imageUrl?: string | null;
   isPublished: boolean;
 }
 

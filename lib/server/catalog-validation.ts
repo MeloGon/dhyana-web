@@ -37,7 +37,19 @@ export function parseWorkshop(body: Record<string, unknown>): WorkshopSaveInput 
   });
   const ids = groups.flatMap((group) => group.id ? [group.id] : []);
   if (new Set(ids).size !== ids.length) throw new HttpError(400, 'No repitas un mismo horario.');
-  return { title, summary: text(body, 'summary', 'Descripción', 3000), category: body.category, isPublished: published(body), groups };
+
+  const imageUrlRaw = body.imageUrl;
+  let imageUrl: string | null = null;
+  if (typeof imageUrlRaw === 'string' && imageUrlRaw.trim().length > 0) {
+    if (imageUrlRaw.trim().length > 2000) {
+      throw new HttpError(400, 'La URL de la imagen no debe superar los 2000 caracteres.');
+    }
+    imageUrl = imageUrlRaw.trim();
+  } else if (imageUrlRaw !== null && imageUrlRaw !== undefined && imageUrlRaw !== '') {
+    throw new HttpError(400, 'URL de imagen inválida.');
+  }
+
+  return { title, summary: text(body, 'summary', 'Descripción', 3000), category: body.category, imageUrl, isPublished: published(body), groups };
 }
 
 export function parseGroup(body: Record<string, unknown>): GroupInput {

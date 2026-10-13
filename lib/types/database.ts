@@ -673,6 +673,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          image_url: string | null
           is_published: boolean
           slug: string
           sort_order: number
@@ -683,6 +684,7 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_published?: boolean
           slug: string
           sort_order?: number
@@ -693,6 +695,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_published?: boolean
           slug?: string
           sort_order?: number

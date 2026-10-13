@@ -21,7 +21,13 @@ export default function WorkshopsSection({ settings, contact }: { settings: Site
         : catalog.errorMessage ? <div role="alert" className="rounded-3xl bg-[var(--surface)] p-8 text-center">
           <p>{catalog.errorMessage}</p><button onClick={catalog.handleRetry} className="mt-4 rounded-full border border-[color:var(--ink)]/25 px-5 py-2">Reintentar</button>
         </div>
-        : catalog.workshops.length ? <div className="grid items-start gap-7 md:grid-cols-2">{catalog.workshops.map((workshop) => <PublicWorkshopCard key={workshop.id} workshop={workshop} contact={contact} />)}</div>
+        : catalog.workshops.length ? (
+          <div className="flex flex-col gap-10">
+            {catalog.workshops.map((workshop) => (
+              <PublicWorkshopCard key={workshop.id} workshop={workshop} contact={contact} />
+            ))}
+          </div>
+        )
         : <div className="rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-10 text-center"><h3 className="font-serif text-2xl">Próximos talleres</h3><p className="mt-3 text-sm">Pronto compartiremos nuestros talleres y horarios disponibles.</p></div>}
       <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-6 sm:p-8">
         <div className="flex items-center gap-3"><User className="h-6 w-6 text-[#8B5CF6]" aria-hidden="true" /><div><h3 className="font-serif text-xl">Talleres individuales</h3><p className="mt-1 text-sm text-[color:var(--ink)]/70">Sin disponibilidad por el momento.</p></div></div>

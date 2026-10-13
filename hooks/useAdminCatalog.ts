@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { deleteWorkshop, reorderWorkshops, saveWorkshop } from '@/lib/api/catalog';
+import { deleteWorkshop, reorderWorkshops, saveWorkshop, uploadWorkshopImage } from '@/lib/api/catalog';
 import { workshopSlug } from '@/lib/workshop-slug';
 import type { AdminGroup, AdminWorkshop, GroupDraft, WorkshopInput } from '@/lib/types/admin-catalog';
 
@@ -77,9 +77,11 @@ export function useAdminCatalog(initial: AdminWorkshop[]) {
 export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: (saved: AdminWorkshop) => void,
   onDeleted: (id: string) => void, onBusyChange: (busy: boolean) => void) {
   const [form, setForm] = useState<WorkshopInput>({ title: workshop?.title ?? '',
-    summary: workshop?.summary ?? '', category: workshop?.category ?? 'group', isPublished: workshop?.isPublished ?? false });
+    summary: workshop?.summary ?? '', category: workshop?.category ?? 'group',
+    imageUrl: workshop?.imageUrl ?? null, isPublished: workshop?.isPublished ?? false });
   const [groups, setGroups] = useState<GroupDraft[]>(() => workshop ? workshop.groups.map(groupDraft) : [groupDraft()]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -94,9 +96,27 @@ export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: 
   function addGroup() { setGroups((previous) => [...previous, groupDraft()]); }
   function removeGroup(key: string) { setGroups((previous) => previous.filter((group) => group.key !== key)); }
 
+  async function handleImageUpload(file: File) {
+    if (isUploadingImage || isSubmitting || isDeleting) return;
+    setIsUploadingImage(true);
+    setErrorMessage('');
+    try {
+      const res = await uploadWorkshopImage(file);
+      setField('imageUrl', res.url);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'No se pudo subir la imagen.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  function handleImageRemove() {
+    setField('imageUrl', null);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting || isDeleting) return;
+    if (isSubmitting || isDeleting || isUploadingImage) return;
     setIsSubmitting(true); onBusyChange(true); setErrorMessage('');
     try {
       const inputs = groups.map((group, index) => {
@@ -147,7 +167,8 @@ export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: 
       const saved = await saveWorkshop({ ...form, groups: inputs }, workshop?.id);
       // Conservar los IDs recién creados: el siguiente guardado debe editar, no duplicar.
       setGroups(saved.groups.map(groupDraft));
-      setForm({ title: saved.title, summary: saved.summary, category: saved.category, isPublished: saved.isPublished });
+      setForm({ title: saved.title, summary: saved.summary, category: saved.category,
+        imageUrl: saved.imageUrl ?? null, isPublished: saved.isPublished });
       onSaved(saved);
     } catch (error) { setErrorMessage(error instanceof Error ? error.message : 'No se pudo guardar el taller.'); }
     finally { setIsSubmitting(false); onBusyChange(false); }
@@ -160,5 +181,6 @@ export function useWorkshopEditor(workshop: AdminWorkshop | undefined, onSaved: 
     finally { setIsDeleting(false); onBusyChange(false); }
   }
   return { form, slug, setField, groups, setGroupField, addGroup, removeGroup, isSubmitting, isDeleting,
+    isUploadingImage, handleImageUpload, handleImageRemove,
     confirmDelete, setConfirmDelete, errorMessage, handleSubmit, handleDelete };
 }

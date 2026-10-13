@@ -30,6 +30,7 @@ function groupDto(group: GroupRow): AdminGroup {
 function workshopDto(workshop: WorkshopRow, groups: GroupRow[] = []): AdminWorkshop {
   return { id: workshop.id, title: workshop.title, slug: workshop.slug, summary: workshop.summary,
     category: workshop.category === 'individual' ? 'individual' : 'group',
+    imageUrl: workshop.image_url ?? null,
     isPublished: workshop.is_published, groups: groups.map(groupDto) };
 }
 
@@ -96,15 +97,16 @@ export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
     title: string;
     summary: string;
     category: string;
+    image_url?: string | null;
     workshop_groups: GroupRow[];
   }>;
 
   const { data, error } = await db.from('workshops')
-    .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,usd_price_cents,capacity,created_at,sort_order)')
+    .select('id,slug,title,summary,category,image_url,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,usd_price_cents,capacity,created_at,sort_order)')
     .eq('is_published', true).eq('workshop_groups.is_published', true).order('sort_order').order('created_at').order('id');
 
   if (error) {
-    if (error.code === '42703' || error.message?.includes('usd_price_cents')) {
+    if (error.code === '42703' || error.message?.includes('usd_price_cents') || error.message?.includes('image_url')) {
       const fallback = await db.from('workshops')
         .select('id,slug,title,summary,category,workshop_groups(id,schedule_description,price_cents,regular_price_cents,discount_cents,capacity,created_at,sort_order)')
         .eq('is_published', true).eq('workshop_groups.is_published', true).order('sort_order').order('created_at').order('id');
@@ -121,6 +123,7 @@ export async function getPublicCatalog(): Promise<PublicWorkshop[]> {
   return Promise.all(rows.map(async (row) => ({
     id: row.id, slug: row.slug, title: row.title, summary: row.summary,
     category: row.category === 'individual' ? 'individual' as const : 'group' as const,
+    imageUrl: row.image_url ?? null,
     groups: row.category === 'individual' ? [] : await Promise.all((row.workshop_groups as GroupRow[])
       .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map(async (group) => {
         const discountCents = group.discount_cents || 0;

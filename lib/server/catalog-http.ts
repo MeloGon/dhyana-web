@@ -3,6 +3,8 @@ import 'server-only';
 import { HttpError } from '@/lib/server/http-error';
 
 import { getAuthConfig } from '@/lib/server/auth-config';
+import { requireAdmin } from '@/lib/server/admin-auth';
+import { uploadWorkshopImage } from '@/lib/server/workshop-media';
 import { getAdminCatalog, getPublicCatalog, deleteWorkshop, saveWorkshop, reorderWorkshops } from '@/lib/server/catalog';
 
 function json(data: unknown, status = 200) {
@@ -31,13 +33,17 @@ export async function handleCatalogGet(isAdmin: boolean) {
 }
 
 export async function handleWorkshopSave(request: Request, id?: string) {
-  try { return json(await saveWorkshop(await readBody(request), id), id ? 200 : 201); }
-  catch (error) { return errorResponse(error); }
+  try {
+    const body = await readBody(request);
+    await requireAdmin();
+    return json(await saveWorkshop(body, id), id ? 200 : 201);
+  } catch (error) { return errorResponse(error); }
 }
 
 export async function handleWorkshopDelete(request: Request, id: string) {
   try {
     await readBody(request);
+    await requireAdmin();
     return json(await deleteWorkshop(id));
   } catch (error) { return errorResponse(error); }
 }
@@ -45,9 +51,41 @@ export async function handleWorkshopDelete(request: Request, id: string) {
 export async function handleWorkshopReorder(request: Request) {
   try {
     const body = await readBody(request);
+    await requireAdmin();
     if (!Array.isArray(body.ids) || !body.ids.every((id) => typeof id === 'string') || !body.ids.length) {
       throw new HttpError(400, 'Lista de talleres inválida.');
     }
     return json(await reorderWorkshops(body.ids));
+  } catch (error) { return errorResponse(error); }
+}
+
+export async function handleWorkshopMediaUpload(request: Request) {
+  try {
+    if (request.headers.get('origin') !== getAuthConfig().origin) throw new HttpError(403, 'Solicitud de origen no permitido.');
+    await requireAdmin();
+    const type = request.headers.get('content-type') ?? '';
+    if (!type.startsWith('multipart/form-data;')) throw new HttpError(415, 'Selecciona un archivo de imagen válido.');
+
+    const limit = 6 * 1024 * 1024;
+    const reader = request.body?.getReader();
+    if (!reader) throw new HttpError(400, 'Faltan datos.');
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) {
+        await reader.cancel();
+        throw new HttpError(413, 'La imagen supera el límite permitido de 5 MB.');
+      }
+      chunks.push(value);
+    }
+    const bytes = Buffer.concat(chunks);
+    const form = await new Response(bytes, { headers: { 'Content-Type': type } }).formData();
+    const file = form.get('file');
+    if (!(file instanceof File)) throw new HttpError(400, 'Falta el archivo de imagen.');
+
+    return json(await uploadWorkshopImage(file));
   } catch (error) { return errorResponse(error); }
 }

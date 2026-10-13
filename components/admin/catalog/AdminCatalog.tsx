@@ -20,8 +20,8 @@ export function AdminCatalog({ initial }: { initial: AdminWorkshop[] }) {
         <div><p className="text-xs font-semibold tracking-widest text-[color:var(--positive)]">DHYANA · CATÁLOGO</p><h1 className="mt-2 font-serif text-3xl">Talleres y horarios</h1></div>
         <Link href="/#talleres" className="rounded-full border border-[color:var(--ink)]/25 px-5 py-2.5 text-sm">Ver catálogo público</Link>
       </header>
-      <div className="mt-8 grid items-start gap-7 lg:grid-cols-[260px_1fr]">
-        <aside className="rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-5">
+      <div className="mt-8 grid items-start gap-7 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="min-w-0 rounded-3xl border border-[color:var(--ink)]/10 bg-[var(--surface)] p-5">
           <button disabled={catalog.isBusy} onClick={() => catalog.selectWorkshop(null)} className="w-full rounded-xl bg-[#3D4C5A] px-4 py-3 text-sm font-medium text-white">+ Nuevo taller</button>
           {!catalog.workshops.length && <p className="mt-5 text-sm leading-relaxed">Todavía no tienes talleres. Crea el primero con sus horarios.</p>}
           <ul className="mt-4 space-y-2">

@@ -8,7 +8,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
   onRemove: (key: string) => void;
 }) {
   const prefix = `group-${index}`;
-  const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--surface)] px-4 py-3 text-base focus:outline-2 focus:outline-[#467E76]';
+  const inputClass = 'mt-2 w-full rounded-xl border border-[color:var(--ink)]/25 bg-[var(--surface)] px-3.5 py-2.5 text-sm focus:outline-2 focus:outline-[#467E76]';
   const regularNum = parseFloat(group.regularPrice.replace(',', '.')) || 0;
   const discountNum = parseFloat(group.discount.replace(',', '.')) || 0;
   const hasValidRegular = regularNum > 0;
@@ -19,19 +19,19 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
   const isDiscountInvalid = discountNum >= regularNum && regularNum > 0 && discountNum > 0;
 
   return (
-    <section aria-labelledby={`${prefix}-heading`} className="rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)]/60 p-5">
+    <section aria-labelledby={`${prefix}-heading`} className="min-w-0 rounded-2xl border border-[color:var(--ink)]/15 bg-[var(--page)]/60 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3 id={`${prefix}-heading`} className="font-semibold">Horario {index + 1}</h3>
         <button type="button" onClick={() => onRemove(group.key)} aria-label={`Quitar horario ${index + 1}`} className="text-sm text-[color:var(--danger)] underline underline-offset-4">Quitar</button>
       </div>
-      <div className="mt-4 space-y-4">
-        <div><label htmlFor={`${prefix}-schedule`} className="text-sm">Horario del grupo</label>
+      <div className="mt-4 space-y-4 min-w-0">
+        <div><label htmlFor={`${prefix}-schedule`} className="text-sm font-medium">Horario del grupo</label>
           <input id={`${prefix}-schedule`} required maxLength={500} value={group.scheduleDescription} onChange={(e) => onChange(group.key, 'scheduleDescription', e.target.value)} placeholder="Sábados de 10:00 a 12:00, hora de Perú" className={inputClass} /></div>
 
         {/* Fila de Precios y Descuento */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label htmlFor={`${prefix}-regular-price`} className="text-sm font-medium">Precio regular (S/)</label>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
+          <div className="min-w-0">
+            <label htmlFor={`${prefix}-regular-price`} className="text-sm font-medium truncate block">Precio regular (S/)</label>
             <input
               id={`${prefix}-regular-price`}
               type="text"
@@ -44,11 +44,11 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center justify-between">
-              <label htmlFor={`${prefix}-discount`} className="text-sm font-medium">Descuento (S/)</label>
+              <label htmlFor={`${prefix}-discount`} className="text-sm font-medium truncate block">Descuento (S/)</label>
               {discountPercent > 0 && (
-                <span className="text-xs font-bold text-[#EC4899] bg-[#EC4899]/15 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-[#EC4899] bg-[#EC4899]/15 px-2 py-0.5 rounded-full shrink-0">
                   -{discountPercent}%
                 </span>
               )}
@@ -67,9 +67,9 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
             )}
           </div>
 
-          <div>
-            <label htmlFor={`${prefix}-final-price`} className="text-sm font-medium">
-              Precio final (S/) <span className="text-xs text-[color:var(--ink)]/60">(automático)</span>
+          <div className="min-w-0">
+            <label htmlFor={`${prefix}-final-price`} className="text-sm font-medium truncate block">
+              Precio final (S/) <span className="text-xs text-[color:var(--ink)]/60">(auto)</span>
             </label>
             <input
               id={`${prefix}-final-price`}
@@ -81,8 +81,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
             />
           </div>
 
-          <div>
-            <label htmlFor={`${prefix}-usd-price`} className="text-sm font-medium">
+          <div className="min-w-0">
+            <label htmlFor={`${prefix}-usd-price`} className="text-sm font-medium truncate block">
               Precio ref. USD ($) <span className="text-xs text-[color:var(--ink)]/60">(opcional)</span>
             </label>
             <input
@@ -94,8 +94,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: {
               placeholder="48.00"
               className={inputClass}
             />
-            <p className="mt-1 text-xs text-[color:var(--ink)]/60">
-              Habilita selector PEN/USD en la web.
+            <p className="mt-1 text-xs text-[color:var(--ink)]/60 truncate">
+              Habilita selector PEN/USD.
             </p>
           </div>
         </div>

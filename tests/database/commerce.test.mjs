@@ -500,6 +500,30 @@ test('catálogo: guarda precio referencial en USD y rechaza valores negativos o 
   ]);
 }));
 
+test('catálogo: guarda imagen/afiche y valida longitud máxima', () => withRollback(async () => {
+  await db.exec('set local role service_role');
+  const saved = await saveCatalog({
+    ...catalogInput,
+    imageUrl: 'https://example.com/flyer.jpg',
+  });
+  assert.equal(saved.workshop.image_url, 'https://example.com/flyer.jpg');
+
+  const updated = await saveCatalog({
+    ...catalogInput,
+    imageUrl: null,
+    groups: [{ ...catalogGroup, id: saved.groups[0].id }],
+  }, saved.workshop.id);
+  assert.equal(updated.workshop.image_url, null);
+
+  // Valor > 2000 caracteres debe fallar por constraint
+  await expectSqlError('select public.save_workshop_catalog(null, $1, $2)', '23514', [
+    JSON.stringify({
+      ...catalogInput,
+      imageUrl: 'a'.repeat(2001),
+    }), 'prueba-imagen-larga',
+  ]);
+}));
+
 
 test('catálogo: grupo ajeno o repetido revierte edición y no mueve relaciones', () => withRollback(async () => {
   const first = await saveCatalog(); const other = await saveCatalog();
